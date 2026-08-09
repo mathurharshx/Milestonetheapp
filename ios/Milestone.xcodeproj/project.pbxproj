@@ -1,0 +1,772 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		MS0001 /* MilestoneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF001 /* MilestoneApp.swift */; };
+		MS0002 /* Mission.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF002 /* Mission.swift */; };
+		MS0003 /* PomodoroSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF003 /* PomodoroSession.swift */; };
+		MS0004 /* Quote.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF004 /* Quote.swift */; };
+		MS0005 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF005 /* Theme.swift */; };
+		MS0006 /* SharedWidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF006 /* SharedWidgetData.swift */; };
+		MS0007 /* DateCalculations.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF007 /* DateCalculations.swift */; };
+		MS0008 /* HapticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF008 /* HapticsManager.swift */; };
+		MS0009 /* MissionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF009 /* MissionStore.swift */; };
+		MS0010 /* PomodoroStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF010 /* PomodoroStore.swift */; };
+		MS0011 /* UserStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF011 /* UserStore.swift */; };
+		MS0012 /* CountdownTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF012 /* CountdownTimerView.swift */; };
+		MS0013 /* DotGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF013 /* DotGridView.swift */; };
+		MS0014 /* MissionTodoListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF014 /* MissionTodoListView.swift */; };
+		MS0015 /* PomodoroRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF015 /* PomodoroRingView.swift */; };
+		MS0016 /* GlassTabBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF016 /* GlassTabBarView.swift */; };
+		MS0017 /* CreateMissionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF017 /* CreateMissionSheet.swift */; };
+		MS0018 /* ProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF018 /* ProfileSheet.swift */; };
+		MS0019 /* QuoteModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF019 /* QuoteModalView.swift */; };
+		MS0020 /* MissionTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF020 /* MissionTabView.swift */; };
+		MS0021 /* PomodoroTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF021 /* PomodoroTabView.swift */; };
+		MS0022 /* ArchiveTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF022 /* ArchiveTabView.swift */; };
+		MS0023 /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF023 /* SettingsTabView.swift */; };
+		MS0024 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF024 /* MainTabView.swift */; };
+		MS0025 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF025 /* SplashView.swift */; };
+		MS0026 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF026 /* OnboardingView.swift */; };
+		MS0027 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF027 /* RootView.swift */; };
+		MS0028 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = MSF028 /* Images.xcassets */; };
+		
+		/* Widget Extension Build Files */
+		WG0001 /* MilestoneWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF001 /* MilestoneWidgetBundle.swift */; };
+		WG0002 /* MilestoneMissionWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF002 /* MilestoneMissionWidget.swift */; };
+		WG0003 /* MilestonePomodoroWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF003 /* MilestonePomodoroWidget.swift */; };
+		WG0004 /* SharedWidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF004 /* SharedWidgetData.swift */; };
+		WG0005 /* MilestoneWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = WGF005 /* MilestoneWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		PRX001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PRJ001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = TRG002 /* MilestoneWidgetExtension */;
+			remoteInfo = MilestoneWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		CPF001 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				WG0005 /* MilestoneWidgetExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		MSF001 /* MilestoneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneApp.swift; sourceTree = "<group>"; };
+		MSF002 /* Mission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mission.swift; sourceTree = "<group>"; };
+		MSF003 /* PomodoroSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroSession.swift; sourceTree = "<group>"; };
+		MSF004 /* Quote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Quote.swift; sourceTree = "<group>"; };
+		MSF005 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		MSF006 /* SharedWidgetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedWidgetData.swift; sourceTree = "<group>"; };
+		MSF007 /* DateCalculations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateCalculations.swift; sourceTree = "<group>"; };
+		MSF008 /* HapticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsManager.swift; sourceTree = "<group>"; };
+		MSF009 /* MissionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionStore.swift; sourceTree = "<group>"; };
+		MSF010 /* PomodoroStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroStore.swift; sourceTree = "<group>"; };
+		MSF011 /* UserStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStore.swift; sourceTree = "<group>"; };
+		MSF012 /* CountdownTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownTimerView.swift; sourceTree = "<group>"; };
+		MSF013 /* DotGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DotGridView.swift; sourceTree = "<group>"; };
+		MSF014 /* MissionTodoListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionTodoListView.swift; sourceTree = "<group>"; };
+		MSF015 /* PomodoroRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroRingView.swift; sourceTree = "<group>"; };
+		MSF016 /* GlassTabBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassTabBarView.swift; sourceTree = "<group>"; };
+		MSF017 /* CreateMissionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMissionSheet.swift; sourceTree = "<group>"; };
+		MSF018 /* ProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSheet.swift; sourceTree = "<group>"; };
+		MSF019 /* QuoteModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuoteModalView.swift; sourceTree = "<group>"; };
+		MSF020 /* MissionTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionTabView.swift; sourceTree = "<group>"; };
+		MSF021 /* PomodoroTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroTabView.swift; sourceTree = "<group>"; };
+		MSF022 /* ArchiveTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveTabView.swift; sourceTree = "<group>"; };
+		MSF023 /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
+		MSF024 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		MSF025 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		MSF026 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		MSF027 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		MSF028 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		MSF029 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		MSF030 /* Milestone.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Milestone.entitlements; sourceTree = "<group>"; };
+		MSF031 /* Milestone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Milestone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+
+		/* Widget Extension Files */
+		WGF001 /* MilestoneWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneWidgetBundle.swift; sourceTree = "<group>"; };
+		WGF002 /* MilestoneMissionWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneMissionWidget.swift; sourceTree = "<group>"; };
+		WGF003 /* MilestonePomodoroWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestonePomodoroWidget.swift; sourceTree = "<group>"; };
+		WGF004 /* SharedWidgetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedWidgetData.swift; sourceTree = "<group>"; };
+		WGF005 /* MilestoneWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MilestoneWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		WGF006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		WGF007 /* MilestoneWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MilestoneWidgetExtension.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FWK001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FWK002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		GRP001 = {
+			isa = PBXGroup;
+			children = (
+				GRP002 /* Milestone */,
+				GRP003 /* MilestoneWidgetExtension */,
+				GRP004 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		GRP002 /* Milestone */ = {
+			isa = PBXGroup;
+			children = (
+				GRP005 /* App */,
+				GRP006 /* Models */,
+				GRP007 /* Stores */,
+				GRP008 /* Utilities */,
+				GRP009 /* Views */,
+				MSF028 /* Images.xcassets */,
+				MSF029 /* Info.plist */,
+				MSF030 /* Milestone.entitlements */,
+			);
+			path = Milestone;
+			sourceTree = "<group>";
+		};
+		GRP005 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				MSF001 /* MilestoneApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		GRP006 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				MSF002 /* Mission.swift */,
+				MSF003 /* PomodoroSession.swift */,
+				MSF004 /* Quote.swift */,
+				MSF005 /* Theme.swift */,
+				MSF006 /* SharedWidgetData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		GRP007 /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				MSF009 /* MissionStore.swift */,
+				MSF010 /* PomodoroStore.swift */,
+				MSF011 /* UserStore.swift */,
+			);
+			path = Stores;
+			sourceTree = "<group>";
+		};
+		GRP008 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				MSF007 /* DateCalculations.swift */,
+				MSF008 /* HapticsManager.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		GRP009 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				MSF027 /* RootView.swift */,
+				MSF025 /* SplashView.swift */,
+				MSF026 /* OnboardingView.swift */,
+				MSF024 /* MainTabView.swift */,
+				GRP010 /* Components */,
+				GRP011 /* Sheets */,
+				GRP012 /* Modals */,
+				GRP013 /* Tabs */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		GRP010 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				MSF012 /* CountdownTimerView.swift */,
+				MSF013 /* DotGridView.swift */,
+				MSF014 /* MissionTodoListView.swift */,
+				MSF015 /* PomodoroRingView.swift */,
+				MSF016 /* GlassTabBarView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		GRP011 /* Sheets */ = {
+			isa = PBXGroup;
+			children = (
+				MSF017 /* CreateMissionSheet.swift */,
+				MSF018 /* ProfileSheet.swift */,
+			);
+			path = Sheets;
+			sourceTree = "<group>";
+		};
+		GRP012 /* Modals */ = {
+			isa = PBXGroup;
+			children = (
+				MSF019 /* QuoteModalView.swift */,
+			);
+			path = Modals;
+			sourceTree = "<group>";
+		};
+		GRP013 /* Tabs */ = {
+			isa = PBXGroup;
+			children = (
+				MSF020 /* MissionTabView.swift */,
+				MSF021 /* PomodoroTabView.swift */,
+				MSF022 /* ArchiveTabView.swift */,
+				MSF023 /* SettingsTabView.swift */,
+			);
+			path = Tabs;
+			sourceTree = "<group>";
+		};
+		GRP003 /* MilestoneWidgetExtension */ = {
+			isa = PBXGroup;
+			children = (
+				WGF001 /* MilestoneWidgetBundle.swift */,
+				WGF002 /* MilestoneMissionWidget.swift */,
+				WGF003 /* MilestonePomodoroWidget.swift */,
+				WGF004 /* SharedWidgetData.swift */,
+				WGF006 /* Info.plist */,
+				WGF007 /* MilestoneWidgetExtension.entitlements */,
+			);
+			path = MilestoneWidgetExtension;
+			sourceTree = "<group>";
+		};
+		GRP004 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				MSF031 /* Milestone.app */,
+				WGF005 /* MilestoneWidgetExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		TRG001 /* Milestone */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BCL001 /* Build configuration list for PBXNativeTarget "Milestone" */;
+			buildPhases = (
+				SRC001 /* Sources */,
+				FWK001 /* Frameworks */,
+				RES001 /* Resources */,
+				CPF001 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DEP001 /* PBXTargetDependency */,
+			);
+			name = Milestone;
+			productName = Milestone;
+			productReference = MSF031 /* Milestone.app */;
+			productType = "com.apple.product-type.application";
+		};
+		TRG002 /* MilestoneWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BCL002 /* Build configuration list for PBXNativeTarget "MilestoneWidgetExtension" */;
+			buildPhases = (
+				SRC002 /* Sources */,
+				FWK002 /* Frameworks */,
+				RES002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MilestoneWidgetExtension;
+			productName = MilestoneWidgetExtension;
+			productReference = WGF005 /* MilestoneWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PRJ001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					TRG001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					TRG002 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = BCL003 /* Build configuration list for PBXProject "Milestone" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = GRP001;
+			productRefGroup = GRP004 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				TRG001 /* Milestone */,
+				TRG002 /* MilestoneWidgetExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		RES001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				MS0028 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		RES002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		SRC001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				MS0001 /* MilestoneApp.swift in Sources */,
+				MS0002 /* Mission.swift in Sources */,
+				MS0003 /* PomodoroSession.swift in Sources */,
+				MS0004 /* Quote.swift in Sources */,
+				MS0005 /* Theme.swift in Sources */,
+				MS0006 /* SharedWidgetData.swift in Sources */,
+				MS0007 /* DateCalculations.swift in Sources */,
+				MS0008 /* HapticsManager.swift in Sources */,
+				MS0009 /* MissionStore.swift in Sources */,
+				MS0010 /* PomodoroStore.swift in Sources */,
+				MS0011 /* UserStore.swift in Sources */,
+				MS0012 /* CountdownTimerView.swift in Sources */,
+				MS0013 /* DotGridView.swift in Sources */,
+				MS0014 /* MissionTodoListView.swift in Sources */,
+				MS0015 /* PomodoroRingView.swift in Sources */,
+				MS0016 /* GlassTabBarView.swift in Sources */,
+				MS0017 /* CreateMissionSheet.swift in Sources */,
+				MS0018 /* ProfileSheet.swift in Sources */,
+				MS0019 /* QuoteModalView.swift in Sources */,
+				MS0020 /* MissionTabView.swift in Sources */,
+				MS0021 /* PomodoroTabView.swift in Sources */,
+				MS0022 /* ArchiveTabView.swift in Sources */,
+				MS0023 /* SettingsTabView.swift in Sources */,
+				MS0024 /* MainTabView.swift in Sources */,
+				MS0025 /* SplashView.swift in Sources */,
+				MS0026 /* OnboardingView.swift in Sources */,
+				MS0027 /* RootView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		SRC002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				WG0001 /* MilestoneWidgetBundle.swift in Sources */,
+				WG0002 /* MilestoneMissionWidget.swift in Sources */,
+				WG0003 /* MilestonePomodoroWidget.swift in Sources */,
+				WG0004 /* SharedWidgetData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DEP001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = TRG002 /* MilestoneWidgetExtension */;
+			targetProxy = PRX001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		CFG001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSIONS = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSIONS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSIONS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = Milestone/Milestone.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = HV4NTX4D65;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Milestone/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Milestone;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mathurharsh.milestone;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CFG002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSIONS = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSIONS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSIONS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = Milestone/Milestone.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = HV4NTX4D65;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Milestone/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Milestone;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mathurharsh.milestone;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		CFG003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSIONS = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSIONS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSIONS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = MilestoneWidgetExtension/MilestoneWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = HV4NTX4D65;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MilestoneWidgetExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MilestoneWidgetExtension;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mathurharsh.milestone.MilestoneWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CFG004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSIONS = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSIONS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSIONS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = MilestoneWidgetExtension/MilestoneWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = HV4NTX4D65;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MilestoneWidgetExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MilestoneWidgetExtension;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mathurharsh.milestone.MilestoneWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		CFG005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		CFG006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BCL001 /* Build configuration list for PBXNativeTarget "Milestone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CFG001 /* Debug */,
+				CFG002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BCL002 /* Build configuration list for PBXNativeTarget "MilestoneWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CFG003 /* Debug */,
+				CFG004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BCL003 /* Build configuration list for PBXProject "Milestone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CFG005 /* Debug */,
+				CFG006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = PRJ001 /* Project object */;
+}

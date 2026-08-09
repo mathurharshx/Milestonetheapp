@@ -1,0 +1,9 @@
+{
+  "projectId": "496e46ef-967e-46cb-8b8b-05d0c1172bdb",
+  "createdAt": 1771780499986,
+  "version": "1.0",
+  "startupCommands": [
+    "bun install; npx expo start --web --port 8081"
+  ],
+  "templateId": "any"
+}

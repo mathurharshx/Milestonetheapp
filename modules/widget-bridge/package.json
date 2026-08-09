@@ -1,0 +1,14 @@
+{
+  "name": "widget-bridge",
+  "version": "1.0.0",
+  "description": "Widget bridge local native module",
+  "main": "index.ts",
+  "types": "index.ts",
+  "keywords": [
+    "react-native",
+    "expo"
+  ],
+  "peerDependencies": {
+    "expo": "*"
+  }
+}
