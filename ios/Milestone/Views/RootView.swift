@@ -37,6 +37,7 @@ public struct RootView: View {
                     .zIndex(1)
             }
         }
+        .animation(.easeInOut(duration: 0.28), value: tokens.isDark)
         .environment(\.theme, tokens)
         .preferredColorScheme(themeStore.mode.colorScheme)
     }

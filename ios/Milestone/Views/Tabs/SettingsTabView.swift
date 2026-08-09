@@ -63,7 +63,9 @@ public struct SettingsTabView: View {
                             get: { theme.isDark },
                             set: { _ in
                                 HapticsManager.shared.impact(.light)
-                                themeStore.toggleTheme(systemScheme: colorScheme)
+                                withAnimation(.easeInOut(duration: 0.28)) {
+                                    themeStore.toggleTheme(systemScheme: colorScheme)
+                                }
                             }
                         ))
                         .labelsHidden()
