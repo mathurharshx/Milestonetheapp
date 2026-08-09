@@ -52,16 +52,23 @@ public final class ThemeStore {
         mode = currentIsDark ? .light : .dark
     }
 
-    public func tokens(systemScheme: ColorScheme?) -> ThemeTokens {
-        let isDark: Bool
+    public func setTheme(isDark: Bool) {
+        mode = isDark ? .dark : .light
+    }
+
+    public func isDarkMode(systemScheme: ColorScheme?) -> Bool {
         switch mode {
         case .system:
-            isDark = systemScheme == .dark
+            return systemScheme == .dark
         case .dark:
-            isDark = true
+            return true
         case .light:
-            isDark = false
+            return false
         }
+    }
+
+    public func tokens(systemScheme: ColorScheme?) -> ThemeTokens {
+        let isDark = isDarkMode(systemScheme: systemScheme)
         return ThemeTokens(isDark: isDark)
     }
 }

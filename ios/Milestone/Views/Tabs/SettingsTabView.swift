@@ -7,6 +7,7 @@ public struct SettingsTabView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var showProfileSheet: Bool = false
+    @State private var isDarkMode: Bool = false
 
     public init() {}
 
@@ -45,14 +46,14 @@ public struct SettingsTabView: View {
 
                     Divider().overlay(theme.divider)
 
-                    // Appearance Toggle
+                    // Appearance Toggle (Smooth Native Switch)
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Appearance")
                                 .font(.system(size: 15, weight: .medium))
                                 .foregroundStyle(theme.textPrimary)
 
-                            Text(theme.isDark ? "Dark" : "Light")
+                            Text(isDarkMode ? "Dark" : "Light")
                                 .font(.system(size: 11, weight: .regular))
                                 .foregroundStyle(theme.textTertiary)
                         }
@@ -60,11 +61,12 @@ public struct SettingsTabView: View {
                         Spacer()
 
                         Toggle("", isOn: Binding(
-                            get: { theme.isDark },
-                            set: { _ in
+                            get: { isDarkMode },
+                            set: { newValue in
+                                isDarkMode = newValue
                                 HapticsManager.shared.impact(.light)
                                 withAnimation(.easeInOut(duration: 0.28)) {
-                                    themeStore.toggleTheme(systemScheme: colorScheme)
+                                    themeStore.setTheme(isDark: newValue)
                                 }
                             }
                         ))
@@ -121,6 +123,14 @@ public struct SettingsTabView: View {
         .background(theme.background.ignoresSafeArea())
         .sheet(isPresented: $showProfileSheet) {
             ProfileSheet()
+        }
+        .onAppear {
+            isDarkMode = themeStore.isDarkMode(systemScheme: colorScheme)
+        }
+        .onChange(of: colorScheme) { _, newScheme in
+            if themeStore.mode == .system {
+                isDarkMode = newScheme == .dark
+            }
         }
     }
 }
