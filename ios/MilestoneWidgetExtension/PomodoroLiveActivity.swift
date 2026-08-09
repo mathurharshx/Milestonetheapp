@@ -38,7 +38,7 @@ public struct PomodoroLiveActivity: Widget {
                     // Right Side: Clean Live Countdown Timer
                     VStack(alignment: .trailing, spacing: 2) {
                         if context.state.isRunning {
-                            Text(timerInterval: Date.now...context.state.targetEndTime, countsDown: true)
+                            Text(timerInterval: context.state.startDate...context.state.targetEndTime, countsDown: true)
                                 .font(.system(size: 26, weight: .light, design: .default))
                                 .monospacedDigit()
                                 .foregroundStyle(Color.white)
@@ -79,35 +79,30 @@ public struct PomodoroLiveActivity: Widget {
                     .padding(.bottom, 6)
                 }
             } compactLeading: {
-                // ── Compact Leading: Tightly Hugging Left Hourglass Icon ──
+                // ── Compact Leading: Exactly like Apple Clock App (Hourglass Icon) ──
                 Image(systemName: "hourglass")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(phaseAccentColor(for: context.state.phase))
-                    .fixedSize(horizontal: true, vertical: true)
             } compactTrailing: {
-                // ── Compact Trailing: Tightly Hugging Right Timer (No Extra Width) ──
-                Group {
-                    if context.state.isRunning {
-                        Text(timerInterval: Date.now...context.state.targetEndTime, countsDown: true)
-                            .font(.system(size: 12, weight: .bold))
-                            .monospacedDigit()
-                            .foregroundStyle(Color.white)
-                            .fixedSize(horizontal: true, vertical: true)
-                    } else {
-                        Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
-                            .font(.system(size: 12, weight: .bold))
-                            .monospacedDigit()
-                            .foregroundStyle(Color.white.opacity(0.8))
-                            .fixedSize(horizontal: true, vertical: true)
-                    }
+                // ── Compact Trailing: Exactly like Apple Clock App (Live Native Timer) ──
+                if context.state.isRunning {
+                    Text(timerInterval: context.state.startDate...context.state.targetEndTime, countsDown: true)
+                        .monospacedDigit()
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.white)
+                        .frame(width: 44, alignment: .trailing)
+                } else {
+                    Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
+                        .monospacedDigit()
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.white.opacity(0.8))
+                        .frame(width: 44, alignment: .trailing)
                 }
             } minimal: {
-                // ── Minimal Single Bubble (Tight Pill next to sensor) ──
-                HStack(spacing: 3) {
-                    Image(systemName: "hourglass")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundStyle(phaseAccentColor(for: context.state.phase))
-                }
+                // ── Minimal Single Bubble ──
+                Image(systemName: "hourglass")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(phaseAccentColor(for: context.state.phase))
             }
         }
     }
@@ -142,7 +137,7 @@ private struct PomodoroLockScreenBannerView: View {
             // Right: Timer + Session Dots
             VStack(alignment: .trailing, spacing: 6) {
                 if context.state.isRunning {
-                    Text(timerInterval: Date.now...context.state.targetEndTime, countsDown: true)
+                    Text(timerInterval: context.state.startDate...context.state.targetEndTime, countsDown: true)
                         .font(.system(size: 30, weight: .light))
                         .monospacedDigit()
                         .foregroundStyle(Color.white)

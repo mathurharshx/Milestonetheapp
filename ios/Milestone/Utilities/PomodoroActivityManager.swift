@@ -13,6 +13,7 @@ public final class PomodoroActivityManager {
         phase: String,
         currentSession: Int,
         totalSessions: Int,
+        startDate: Date,
         targetEndTime: Date,
         totalDuration: Double
     ) {
@@ -26,6 +27,7 @@ public final class PomodoroActivityManager {
             phase: phase,
             currentSession: currentSession,
             totalSessions: totalSessions,
+            startDate: startDate,
             targetEndTime: targetEndTime,
             isRunning: true,
             totalDuration: totalDuration,
@@ -48,18 +50,19 @@ public final class PomodoroActivityManager {
         phase: String,
         currentSession: Int,
         totalSessions: Int,
+        startDate: Date,
         targetEndTime: Date,
         isRunning: Bool,
         totalDuration: Double,
         timeRemainingWhenPaused: Int = 0
     ) {
         guard let activity = currentActivity else {
-            // If activity was killed, re-request if running
             if isRunning {
                 startActivity(
                     phase: phase,
                     currentSession: currentSession,
                     totalSessions: totalSessions,
+                    startDate: startDate,
                     targetEndTime: targetEndTime,
                     totalDuration: totalDuration
                 )
@@ -71,6 +74,7 @@ public final class PomodoroActivityManager {
             phase: phase,
             currentSession: currentSession,
             totalSessions: totalSessions,
+            startDate: startDate,
             targetEndTime: targetEndTime,
             isRunning: isRunning,
             totalDuration: totalDuration,

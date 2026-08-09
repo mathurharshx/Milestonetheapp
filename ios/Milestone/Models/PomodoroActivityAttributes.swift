@@ -6,6 +6,7 @@ public struct PomodoroActivityAttributes: ActivityAttributes {
         public var phase: String        // "focus", "shortBreak", "longBreak"
         public var currentSession: Int  // 1...4
         public var totalSessions: Int   // 4
+        public var startDate: Date
         public var targetEndTime: Date
         public var isRunning: Bool
         public var totalDuration: Double
@@ -15,6 +16,7 @@ public struct PomodoroActivityAttributes: ActivityAttributes {
             phase: String,
             currentSession: Int,
             totalSessions: Int,
+            startDate: Date,
             targetEndTime: Date,
             isRunning: Bool,
             totalDuration: Double,
@@ -23,6 +25,7 @@ public struct PomodoroActivityAttributes: ActivityAttributes {
             self.phase = phase
             self.currentSession = currentSession
             self.totalSessions = totalSessions
+            self.startDate = startDate
             self.targetEndTime = targetEndTime
             self.isRunning = isRunning
             self.totalDuration = totalDuration

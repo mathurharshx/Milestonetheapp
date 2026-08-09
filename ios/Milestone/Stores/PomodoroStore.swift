@@ -14,6 +14,7 @@ public final class PomodoroStore {
 
     private var timerTask: Task<Void, Never>?
     private var targetEndTime: Date?
+    private var sessionStartDate: Date = Date()
 
     public var progress: Double {
         guard totalTime > 0 else { return 0 }
@@ -30,7 +31,9 @@ public final class PomodoroStore {
         guard timeRemaining > 0 else { return }
         isStarted = true
         isRunning = true
-        let target = Date().addingTimeInterval(TimeInterval(timeRemaining))
+        let now = Date()
+        sessionStartDate = now
+        let target = now.addingTimeInterval(TimeInterval(timeRemaining))
         targetEndTime = target
         
         timerTask?.cancel()
@@ -47,6 +50,7 @@ public final class PomodoroStore {
             phase: phase.rawValue,
             currentSession: currentSession,
             totalSessions: totalSessions,
+            startDate: sessionStartDate,
             targetEndTime: target,
             totalDuration: Double(totalTime)
         )
@@ -66,6 +70,7 @@ public final class PomodoroStore {
             phase: phase.rawValue,
             currentSession: currentSession,
             totalSessions: totalSessions,
+            startDate: sessionStartDate,
             targetEndTime: targetEndTime ?? Date(),
             isRunning: false,
             totalDuration: Double(totalTime),
@@ -114,7 +119,9 @@ public final class PomodoroStore {
 
         // Auto-start next phase
         self.isRunning = true
-        let target = Date().addingTimeInterval(TimeInterval(self.totalTime))
+        let now = Date()
+        self.sessionStartDate = now
+        let target = now.addingTimeInterval(TimeInterval(self.totalTime))
         self.targetEndTime = target
         
         timerTask?.cancel()
@@ -131,6 +138,7 @@ public final class PomodoroStore {
             phase: phase.rawValue,
             currentSession: currentSession,
             totalSessions: totalSessions,
+            startDate: self.sessionStartDate,
             targetEndTime: target,
             totalDuration: Double(totalTime)
         )
@@ -146,7 +154,6 @@ public final class PomodoroStore {
         } else if current == .shortBreak {
             return (.focus, session + 1)
         } else {
-            // After long break, reset cycle to session 1 focus
             return (.focus, 1)
         }
     }
