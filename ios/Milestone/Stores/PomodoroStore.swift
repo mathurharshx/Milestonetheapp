@@ -30,7 +30,8 @@ public final class PomodoroStore {
         guard timeRemaining > 0 else { return }
         isStarted = true
         isRunning = true
-        targetEndTime = Date().addingTimeInterval(TimeInterval(timeRemaining))
+        let target = Date().addingTimeInterval(TimeInterval(timeRemaining))
+        targetEndTime = target
         
         timerTask?.cancel()
         timerTask = Task { @MainActor [weak self] in
@@ -41,6 +42,14 @@ public final class PomodoroStore {
             }
         }
         syncToWidget()
+
+        PomodoroActivityManager.shared.startActivity(
+            phase: phase.rawValue,
+            currentSession: currentSession,
+            totalSessions: totalSessions,
+            targetEndTime: target,
+            totalDuration: Double(totalTime)
+        )
     }
 
     public func pause() {
@@ -52,6 +61,16 @@ public final class PomodoroStore {
             timeRemaining = remaining
         }
         syncToWidget()
+
+        PomodoroActivityManager.shared.updateActivity(
+            phase: phase.rawValue,
+            currentSession: currentSession,
+            totalSessions: totalSessions,
+            targetEndTime: targetEndTime ?? Date(),
+            isRunning: false,
+            totalDuration: Double(totalTime),
+            timeRemainingWhenPaused: timeRemaining
+        )
     }
 
     public func reset() {
@@ -65,6 +84,8 @@ public final class PomodoroStore {
         timeRemaining = totalTime
         targetEndTime = nil
         syncToWidget()
+
+        PomodoroActivityManager.shared.endActivity()
     }
 
     private func tick() {
@@ -93,7 +114,8 @@ public final class PomodoroStore {
 
         // Auto-start next phase
         self.isRunning = true
-        self.targetEndTime = Date().addingTimeInterval(TimeInterval(self.totalTime))
+        let target = Date().addingTimeInterval(TimeInterval(self.totalTime))
+        self.targetEndTime = target
         
         timerTask?.cancel()
         timerTask = Task { @MainActor [weak self] in
@@ -104,6 +126,14 @@ public final class PomodoroStore {
             }
         }
         syncToWidget()
+
+        PomodoroActivityManager.shared.startActivity(
+            phase: phase.rawValue,
+            currentSession: currentSession,
+            totalSessions: totalSessions,
+            targetEndTime: target,
+            totalDuration: Double(totalTime)
+        )
     }
 
     private func getNextPhase(current: PomodoroPhase, session: Int) -> (PomodoroPhase, Int) {

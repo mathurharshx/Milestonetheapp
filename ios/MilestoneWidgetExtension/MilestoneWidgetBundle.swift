@@ -6,5 +6,6 @@ struct MilestoneWidgetBundle: WidgetBundle {
     var body: some Widget {
         MilestoneMissionWidget()
         MilestonePomodoroWidget()
+        PomodoroLiveActivity()
     }
 }
