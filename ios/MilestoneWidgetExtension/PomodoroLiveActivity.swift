@@ -9,14 +9,14 @@ public struct PomodoroLiveActivity: Widget {
         ActivityConfiguration(for: PomodoroActivityAttributes.self) { context in
             // ── Lock Screen / Banner View ──
             PomodoroLockScreenBannerView(context: context)
-                .activityBackgroundTint(Color(red: 0x18/255.0, green: 0x18/255.0, blue: 0x18/255.0))
+                .activityBackgroundTint(Color(red: 0x16/255.0, green: 0x16/255.0, blue: 0x16/255.0))
         } dynamicIsland: { context in
             DynamicIsland {
                 // ── Expanded Dynamic Island (Long Press) ──
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: 8) {
                         Image(systemName: "hourglass")
-                            .font(.system(size: 18, weight: .medium))
+                            .font(.system(size: 16, weight: .medium))
                             .foregroundStyle(phaseAccentColor(for: context.state.phase))
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -30,7 +30,7 @@ public struct PomodoroLiveActivity: Widget {
                                 .foregroundStyle(Color.white.opacity(0.55))
                         }
                     }
-                    .padding(.leading, 8)
+                    .padding(.leading, 6)
                     .padding(.top, 6)
                 }
 
@@ -49,14 +49,13 @@ public struct PomodoroLiveActivity: Widget {
                                 .foregroundStyle(Color.white)
                         }
                     }
-                    .padding(.trailing, 8)
+                    .padding(.trailing, 6)
                     .padding(.top, 4)
                 }
 
                 DynamicIslandExpandedRegion(.bottom) {
-                    // Bottom: 4 Session Dots + Clean Subtitle
+                    // Bottom: 4 Session Dots + Milestone Subtitle
                     HStack {
-                        // 4 Session Dots
                         HStack(spacing: 7) {
                             ForEach(1...context.state.totalSessions, id: \.self) { session in
                                 let isCurrent = session == context.state.currentSession
@@ -75,33 +74,39 @@ public struct PomodoroLiveActivity: Widget {
                             .tracking(1.5)
                             .foregroundStyle(Color.white.opacity(0.35))
                     }
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 6)
                     .padding(.top, 8)
                     .padding(.bottom, 6)
                 }
             } compactLeading: {
-                // ── Compact Leading (Left Side: Hourglass Icon Only) ──
-                Image(systemName: "hourglass")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(phaseAccentColor(for: context.state.phase))
-            } compactTrailing: {
-                // ── Compact Trailing (Right Side: Tightly Hugging Timer Only) ──
-                if context.state.isRunning {
-                    Text(timerInterval: Date.now...context.state.targetEndTime, countsDown: true)
-                        .font(.system(size: 13, weight: .semibold))
-                        .monospacedDigit()
-                        .foregroundStyle(Color.white)
-                } else {
-                    Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
-                        .font(.system(size: 13, weight: .semibold))
-                        .monospacedDigit()
-                        .foregroundStyle(Color.white.opacity(0.7))
-                }
-            } minimal: {
-                // ── Minimal Island (When multiple activities are running) ──
+                // ── Compact Leading: Tightly Hugging Left Hourglass Icon ──
                 Image(systemName: "hourglass")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(phaseAccentColor(for: context.state.phase))
+                    .padding(.leading, 1)
+            } compactTrailing: {
+                // ── Compact Trailing: Tightly Hugging Right Timer (No Extra Width) ──
+                Group {
+                    if context.state.isRunning {
+                        Text(timerInterval: Date.now...context.state.targetEndTime, countsDown: true)
+                            .font(.system(size: 12, weight: .bold))
+                            .monospacedDigit()
+                            .foregroundStyle(Color.white)
+                    } else {
+                        Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
+                            .font(.system(size: 12, weight: .bold))
+                            .monospacedDigit()
+                            .foregroundStyle(Color.white.opacity(0.75))
+                    }
+                }
+                .padding(.trailing, 1)
+            } minimal: {
+                // ── Minimal Single Bubble (Tight Pill next to sensor) ──
+                HStack(spacing: 3) {
+                    Image(systemName: "hourglass")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(phaseAccentColor(for: context.state.phase))
+                }
             }
         }
     }
@@ -116,7 +121,7 @@ private struct PomodoroLockScreenBannerView: View {
             // Left: Hourglass Icon + Session Info
             HStack(spacing: 12) {
                 Image(systemName: "hourglass")
-                    .font(.system(size: 22, weight: .medium))
+                    .font(.system(size: 20, weight: .medium))
                     .foregroundStyle(phaseAccentColor(for: context.state.phase))
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -196,9 +201,9 @@ private func phaseAccentColor(for phase: String) -> Color {
     case "focus":
         return Color.white
     case "shortBreak":
-        return Color(red: 0x4E/255.0, green: 0xC3/255.0, blue: 0x89/255.0) // Mint/Green
+        return Color(red: 0x4E/255.0, green: 0xC3/255.0, blue: 0x89/255.0)
     case "longBreak":
-        return Color(red: 0x5A/255.0, green: 0xC8/255.0, blue: 0xFA/255.0) // Sky Blue
+        return Color(red: 0x5A/255.0, green: 0xC8/255.0, blue: 0xFA/255.0)
     default:
         return Color.white
     }
