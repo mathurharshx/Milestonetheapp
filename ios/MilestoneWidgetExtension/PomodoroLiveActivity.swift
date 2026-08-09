@@ -81,9 +81,9 @@ public struct PomodoroLiveActivity: Widget {
             } compactLeading: {
                 // ── Compact Leading: Tightly Hugging Left Hourglass Icon ──
                 Image(systemName: "hourglass")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(phaseAccentColor(for: context.state.phase))
-                    .padding(.leading, 1)
+                    .fixedSize(horizontal: true, vertical: true)
             } compactTrailing: {
                 // ── Compact Trailing: Tightly Hugging Right Timer (No Extra Width) ──
                 Group {
@@ -92,14 +92,15 @@ public struct PomodoroLiveActivity: Widget {
                             .font(.system(size: 12, weight: .bold))
                             .monospacedDigit()
                             .foregroundStyle(Color.white)
+                            .fixedSize(horizontal: true, vertical: true)
                     } else {
                         Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
                             .font(.system(size: 12, weight: .bold))
                             .monospacedDigit()
-                            .foregroundStyle(Color.white.opacity(0.75))
+                            .foregroundStyle(Color.white.opacity(0.8))
+                            .fixedSize(horizontal: true, vertical: true)
                     }
                 }
-                .padding(.trailing, 1)
             } minimal: {
                 // ── Minimal Single Bubble (Tight Pill next to sensor) ──
                 HStack(spacing: 3) {
