@@ -173,6 +173,7 @@ public final class MissionStore {
 
         let totalTodos = activeMission?.todos.count ?? 0
         let doneTodos = activeMission?.todos.filter(\.done).count ?? 0
+        let topTask = activeMission?.todos.first(where: { !$0.done })?.text
 
         let updated = MilestoneWidgetData(
             pomodoroPhase: existing.pomodoroPhase,
@@ -181,11 +182,18 @@ public final class MissionStore {
             pomodoroIsRunning: existing.pomodoroIsRunning,
             pomodoroSession: existing.pomodoroSession,
             pomodoroTotalSessions: existing.pomodoroTotalSessions,
+            pomodoroTargetEndTime: existing.pomodoroTargetEndTime,
             missionTitle: activeMission?.title,
             missionTargetDate: activeMission?.targetDate.timeIntervalSince1970,
             missionCreatedAt: activeMission?.createdAt.timeIntervalSince1970,
             missionTodosTotal: totalTodos,
             missionTodosDone: doneTodos,
+            topPendingTaskText: topTask,
+            focusStreak: existing.focusStreak,
+            todayFocusMinutes: existing.todayFocusMinutes,
+            weeklyFocusLevels: existing.weeklyFocusLevels,
+            quoteText: existing.quoteText,
+            quoteAuthor: existing.quoteAuthor,
             lastUpdated: Date().timeIntervalSince1970
         )
         SharedWidgetStore.save(updated)

@@ -48,6 +48,8 @@
 		WG0005 /* MilestoneWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = WGF005 /* MilestoneWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		WG0006 /* PomodoroActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF008 /* PomodoroActivityAttributes.swift */; };
 		WG0007 /* PomodoroLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF009 /* PomodoroLiveActivity.swift */; };
+		WG0008 /* MilestoneDotMatrixWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF010 /* MilestoneDotMatrixWidget.swift */; };
+		WG0009 /* MilestoneMomentumWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF011 /* MilestoneMomentumWidget.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -121,6 +123,8 @@
 		WGF007 /* MilestoneWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MilestoneWidgetExtension.entitlements; sourceTree = "<group>"; };
 		WGF008 /* PomodoroActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroActivityAttributes.swift; sourceTree = "<group>"; };
 		WGF009 /* PomodoroLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroLiveActivity.swift; sourceTree = "<group>"; };
+		WGF010 /* MilestoneDotMatrixWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneDotMatrixWidget.swift; sourceTree = "<group>"; };
+		WGF011 /* MilestoneMomentumWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneMomentumWidget.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -267,8 +271,10 @@
 			isa = PBXGroup;
 			children = (
 				WGF001 /* MilestoneWidgetBundle.swift */,
+				WGF010 /* MilestoneDotMatrixWidget.swift */,
 				WGF002 /* MilestoneMissionWidget.swift */,
 				WGF003 /* MilestonePomodoroWidget.swift */,
+				WGF011 /* MilestoneMomentumWidget.swift */,
 				WGF004 /* SharedWidgetData.swift */,
 				WGF008 /* PomodoroActivityAttributes.swift */,
 				WGF009 /* PomodoroLiveActivity.swift */,
@@ -430,6 +436,8 @@
 				WG0004 /* SharedWidgetData.swift in Sources */,
 				WG0006 /* PomodoroActivityAttributes.swift in Sources */,
 				WG0007 /* PomodoroLiveActivity.swift in Sources */,
+				WG0008 /* MilestoneDotMatrixWidget.swift in Sources */,
+				WG0009 /* MilestoneMomentumWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

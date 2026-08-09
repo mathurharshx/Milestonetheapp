@@ -3,22 +3,31 @@ import WidgetKit
 
 public struct MilestoneWidgetData: Codable {
     // ── Pomodoro state ──
-    public let pomodoroPhase: String
-    public let pomodoroTimeRemaining: Int
-    public let pomodoroTotalTime: Int
-    public let pomodoroIsRunning: Bool
-    public let pomodoroSession: Int
-    public let pomodoroTotalSessions: Int
+    public var pomodoroPhase: String        // "focus" | "shortBreak" | "longBreak"
+    public var pomodoroTimeRemaining: Int   // seconds
+    public var pomodoroTotalTime: Int       // seconds
+    public var pomodoroIsRunning: Bool
+    public var pomodoroSession: Int         // 1-4
+    public var pomodoroTotalSessions: Int   // 4
+    public var pomodoroTargetEndTime: Double? // Unix timestamp (seconds)
 
     // ── Mission state ──
-    public let missionTitle: String?
-    public let missionTargetDate: Double?
-    public let missionCreatedAt: Double?
-    public let missionTodosTotal: Int
-    public let missionTodosDone: Int
+    public var missionTitle: String?
+    public var missionTargetDate: Double?   // Unix timestamp (seconds)
+    public var missionCreatedAt: Double?    // Unix timestamp (seconds)
+    public var missionTodosTotal: Int
+    public var missionTodosDone: Int
+    public var topPendingTaskText: String?
+
+    // ── Momentum & Habit state ──
+    public var focusStreak: Int             // e.g. 5
+    public var todayFocusMinutes: Int       // e.g. 75
+    public var weeklyFocusLevels: [Int]     // 7 items: 0=none, 1=light, 2=medium, 3=heavy
+    public var quoteText: String?
+    public var quoteAuthor: String?
 
     // ── Meta ──
-    public let lastUpdated: Double
+    public var lastUpdated: Double          // Unix timestamp (seconds)
 
     public init(
         pomodoroPhase: String = "focus",
@@ -27,11 +36,18 @@ public struct MilestoneWidgetData: Codable {
         pomodoroIsRunning: Bool = false,
         pomodoroSession: Int = 1,
         pomodoroTotalSessions: Int = 4,
+        pomodoroTargetEndTime: Double? = nil,
         missionTitle: String? = nil,
         missionTargetDate: Double? = nil,
         missionCreatedAt: Double? = nil,
         missionTodosTotal: Int = 0,
         missionTodosDone: Int = 0,
+        topPendingTaskText: String? = nil,
+        focusStreak: Int = 1,
+        todayFocusMinutes: Int = 25,
+        weeklyFocusLevels: [Int] = [1, 2, 3, 2, 3, 1, 2],
+        quoteText: String? = "Discipline is destiny.",
+        quoteAuthor: String? = "Marcus Aurelius",
         lastUpdated: Double = Date().timeIntervalSince1970
     ) {
         self.pomodoroPhase = pomodoroPhase
@@ -40,11 +56,18 @@ public struct MilestoneWidgetData: Codable {
         self.pomodoroIsRunning = pomodoroIsRunning
         self.pomodoroSession = pomodoroSession
         self.pomodoroTotalSessions = pomodoroTotalSessions
+        self.pomodoroTargetEndTime = pomodoroTargetEndTime
         self.missionTitle = missionTitle
         self.missionTargetDate = missionTargetDate
         self.missionCreatedAt = missionCreatedAt
         self.missionTodosTotal = missionTodosTotal
         self.missionTodosDone = missionTodosDone
+        self.topPendingTaskText = topPendingTaskText
+        self.focusStreak = focusStreak
+        self.todayFocusMinutes = todayFocusMinutes
+        self.weeklyFocusLevels = weeklyFocusLevels
+        self.quoteText = quoteText
+        self.quoteAuthor = quoteAuthor
         self.lastUpdated = lastUpdated
     }
 }

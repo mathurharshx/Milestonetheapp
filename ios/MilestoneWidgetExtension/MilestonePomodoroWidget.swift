@@ -1,170 +1,312 @@
 import WidgetKit
 import SwiftUI
+import AppIntents
 
-// MARK: - Timeline Provider
+public struct TogglePomodoroWidgetIntent: AppIntent {
+    public static var title: LocalizedStringResource = "Toggle Pomodoro"
+    public static var description = IntentDescription("Start or pause the focus timer directly from widget")
 
-struct PomodoroProvider: TimelineProvider {
-    func placeholder(in context: Context) -> PomodoroEntry {
-        PomodoroEntry(
-            date: Date(),
-            phase: "focus",
-            timeRemaining: 1500,
-            totalTime: 1500,
-            isRunning: false,
-            session: 1,
-            totalSessions: 4
-        )
-    }
+    public init() {}
 
-    func getSnapshot(in context: Context, completion: @escaping (PomodoroEntry) -> Void) {
-        let entry = entryFromData() ?? placeholder(in: context)
-        completion(entry)
-    }
-
-    func getTimeline(in context: Context, completion: @escaping (Timeline<PomodoroEntry>) -> Void) {
-        let entry = entryFromData() ?? placeholder(in: context)
-
-        // If running, refresh every 60 seconds. If paused, refresh in 15 minutes.
-        let refreshDate: Date
-        if entry.isRunning {
-            refreshDate = Calendar.current.date(byAdding: .second, value: 60, to: Date()) ?? Date().addingTimeInterval(60)
-        } else {
-            refreshDate = Calendar.current.date(byAdding: .minute, value: 15, to: Date()) ?? Date().addingTimeInterval(900)
+    public func perform() async throws -> some IntentResult {
+        if var data = SharedWidgetStore.load() {
+            let wasRunning = data.pomodoroIsRunning
+            data.pomodoroIsRunning = !wasRunning
+            if !wasRunning {
+                // Starting
+                let target = Date().addingTimeInterval(TimeInterval(data.pomodoroTimeRemaining))
+                data.pomodoroTargetEndTime = target.timeIntervalSince1970
+            } else {
+                // Pausing
+                if let target = data.pomodoroTargetEndTime {
+                    let diff = max(0, Int(ceil(Date(timeIntervalSince1970: target).timeIntervalSinceNow)))
+                    data.pomodoroTimeRemaining = diff
+                }
+                data.pomodoroTargetEndTime = nil
+            }
+            data.lastUpdated = Date().timeIntervalSince1970
+            SharedWidgetStore.save(data)
         }
-
-        let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
-        completion(timeline)
-    }
-
-    private func entryFromData() -> PomodoroEntry? {
-        guard let data = SharedWidgetStore.load() else { return nil }
-        return PomodoroEntry(
-            date: Date(),
-            phase: data.pomodoroPhase,
-            timeRemaining: data.pomodoroTimeRemaining,
-            totalTime: data.pomodoroTotalTime,
-            isRunning: data.pomodoroIsRunning,
-            session: data.pomodoroSession,
-            totalSessions: data.pomodoroTotalSessions
-        )
+        return .result()
     }
 }
 
-// MARK: - Timeline Entry
+public struct ResetPomodoroWidgetIntent: AppIntent {
+    public static var title: LocalizedStringResource = "Reset Pomodoro"
+    public static var description = IntentDescription("Reset the focus timer to start of cycle")
 
-struct PomodoroEntry: TimelineEntry {
+    public init() {}
+
+    public func perform() async throws -> some IntentResult {
+        if var data = SharedWidgetStore.load() {
+            data.pomodoroIsRunning = false
+            data.pomodoroPhase = "focus"
+            data.pomodoroSession = 1
+            data.pomodoroTimeRemaining = data.pomodoroTotalTime > 0 ? data.pomodoroTotalTime : 1500
+            data.pomodoroTargetEndTime = nil
+            data.lastUpdated = Date().timeIntervalSince1970
+            SharedWidgetStore.save(data)
+        }
+        return .result()
+    }
+}
+
+struct PomodoroWidgetProvider: TimelineProvider {
+    func placeholder(in context: Context) -> PomodoroWidgetEntry {
+        PomodoroWidgetEntry(date: Date(), data: MilestoneWidgetData())
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (PomodoroWidgetEntry) -> Void) {
+        let data = SharedWidgetStore.load() ?? MilestoneWidgetData()
+        completion(PomodoroWidgetEntry(date: Date(), data: data))
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<PomodoroWidgetEntry>) -> Void) {
+        let data = SharedWidgetStore.load() ?? MilestoneWidgetData()
+        let entry = PomodoroWidgetEntry(date: Date(), data: data)
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
+        completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+    }
+}
+
+struct PomodoroWidgetEntry: TimelineEntry {
     let date: Date
-    let phase: String
-    let timeRemaining: Int
-    let totalTime: Int
-    let isRunning: Bool
-    let session: Int
-    let totalSessions: Int
+    let data: MilestoneWidgetData
 }
 
-// MARK: - Widget View
-
-struct PomodoroWidgetView: View {
-    var entry: PomodoroEntry
+struct MilestonePomodoroWidgetView: View {
+    let entry: PomodoroWidgetEntry
     @Environment(\.widgetFamily) var family
 
-    private var accentColor: Color {
-        switch entry.phase {
-        case "focus": return Color(red: 0.231, green: 0.51, blue: 0.965)  // #3B82F6
-        case "shortBreak": return Color(red: 0.06, green: 0.78, blue: 0.82) // cyan
-        case "longBreak": return Color(red: 0.56, green: 0.75, blue: 1.0)   // light blue
-        default: return Color(red: 0.231, green: 0.51, blue: 0.965)
+    private var progressRatio: Double {
+        let total = entry.data.pomodoroTotalTime
+        guard total > 0 else { return 0 }
+        let remaining = entry.data.pomodoroTimeRemaining
+        let elapsed = max(0, total - remaining)
+        return min(1.0, max(0.0, Double(elapsed) / Double(total)))
+    }
+
+    private var formattedTime: String {
+        let seconds = entry.data.pomodoroTimeRemaining
+        let m = seconds / 60
+        let s = seconds % 60
+        return String(format: "%02d:%02d", m, s)
+    }
+
+    private var phaseTitle: String {
+        switch entry.data.pomodoroPhase {
+        case "shortBreak": return "Short Break"
+        case "longBreak": return "Long Break"
+        default: return "Focus Session"
         }
-    }
-
-    private var phaseLabel: String {
-        switch entry.phase {
-        case "focus": return "FOCUS"
-        case "shortBreak": return "SHORT BREAK"
-        case "longBreak": return "LONG BREAK"
-        default: return "FOCUS"
-        }
-    }
-
-    private var timeString: String {
-        let mins = entry.timeRemaining / 60
-        let secs = entry.timeRemaining % 60
-        return String(format: "%02d:%02d", mins, secs)
-    }
-
-    private var progress: Double {
-        guard entry.totalTime > 0 else { return 0 }
-        return Double(entry.totalTime - entry.timeRemaining) / Double(entry.totalTime)
     }
 
     var body: some View {
-        ZStack {
-            Color(red: 0.039, green: 0.039, blue: 0.039) // #0a0a0a
+        switch family {
+        case .systemSmall:
+            smallView
+        case .systemMedium:
+            mediumView
+        case .accessoryCircular:
+            accessoryCircularView
+        default:
+            smallView
+        }
+    }
 
-            VStack(spacing: family == .systemSmall ? 6 : 10) {
-                // Phase badge
-                Text(phaseLabel)
-                    .font(.system(size: family == .systemSmall ? 9 : 11, weight: .semibold))
-                    .tracking(1.5)
-                    .foregroundColor(accentColor)
+    // ── Small Widget ──
+    private var smallView: some View {
+        VStack(spacing: 8) {
+            // Header
+            HStack {
+                Text(phaseTitle.uppercased())
+                    .font(.system(size: 9, weight: .heavy))
+                    .tracking(2)
+                    .foregroundStyle(Color.secondary)
 
-                // Timer
-                Text(timeString)
-                    .font(.system(size: family == .systemSmall ? 32 : 42, weight: .light, design: .monospaced))
-                    .foregroundColor(.white)
+                Spacer()
 
-                // Progress bar
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.white.opacity(0.1))
-                            .frame(height: 3)
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(accentColor)
-                            .frame(width: geometry.size.width * progress, height: 3)
-                    }
-                }
-                .frame(height: 3)
+                Text("\(entry.data.pomodoroSession)/\(entry.data.pomodoroTotalSessions)")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(Color.secondary)
+            }
 
-                // Session dots
-                HStack(spacing: 6) {
-                    ForEach(1...entry.totalSessions, id: \.self) { i in
-                        Circle()
-                            .fill(i <= entry.session ? accentColor : Color.white.opacity(0.2))
-                            .frame(width: 6, height: 6)
-                    }
-                }
+            Spacer()
 
-                // Status
-                if entry.isRunning {
-                    Text("RUNNING")
-                        .font(.system(size: 8, weight: .medium))
-                        .tracking(1)
-                        .foregroundColor(accentColor.opacity(0.8))
+            // Circular Ring with Countdown
+            ZStack {
+                Circle()
+                    .stroke(Color.primary.opacity(0.12), lineWidth: 5)
+                    .frame(width: 68, height: 68)
+
+                Circle()
+                    .trim(from: 0, to: CGFloat(progressRatio))
+                    .stroke(
+                        Color.primary,
+                        style: StrokeStyle(lineWidth: 5, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: 68, height: 68)
+
+                if entry.data.pomodoroIsRunning, let target = entry.data.pomodoroTargetEndTime {
+                    Text(timerInterval: Date()...Date(timeIntervalSince1970: target), countsDown: true)
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.primary)
                 } else {
-                    Text("PAUSED")
-                        .font(.system(size: 8, weight: .medium))
-                        .tracking(1)
-                        .foregroundColor(Color.white.opacity(0.4))
+                    Text(formattedTime)
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.primary)
                 }
             }
-            .padding(family == .systemSmall ? 12 : 16)
+
+            Spacer()
+
+            // Interactive Start/Pause Button (iOS 17+)
+            Button(intent: TogglePomodoroWidgetIntent()) {
+                HStack(spacing: 4) {
+                    Image(systemName: entry.data.pomodoroIsRunning ? "pause.fill" : "play.fill")
+                        .font(.system(size: 10, weight: .bold))
+                    Text(entry.data.pomodoroIsRunning ? "PAUSE" : "START")
+                        .font(.system(size: 10, weight: .bold))
+                        .tracking(1.5)
+                }
+                .foregroundStyle(entry.data.pomodoroIsRunning ? Color.primary : Color(.systemBackground))
+                .frame(maxWidth: .infinity)
+                .frame(height: 28)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(entry.data.pomodoroIsRunning ? Color.primary.opacity(0.12) : Color.primary)
+                )
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(14)
+        .containerBackground(for: .widget) {
+            Color(.systemBackground)
+        }
+    }
+
+    // ── Medium Widget ──
+    private var mediumView: some View {
+        HStack(spacing: 20) {
+            // Left: Progress Ring
+            ZStack {
+                Circle()
+                    .stroke(Color.primary.opacity(0.12), lineWidth: 6)
+                    .frame(width: 88, height: 88)
+
+                Circle()
+                    .trim(from: 0, to: CGFloat(progressRatio))
+                    .stroke(
+                        Color.primary,
+                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: 88, height: 88)
+
+                if entry.data.pomodoroIsRunning, let target = entry.data.pomodoroTargetEndTime {
+                    Text(timerInterval: Date()...Date(timeIntervalSince1970: target), countsDown: true)
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.primary)
+                } else {
+                    Text(formattedTime)
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.primary)
+                }
+            }
+
+            // Right: Information and Controls
+            VStack(alignment: .leading, spacing: 6) {
+                Text("POMODORO")
+                    .font(.system(size: 9, weight: .heavy))
+                    .tracking(2.5)
+                    .foregroundStyle(Color.secondary)
+
+                Text(phaseTitle)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(Color.primary)
+
+                // Session Indicator Dots (4 dots)
+                HStack(spacing: 6) {
+                    ForEach(1...entry.data.pomodoroTotalSessions, id: \.self) { s in
+                        Circle()
+                            .fill(s <= entry.data.pomodoroSession ? Color.primary : Color.primary.opacity(0.18))
+                            .frame(width: 6, height: 6)
+                    }
+                    Text("Session \(entry.data.pomodoroSession) of \(entry.data.pomodoroTotalSessions)")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(Color.secondary)
+                }
+                .padding(.bottom, 2)
+
+                Spacer()
+
+                // Interactive Action Buttons
+                HStack(spacing: 8) {
+                    Button(intent: TogglePomodoroWidgetIntent()) {
+                        HStack(spacing: 4) {
+                            Image(systemName: entry.data.pomodoroIsRunning ? "pause.fill" : "play.fill")
+                                .font(.system(size: 10, weight: .bold))
+                            Text(entry.data.pomodoroIsRunning ? "PAUSE" : "START")
+                                .font(.system(size: 10, weight: .bold))
+                                .tracking(1.5)
+                        }
+                        .foregroundStyle(entry.data.pomodoroIsRunning ? Color.primary : Color(.systemBackground))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 32)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(entry.data.pomodoroIsRunning ? Color.primary.opacity(0.12) : Color.primary)
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(intent: ResetPomodoroWidgetIntent()) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(Color.primary)
+                            .frame(width: 32, height: 32)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.primary.opacity(0.08))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(16)
+        .containerBackground(for: .widget) {
+            Color(.systemBackground)
+        }
+    }
+
+    // ── Lock Screen Circular ──
+    private var accessoryCircularView: some View {
+        ZStack {
+            Gauge(value: progressRatio) {
+                Image(systemName: "hourglass")
+            } currentValueLabel: {
+                Text(formattedTime)
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+            }
+            .gaugeStyle(.accessoryCircularCapacity)
         }
     }
 }
 
-// MARK: - Widget Configuration
+public struct MilestonePomodoroWidget: Widget {
+    public let kind: String = "MilestonePomodoroWidget"
 
-struct MilestonePomodoroWidget: Widget {
-    let kind: String = "MilestonePomodoroWidget"
+    public init() {}
 
-    var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: PomodoroProvider()) { entry in
-            PomodoroWidgetView(entry: entry)
-                .containerBackground(Color(red: 0.039, green: 0.039, blue: 0.039), for: .widget)
+    public var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: PomodoroWidgetProvider()) { entry in
+            MilestonePomodoroWidgetView(entry: entry)
         }
-        .configurationDisplayName("Pomodoro Timer")
-        .description("Track your focus sessions at a glance.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .configurationDisplayName("Focus Timer")
+        .description("Interactive Pomodoro focus timer with live start/pause controls.")
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular])
     }
 }

@@ -1,147 +1,225 @@
 import WidgetKit
 import SwiftUI
 
-// MARK: - Timeline Provider
-
 struct MissionProvider: TimelineProvider {
     func placeholder(in context: Context) -> MissionEntry {
-        MissionEntry(
-            date: Date(),
-            title: "My Mission",
-            targetDate: Date().addingTimeInterval(86400 * 30),
-            daysRemaining: 30,
-            todosTotal: 5,
-            todosDone: 2,
-            hasMission: true
-        )
+        MissionEntry(date: Date(), data: MilestoneWidgetData())
     }
 
     func getSnapshot(in context: Context, completion: @escaping (MissionEntry) -> Void) {
-        let entry = entryFromData() ?? placeholder(in: context)
-        completion(entry)
+        let data = SharedWidgetStore.load() ?? MilestoneWidgetData()
+        completion(MissionEntry(date: Date(), data: data))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<MissionEntry>) -> Void) {
-        let entry = entryFromData() ?? MissionEntry(
-            date: Date(),
-            title: nil,
-            targetDate: nil,
-            daysRemaining: 0,
-            todosTotal: 0,
-            todosDone: 0,
-            hasMission: false
-        )
-
-        // Refresh every 30 minutes for mission countdown
-        let refreshDate = Calendar.current.date(byAdding: .minute, value: 30, to: Date()) ?? Date().addingTimeInterval(1800)
-        let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
-        completion(timeline)
-    }
-
-    private func entryFromData() -> MissionEntry? {
-        guard let data = SharedWidgetStore.load(),
-              let title = data.missionTitle,
-              let targetTs = data.missionTargetDate else {
-            return nil
-        }
-
-        let targetDate = Date(timeIntervalSince1970: targetTs)
-        let now = Date()
-        let daysRemaining = max(0, Calendar.current.dateComponents([.day], from: now, to: targetDate).day ?? 0)
-
-        return MissionEntry(
-            date: now,
-            title: title,
-            targetDate: targetDate,
-            daysRemaining: daysRemaining,
-            todosTotal: data.missionTodosTotal,
-            todosDone: data.missionTodosDone,
-            hasMission: true
-        )
+        let data = SharedWidgetStore.load() ?? MilestoneWidgetData()
+        let entry = MissionEntry(date: Date(), data: data)
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
+        completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
     }
 }
-
-// MARK: - Timeline Entry
 
 struct MissionEntry: TimelineEntry {
     let date: Date
-    let title: String?
-    let targetDate: Date?
-    let daysRemaining: Int
-    let todosTotal: Int
-    let todosDone: Int
-    let hasMission: Bool
+    let data: MilestoneWidgetData
 }
 
-// MARK: - Widget View
-
-struct MissionWidgetView: View {
-    var entry: MissionEntry
+struct MilestoneMissionWidgetView: View {
+    let entry: MissionEntry
     @Environment(\.widgetFamily) var family
 
-    private let accentBlue = Color(red: 0.231, green: 0.51, blue: 0.965) // #3B82F6
+    private var daysRemaining: Int {
+        guard let target = entry.data.missionTargetDate else { return 0 }
+        let diff = Date(timeIntervalSince1970: target).timeIntervalSince(Date())
+        return max(0, Int(ceil(diff / 86400.0)))
+    }
+
+    private var totalDays: Int {
+        guard let created = entry.data.missionCreatedAt,
+              let target = entry.data.missionTargetDate else { return 1 }
+        let diff = Date(timeIntervalSince1970: target).timeIntervalSince(Date(timeIntervalSince1970: created))
+        return max(1, Int(ceil(diff / 86400.0)))
+    }
+
+    private var progressRatio: Double {
+        guard let created = entry.data.missionCreatedAt else { return 0 }
+        let diff = Date().timeIntervalSince(Date(timeIntervalSince1970: created))
+        let elapsed = max(0, Int(floor(diff / 86400.0)))
+        return min(1.0, max(0.0, Double(elapsed) / Double(totalDays)))
+    }
 
     var body: some View {
-        ZStack {
-            Color(red: 0.039, green: 0.039, blue: 0.039) // #0a0a0a
+        switch family {
+        case .systemSmall:
+            smallView
+        case .systemMedium:
+            mediumView
+        case .accessoryCircular:
+            accessoryCircularView
+        case .accessoryInline:
+            accessoryInlineView
+        default:
+            smallView
+        }
+    }
 
-            if entry.hasMission, let title = entry.title {
-                VStack(spacing: family == .systemSmall ? 6 : 10) {
-                    // Mission title
-                    Text(title)
-                        .font(.system(size: family == .systemSmall ? 11 : 13, weight: .medium))
-                        .foregroundColor(.white.opacity(0.7))
-                        .lineLimit(1)
+    // ── Small Widget ──
+    private var smallView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            HStack {
+                Text("MISSION")
+                    .font(.system(size: 9, weight: .heavy))
+                    .tracking(2.5)
+                    .foregroundStyle(Color.secondary)
 
-                    // Days remaining - hero number
-                    Text("\(entry.daysRemaining)")
-                        .font(.system(size: family == .systemSmall ? 40 : 52, weight: .light))
-                        .foregroundColor(.white)
+                Spacer()
 
-                    Text("days left")
-                        .font(.system(size: 10, weight: .regular))
-                        .foregroundColor(.white.opacity(0.4))
-
-                    // Todos progress (if any)
-                    if entry.todosTotal > 0 {
-                        HStack(spacing: 4) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 10))
-                                .foregroundColor(accentBlue)
-                            Text("\(entry.todosDone)/\(entry.todosTotal)")
-                                .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.5))
-                        }
-                    }
-                }
-                .padding(family == .systemSmall ? 12 : 16)
-            } else {
-                // No active mission
-                VStack(spacing: 8) {
-                    Image(systemName: "target")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white.opacity(0.2))
-                    Text("No active mission")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.white.opacity(0.3))
+                if entry.data.missionTodosTotal > 0 {
+                    Text("\(entry.data.missionTodosDone)/\(entry.data.missionTodosTotal)")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Color.secondary)
                 }
             }
+
+            Spacer()
+
+            // Large Digits
+            Text("\(daysRemaining)")
+                .font(.system(size: 42, weight: .bold))
+                .tracking(-1)
+                .foregroundStyle(Color.primary)
+
+            Text("DAYS REMAINING")
+                .font(.system(size: 9, weight: .semibold))
+                .tracking(1.5)
+                .foregroundStyle(Color.secondary)
+                .padding(.bottom, 8)
+
+            Spacer()
+
+            // Mission Title
+            Text(entry.data.missionTitle ?? "Active Mission")
+                .font(.system(size: 13, weight: .semibold))
+                .lineLimit(1)
+                .foregroundStyle(Color.primary)
         }
+        .padding(14)
+        .containerBackground(for: .widget) {
+            Color(.systemBackground)
+        }
+    }
+
+    // ── Medium Widget ──
+    private var mediumView: some View {
+        HStack(spacing: 16) {
+            // Left Column: Mission Countdown
+            VStack(alignment: .leading, spacing: 3) {
+                Text("MISSION")
+                    .font(.system(size: 9, weight: .heavy))
+                    .tracking(2.5)
+                    .foregroundStyle(Color.secondary)
+
+                Text("\(daysRemaining)")
+                    .font(.system(size: 38, weight: .bold))
+                    .tracking(-1)
+                    .foregroundStyle(Color.primary)
+
+                Text("DAYS REMAINING")
+                    .font(.system(size: 9, weight: .semibold))
+                    .tracking(1.5)
+                    .foregroundStyle(Color.secondary)
+
+                Spacer()
+
+                Text(entry.data.missionTitle ?? "No active mission")
+                    .font(.system(size: 13, weight: .semibold))
+                    .lineLimit(1)
+                    .foregroundStyle(Color.primary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            // Right Column: Priority Task & Progress Card
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("PRIORITY TASK")
+                        .font(.system(size: 9, weight: .heavy))
+                        .tracking(1.5)
+                        .foregroundStyle(Color.secondary)
+
+                    Spacer()
+
+                    if entry.data.missionTodosTotal > 0 {
+                        Text("\(entry.data.missionTodosDone)/\(entry.data.missionTodosTotal)")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color.secondary)
+                    }
+                }
+
+                Text(entry.data.topPendingTaskText ?? (entry.data.missionTodosTotal > 0 ? "All tasks completed" : "No pending tasks"))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.primary)
+                    .lineLimit(2)
+                    .frame(maxHeight: .infinity, alignment: .topLeading)
+
+                // Progress Bar
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.primary.opacity(0.12))
+                            .frame(height: 4)
+
+                        Capsule()
+                            .fill(Color.primary)
+                            .frame(width: geo.size.width * CGFloat(progressRatio), height: 4)
+                    }
+                }
+                .frame(height: 4)
+            }
+            .padding(12)
+            .frame(width: 148)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.primary.opacity(0.05))
+            )
+        }
+        .padding(16)
+        .containerBackground(for: .widget) {
+            Color(.systemBackground)
+        }
+    }
+
+    // ── Lock Screen Circular ──
+    private var accessoryCircularView: some View {
+        ZStack {
+            Gauge(value: progressRatio) {
+                Text("\(daysRemaining)")
+                    .font(.system(size: 14, weight: .bold))
+            } currentValueLabel: {
+                Text("\(daysRemaining)")
+                    .font(.system(size: 14, weight: .bold))
+            }
+            .gaugeStyle(.accessoryCircularCapacity)
+        }
+    }
+
+    // ── Lock Screen Inline ──
+    private var accessoryInlineView: some View {
+        Text("\(daysRemaining)d Left · \(entry.data.missionTitle ?? "Milestone")")
     }
 }
 
-// MARK: - Widget Configuration
+public struct MilestoneMissionWidget: Widget {
+    public let kind: String = "MilestoneMissionWidget"
 
-struct MilestoneMissionWidget: Widget {
-    let kind: String = "MilestoneMissionWidget"
+    public init() {}
 
-    var body: some WidgetConfiguration {
+    public var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: MissionProvider()) { entry in
-            MissionWidgetView(entry: entry)
-                .containerBackground(Color(red: 0.039, green: 0.039, blue: 0.039), for: .widget)
+            MilestoneMissionWidgetView(entry: entry)
         }
-        .configurationDisplayName("Mission Countdown")
-        .description("Track your mission deadline and task progress.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .configurationDisplayName("Mission Card")
+        .description("Track your active mission countdown and top priority task.")
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryInline])
     }
 }

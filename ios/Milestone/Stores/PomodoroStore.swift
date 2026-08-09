@@ -234,11 +234,18 @@ public final class PomodoroStore {
             pomodoroIsRunning: isRunning,
             pomodoroSession: currentSession,
             pomodoroTotalSessions: totalSessions,
+            pomodoroTargetEndTime: targetEndTime?.timeIntervalSince1970,
             missionTitle: existing.missionTitle,
             missionTargetDate: existing.missionTargetDate,
             missionCreatedAt: existing.missionCreatedAt,
             missionTodosTotal: existing.missionTodosTotal,
             missionTodosDone: existing.missionTodosDone,
+            topPendingTaskText: existing.topPendingTaskText,
+            focusStreak: existing.focusStreak,
+            todayFocusMinutes: existing.todayFocusMinutes,
+            weeklyFocusLevels: existing.weeklyFocusLevels,
+            quoteText: existing.quoteText,
+            quoteAuthor: existing.quoteAuthor,
             lastUpdated: Date().timeIntervalSince1970
         )
         SharedWidgetStore.save(updated)
