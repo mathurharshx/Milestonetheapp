@@ -65,8 +65,11 @@ public struct SettingsTabView: View {
                             set: { newValue in
                                 isDarkMode = newValue
                                 HapticsManager.shared.impact(.light)
-                                withAnimation(.easeInOut(duration: 0.28)) {
-                                    themeStore.setTheme(isDark: newValue)
+                                // Let the switch thumb slide animation finish smoothly, then transition the theme
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.26) {
+                                    withAnimation(.easeInOut(duration: 0.28)) {
+                                        themeStore.setTheme(isDark: newValue)
+                                    }
                                 }
                             }
                         ))
