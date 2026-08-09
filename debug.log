@@ -1,2 +1,0 @@
-2026-02-22T19:46:22.569Z [console][error] props.pointerEvents is deprecated. Use style.pointerEvents
-2026-02-22T19:49:51.105Z [console][error] Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md

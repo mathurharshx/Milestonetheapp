@@ -1,50 +1,69 @@
-# Welcome to your Expo app 👋
+# Milestone (iOS)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A minimalist, high-impact native iOS productivity application designed for deep focus and milestone achievement. Built with 100% pure Swift, SwiftUI, WidgetKit, and ActivityKit.
 
-## Get started
+---
 
-1. Install dependencies
+## Key Features
 
-   ```bash
-   npm install
-   ```
+- **Single Mission Focus:** Commitment to one active goal at a time to prevent cognitive overload.
+- **Dynamic Dot Grid Matrix:** Visual progress tracking dynamically sampled across 24h, 90d, 365d, and 1095d time horizons.
+- **4-Phase Pomodoro Timer:** 4-session focus cycles with an interactive 96-dot progress ring.
+- **Dynamic Island & Live Activities:** Battery-efficient, Apple Clock app-style snug Dynamic Island capsule and Lock Screen timer banner with real-time countdown.
+- **Apple Fitness-Style Celebration:** Cascading dot matrix wave, glowing award seal, goal stats, and seamless spatial archive transition.
+- **Background Accountability Notifications:** Clean, minimal, non-intrusive notifications for focus sessions and daily morning countdowns.
+- **Customizable ADHD Rhythms:** Tailored focus intervals (15m, 20m, 25m, 30m, 45m, 50m, 60m) and break lengths.
+- **Native 4-Tab Navigation:** Mission, Pomodoro, Archive, and Settings.
+- **System Theme Synchronization:** Automatic Light/Dark mode matching iOS with fluid switch physics.
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## Project Structure
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+ios/
+├── Milestone.xcodeproj            # Xcode Project & Build Configurations
+├── Milestone/                     # Main iOS Application
+│   ├── App/                       # MilestoneApp entry point
+│   ├── Models/                    # Mission, Pomodoro, Theme data models
+│   ├── Stores/                    # Observable state stores (MissionStore, PomodoroStore, UserStore)
+│   ├── Views/                     # SwiftUI tabs, sheets, components, and modals
+│   ├── Utilities/                 # Date calculations, haptics, notification manager
+│   ├── Images.xcassets/           # App icon (1024x1024) & visual assets
+│   ├── Info.plist                 # App configuration & encryption exemptions
+│   └── Milestone.entitlements     # App Groups entitlement
+└── MilestoneWidgetExtension/      # WidgetKit & ActivityKit Extension
+    ├── MilestoneMissionWidget.swift
+    ├── MilestonePomodoroWidget.swift
+    ├── PomodoroLiveActivity.swift # Dynamic Island & Lock Screen Live Activity
+    └── Info.plist
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## Building and Running
 
-To learn more about developing your project with Expo, look at the following resources:
+### Prerequisites
+- macOS Sonoma or later
+- Xcode 15.0 or later
+- iOS 17.0+ deployment target
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/mathurharshx/Milestonetheapp.git
+   ```
+2. Open the Xcode project:
+   ```bash
+   open ios/Milestone.xcodeproj
+   ```
+3. Select the **Milestone** scheme and your target device or simulator (e.g., iPhone 17).
+4. Press `Cmd + R` to build and run.
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## App Store Submission
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Target Version:** `1.0.0`
+- **Build Number:** `1`
+- **Validation:** Pre-validated for App Store submission (`-validate-for-store`).
