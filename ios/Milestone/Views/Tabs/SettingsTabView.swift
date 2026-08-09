@@ -12,6 +12,7 @@ public struct SettingsTabView: View {
     @State private var showProfileSheet: Bool = false
     @State private var isDarkMode: Bool = false
     @State private var reminderDate: Date = Date()
+    @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
 
     private let focusOptions = [15, 20, 25, 30, 45, 50, 60]
     private let shortBreakOptions = [3, 5, 10]
@@ -205,69 +206,160 @@ public struct SettingsTabView: View {
 
                     Divider().overlay(theme.divider)
 
-                    // ── NOTIFICATIONS ──
+                    // ── NOTIFICATIONS (APP STORE COMPLIANT) ──
                     SectionHeader(title: "NOTIFICATIONS")
                         .padding(.top, 24)
 
-                    // Daily Morning Reminder Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Daily Mission Reminder")
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundStyle(theme.textPrimary)
-
-                            Text("Morning countdown & pending tasks")
-                                .font(.system(size: 11, weight: .regular))
-                                .foregroundStyle(theme.textTertiary)
-                        }
-
-                        Spacer()
-
-                        Toggle("", isOn: Binding(
-                            get: { userStore.morningReminderEnabled },
-                            set: { newValue in
-                                userStore.morningReminderEnabled = newValue
-                                HapticsManager.shared.impact(.light)
-                                if newValue {
-                                    Task {
-                                        let _ = await NotificationManager.shared.requestAuthorization()
-                                        missionStore.refreshMorningNotification()
-                                    }
-                                } else {
-                                    NotificationManager.shared.cancelDailyMorningReminder()
-                                }
+                    if notificationStatus == .denied {
+                        // System Settings Navigation when permission is denied
+                        Button {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
                             }
-                        ))
-                        .labelsHidden()
-                        .tint(Color(uiColor: .systemGreen))
-                    }
-                    .padding(.vertical, 14)
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("Notifications are Disabled")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundStyle(theme.danger)
 
-                    if userStore.morningReminderEnabled {
+                                    Text("Tap to enable in iOS Settings")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(theme.textTertiary)
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "arrow.up.right")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(theme.accent)
+                            }
+                            .padding(.vertical, 12)
+                        }
+                        .buttonStyle(.plain)
+
                         Divider().overlay(theme.divider)
+                    } else if notificationStatus == .notDetermined {
+                        // Prompt to Request Permissions
+                        Button {
+                            Task {
+                                HapticsManager.shared.impact(.light)
+                                let _ = await NotificationManager.shared.requestAuthorization()
+                                await checkNotificationStatus()
+                                missionStore.refreshMorningNotification()
+                            }
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("Enable Notifications")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundStyle(theme.textPrimary)
 
-                        // Reminder Time Picker
+                                    Text("Receive focus timer alerts and morning updates")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(theme.textTertiary)
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "bell.badge")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundStyle(theme.accent)
+                            }
+                            .padding(.vertical, 12)
+                        }
+                        .buttonStyle(.plain)
+
+                        Divider().overlay(theme.divider)
+                    } else {
+                        // Focus Timer Completion Toggle
                         HStack {
-                            Text("Reminder Time")
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundStyle(theme.textPrimary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Timer Completion Alerts")
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundStyle(theme.textPrimary)
+
+                                Text("Alert when focus or break sessions end")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundStyle(theme.textTertiary)
+                            }
 
                             Spacer()
 
-                            DatePicker("", selection: $reminderDate, displayedComponents: .hourAndMinute)
-                                .labelsHidden()
-                                .tint(theme.accent)
-                                .onChange(of: reminderDate) { _, newDate in
-                                    let cal = Calendar.current
-                                    userStore.morningReminderHour = cal.component(.hour, from: newDate)
-                                    userStore.morningReminderMinute = cal.component(.minute, from: newDate)
-                                    missionStore.refreshMorningNotification()
+                            Toggle("", isOn: Binding(
+                                get: { userStore.timerNotificationsEnabled },
+                                set: { newValue in
+                                    userStore.timerNotificationsEnabled = newValue
+                                    HapticsManager.shared.impact(.light)
+                                    if !newValue {
+                                        NotificationManager.shared.cancelPomodoroNotifications()
+                                    }
                                 }
+                            ))
+                            .labelsHidden()
+                            .tint(Color(uiColor: .systemGreen))
                         }
-                        .padding(.vertical, 10)
-                    }
+                        .padding(.vertical, 14)
 
-                    Divider().overlay(theme.divider)
+                        Divider().overlay(theme.divider)
+
+                        // Daily Morning Reminder Toggle
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Daily Mission Reminder")
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundStyle(theme.textPrimary)
+
+                                Text("Morning countdown and pending tasks")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundStyle(theme.textTertiary)
+                            }
+
+                            Spacer()
+
+                            Toggle("", isOn: Binding(
+                                get: { userStore.morningReminderEnabled },
+                                set: { newValue in
+                                    userStore.morningReminderEnabled = newValue
+                                    HapticsManager.shared.impact(.light)
+                                    if newValue {
+                                        missionStore.refreshMorningNotification()
+                                    } else {
+                                        NotificationManager.shared.cancelDailyMorningReminder()
+                                    }
+                                }
+                            ))
+                            .labelsHidden()
+                            .tint(Color(uiColor: .systemGreen))
+                        }
+                        .padding(.vertical, 14)
+
+                        if userStore.morningReminderEnabled {
+                            Divider().overlay(theme.divider)
+
+                            // Reminder Time Picker
+                            HStack {
+                                Text("Reminder Time")
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundStyle(theme.textPrimary)
+
+                                Spacer()
+
+                                DatePicker("", selection: $reminderDate, displayedComponents: .hourAndMinute)
+                                    .labelsHidden()
+                                    .tint(theme.accent)
+                                    .onChange(of: reminderDate) { _, newDate in
+                                        let cal = Calendar.current
+                                        userStore.morningReminderHour = cal.component(.hour, from: newDate)
+                                        userStore.morningReminderMinute = cal.component(.minute, from: newDate)
+                                        missionStore.refreshMorningNotification()
+                                    }
+                            }
+                            .padding(.vertical, 10)
+                        }
+
+                        Divider().overlay(theme.divider)
+                    }
 
                     // ── ABOUT SECTION ──
                     SectionHeader(title: "ABOUT")
@@ -295,11 +387,22 @@ public struct SettingsTabView: View {
             comps.hour = userStore.morningReminderHour
             comps.minute = userStore.morningReminderMinute
             reminderDate = Calendar.current.date(from: comps) ?? Date()
+
+            Task {
+                await checkNotificationStatus()
+            }
         }
         .onChange(of: colorScheme) { _, newScheme in
             if themeStore.mode == .system {
                 isDarkMode = newScheme == .dark
             }
+        }
+    }
+
+    private func checkNotificationStatus() async {
+        let status = await NotificationManager.shared.checkAuthorizationStatus()
+        await MainActor.run {
+            self.notificationStatus = status
         }
     }
 }

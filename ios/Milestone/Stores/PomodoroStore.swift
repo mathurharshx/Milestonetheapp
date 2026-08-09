@@ -79,11 +79,14 @@ public final class PomodoroStore {
         )
 
         // 2. Schedule Clean Background Local Notification
-        NotificationManager.shared.schedulePomodoroNotification(
-            phase: phase,
-            seconds: timeRemaining,
-            nextPhaseLabel: nextPhaseLabel
-        )
+        let notificationsEnabled = UserDefaults.standard.object(forKey: "milestone:timerNotificationsEnabled") as? Bool ?? true
+        if notificationsEnabled {
+            NotificationManager.shared.schedulePomodoroNotification(
+                phase: phase,
+                seconds: timeRemaining,
+                nextPhaseLabel: nextPhaseLabel
+            )
+        }
     }
 
     public func pause() {
@@ -183,11 +186,14 @@ public final class PomodoroStore {
         )
 
         // 2. Background Notification for new phase
-        NotificationManager.shared.schedulePomodoroNotification(
-            phase: phase,
-            seconds: timeRemaining,
-            nextPhaseLabel: nextPhaseLabel
-        )
+        let notificationsEnabled = UserDefaults.standard.object(forKey: "milestone:timerNotificationsEnabled") as? Bool ?? true
+        if notificationsEnabled {
+            NotificationManager.shared.schedulePomodoroNotification(
+                phase: phase,
+                seconds: timeRemaining,
+                nextPhaseLabel: nextPhaseLabel
+            )
+        }
     }
 
     private func getNextPhase(current: PomodoroPhase, session: Int) -> (PomodoroPhase, Int) {

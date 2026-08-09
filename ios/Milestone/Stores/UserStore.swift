@@ -41,7 +41,13 @@ public final class UserStore {
         }
     }
 
-    // ── Daily Morning Accountability Notification ──
+    // ── Notification Preferences ──
+    public var timerNotificationsEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(timerNotificationsEnabled, forKey: "milestone:timerNotificationsEnabled")
+        }
+    }
+
     public var morningReminderEnabled: Bool {
         didSet {
             UserDefaults.standard.set(morningReminderEnabled, forKey: "milestone:morningReminderEnabled")
@@ -78,6 +84,7 @@ public final class UserStore {
         let savedLongBreak = UserDefaults.standard.integer(forKey: "milestone:longBreakDuration")
         self.longBreakDurationMinutes = savedLongBreak > 0 ? savedLongBreak : 20
 
+        self.timerNotificationsEnabled = UserDefaults.standard.object(forKey: "milestone:timerNotificationsEnabled") as? Bool ?? true
         self.morningReminderEnabled = UserDefaults.standard.object(forKey: "milestone:morningReminderEnabled") as? Bool ?? true
         let savedHour = UserDefaults.standard.object(forKey: "milestone:morningReminderHour") as? Int ?? 9
         self.morningReminderHour = savedHour
