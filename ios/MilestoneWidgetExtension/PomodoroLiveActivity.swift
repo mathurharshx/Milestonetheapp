@@ -9,117 +9,96 @@ public struct PomodoroLiveActivity: Widget {
         ActivityConfiguration(for: PomodoroActivityAttributes.self) { context in
             // ── Lock Screen / Banner View ──
             PomodoroLockScreenBannerView(context: context)
-                .activityBackgroundTint(Color(red: 0x1A/255.0, green: 0x1A/255.0, blue: 0x1A/255.0))
+                .activityBackgroundTint(Color(red: 0x18/255.0, green: 0x18/255.0, blue: 0x18/255.0))
         } dynamicIsland: { context in
             DynamicIsland {
                 // ── Expanded Dynamic Island (Long Press) ──
                 DynamicIslandExpandedRegion(.leading) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: 8) {
                         Image(systemName: "hourglass")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 18, weight: .medium))
                             .foregroundStyle(phaseAccentColor(for: context.state.phase))
 
-                        Text(phaseTitle(for: context.state.phase, session: context.state.currentSession, total: context.state.totalSessions))
-                            .font(.system(size: 11, weight: .bold))
-                            .tracking(1.5)
-                            .foregroundStyle(phaseAccentColor(for: context.state.phase))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(phaseTitle(for: context.state.phase, session: context.state.currentSession, total: context.state.totalSessions))
+                                .font(.system(size: 13, weight: .bold))
+                                .tracking(1)
+                                .foregroundStyle(Color.white)
+
+                            Text(phaseMessage(for: context.state.phase))
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(Color.white.opacity(0.55))
+                        }
                     }
-                    .padding(.leading, 4)
-                    .padding(.top, 4)
+                    .padding(.leading, 8)
+                    .padding(.top, 6)
                 }
 
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(context.state.isRunning ? "RUNNING" : "PAUSED")
-                        .font(.system(size: 9, weight: .heavy))
-                        .tracking(2)
-                        .foregroundStyle(context.state.isRunning ? phaseAccentColor(for: context.state.phase) : Color.gray)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(
-                            Capsule()
-                                .fill(phaseAccentColor(for: context.state.phase).opacity(0.15))
-                        )
-                        .padding(.trailing, 4)
-                        .padding(.top, 4)
-                }
-
-                DynamicIslandExpandedRegion(.center) {
-                    VStack(spacing: 8) {
-                        // Big Hero Countdown Timer
+                    // Right Side: Clean Live Countdown Timer
+                    VStack(alignment: .trailing, spacing: 2) {
                         if context.state.isRunning {
                             Text(timerInterval: Date.now...context.state.targetEndTime, countsDown: true)
-                                .font(.system(size: 38, weight: .light, design: .default))
+                                .font(.system(size: 26, weight: .light, design: .default))
                                 .monospacedDigit()
-                                .tracking(1)
                                 .foregroundStyle(Color.white)
                         } else {
                             Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
-                                .font(.system(size: 38, weight: .light, design: .default))
+                                .font(.system(size: 26, weight: .light, design: .default))
                                 .monospacedDigit()
-                                .tracking(1)
                                 .foregroundStyle(Color.white)
                         }
+                    }
+                    .padding(.trailing, 8)
+                    .padding(.top, 4)
+                }
 
-                        // 4 Session Dots Row
-                        HStack(spacing: 8) {
+                DynamicIslandExpandedRegion(.bottom) {
+                    // Bottom: 4 Session Dots + Clean Subtitle
+                    HStack {
+                        // 4 Session Dots
+                        HStack(spacing: 7) {
                             ForEach(1...context.state.totalSessions, id: \.self) { session in
                                 let isCurrent = session == context.state.currentSession
                                 let isDone = session < context.state.currentSession
 
                                 Circle()
-                                    .fill(isDone ? Color.white.opacity(0.85) : (isCurrent ? phaseAccentColor(for: context.state.phase) : Color.white.opacity(0.18)))
+                                    .fill(isDone ? Color.white.opacity(0.9) : (isCurrent ? phaseAccentColor(for: context.state.phase) : Color.white.opacity(0.2)))
                                     .frame(width: isCurrent ? 7 : 5, height: isCurrent ? 7 : 5)
                             }
                         }
-                    }
-                    .padding(.vertical, 4)
-                }
-
-                DynamicIslandExpandedRegion(.bottom) {
-                    HStack {
-                        Text(phaseMessage(for: context.state.phase))
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.6))
 
                         Spacer()
 
                         Text("Milestone Focus")
-                            .font(.system(size: 10, weight: .semibold))
-                            .tracking(1)
-                            .foregroundStyle(Color.white.opacity(0.3))
+                            .font(.system(size: 10, weight: .medium))
+                            .tracking(1.5)
+                            .foregroundStyle(Color.white.opacity(0.35))
                     }
                     .padding(.horizontal, 8)
+                    .padding(.top, 8)
                     .padding(.bottom, 6)
                 }
             } compactLeading: {
-                // ── Compact Leading (Left Pill) ──
-                HStack(spacing: 4) {
-                    Image(systemName: "hourglass")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(phaseAccentColor(for: context.state.phase))
-
-                    Text("\(context.state.currentSession)/\(context.state.totalSessions)")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(Color.white.opacity(0.85))
-                }
-                .padding(.leading, 2)
+                // ── Compact Leading (Left Side: Hourglass Icon Only) ──
+                Image(systemName: "hourglass")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(phaseAccentColor(for: context.state.phase))
             } compactTrailing: {
-                // ── Compact Trailing (Right Pill) ──
+                // ── Compact Trailing (Right Side: Tightly Hugging Timer Only) ──
                 if context.state.isRunning {
                     Text(timerInterval: Date.now...context.state.targetEndTime, countsDown: true)
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: 13, weight: .semibold))
                         .monospacedDigit()
-                        .foregroundStyle(phaseAccentColor(for: context.state.phase))
-                        .frame(minWidth: 44, alignment: .trailing)
+                        .foregroundStyle(Color.white)
                 } else {
                     Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: 13, weight: .semibold))
                         .monospacedDigit()
-                        .foregroundStyle(Color.gray)
-                        .frame(minWidth: 44, alignment: .trailing)
+                        .foregroundStyle(Color.white.opacity(0.7))
                 }
             } minimal: {
-                // ── Minimal (When 2 activities are active) ──
+                // ── Minimal Island (When multiple activities are running) ──
                 Image(systemName: "hourglass")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(phaseAccentColor(for: context.state.phase))
@@ -134,26 +113,22 @@ private struct PomodoroLockScreenBannerView: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            // Left: Icon + Session Info
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Image(systemName: "hourglass")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(phaseAccentColor(for: context.state.phase))
+            // Left: Hourglass Icon + Session Info
+            HStack(spacing: 12) {
+                Image(systemName: "hourglass")
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundStyle(phaseAccentColor(for: context.state.phase))
 
-                    Text("MILESTONE FOCUS")
-                        .font(.system(size: 10, weight: .heavy))
-                        .tracking(2.5)
-                        .foregroundStyle(Color.white.opacity(0.5))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(phaseTitle(for: context.state.phase, session: context.state.currentSession, total: context.state.totalSessions))
+                        .font(.system(size: 14, weight: .bold))
+                        .tracking(1)
+                        .foregroundStyle(Color.white)
+
+                    Text(phaseMessage(for: context.state.phase))
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(Color.white.opacity(0.55))
                 }
-
-                Text(phaseTitle(for: context.state.phase, session: context.state.currentSession, total: context.state.totalSessions))
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color.white)
-
-                Text(phaseMessage(for: context.state.phase))
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(Color.white.opacity(0.6))
             }
 
             Spacer()
@@ -162,12 +137,12 @@ private struct PomodoroLockScreenBannerView: View {
             VStack(alignment: .trailing, spacing: 6) {
                 if context.state.isRunning {
                     Text(timerInterval: Date.now...context.state.targetEndTime, countsDown: true)
-                        .font(.system(size: 32, weight: .light))
+                        .font(.system(size: 30, weight: .light))
                         .monospacedDigit()
                         .foregroundStyle(Color.white)
                 } else {
                     Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
-                        .font(.system(size: 32, weight: .light))
+                        .font(.system(size: 30, weight: .light))
                         .monospacedDigit()
                         .foregroundStyle(Color.white)
                 }
