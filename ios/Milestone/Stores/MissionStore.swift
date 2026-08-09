@@ -7,6 +7,7 @@ public final class MissionStore {
         didSet {
             saveActiveMission()
             syncToWidget()
+            refreshMorningNotification()
         }
     }
     public var archivedMissions: [Mission] = [] {
@@ -37,7 +38,6 @@ public final class MissionStore {
                 if let d = formatter.date(from: dateStr) { return d }
             }
             if let ts = try? container.decode(Double.self) {
-                // If timestamp > 1e11 it's in milliseconds
                 return ts > 100_000_000_000 ? Date(timeIntervalSince1970: ts / 1000) : Date(timeIntervalSince1970: ts)
             }
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date format")
@@ -68,6 +68,7 @@ public final class MissionStore {
         }
 
         syncToWidget()
+        refreshMorningNotification()
     }
 
     public func createMission(title: String, targetDate: Date, note: String? = nil, todos: [TodoTask] = []) {
@@ -138,6 +139,20 @@ public final class MissionStore {
     private func saveArchivedMissions() {
         if let encoded = try? encoder.encode(archivedMissions) {
             UserDefaults.standard.set(encoded, forKey: archiveKey)
+        }
+    }
+
+    public func refreshMorningNotification() {
+        let isEnabled = UserDefaults.standard.object(forKey: "milestone:morningReminderEnabled") as? Bool ?? true
+        let hour = UserDefaults.standard.object(forKey: "milestone:morningReminderHour") as? Int ?? 9
+        let min = UserDefaults.standard.object(forKey: "milestone:morningReminderMinute") as? Int ?? 0
+
+        Task { @MainActor in
+            if isEnabled, let mission = activeMission {
+                NotificationManager.shared.scheduleDailyMorningReminder(mission: mission, hour: hour, minute: min)
+            } else {
+                NotificationManager.shared.cancelDailyMorningReminder()
+            }
         }
     }
 

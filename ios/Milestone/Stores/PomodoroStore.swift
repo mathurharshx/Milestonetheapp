@@ -23,8 +23,30 @@ public final class PomodoroStore {
     }
 
     public init() {
-        self.totalTime = phase.defaultDuration
-        self.timeRemaining = self.totalTime
+        let initialDuration = durationForPhase(.focus)
+        self.totalTime = initialDuration
+        self.timeRemaining = initialDuration
+    }
+
+    private func durationForPhase(_ p: PomodoroPhase) -> Int {
+        switch p {
+        case .focus:
+            let mins = UserDefaults.standard.integer(forKey: "milestone:focusDuration")
+            return (mins > 0 ? mins : 25) * 60
+        case .shortBreak:
+            let mins = UserDefaults.standard.integer(forKey: "milestone:shortBreakDuration")
+            return (mins > 0 ? mins : 5) * 60
+        case .longBreak:
+            let mins = UserDefaults.standard.integer(forKey: "milestone:longBreakDuration")
+            return (mins > 0 ? mins : 20) * 60
+        }
+    }
+
+    public func reloadDurationsIfIdle() {
+        guard !isRunning && !isStarted else { return }
+        let newDuration = durationForPhase(phase)
+        self.totalTime = newDuration
+        self.timeRemaining = newDuration
     }
 
     public func start() {
@@ -46,6 +68,7 @@ public final class PomodoroStore {
         }
         syncToWidget()
 
+        // 1. Start Dynamic Island / Lock Screen Activity
         PomodoroActivityManager.shared.startActivity(
             phase: phase.rawValue,
             currentSession: currentSession,
@@ -53,6 +76,13 @@ public final class PomodoroStore {
             startDate: sessionStartDate,
             targetEndTime: target,
             totalDuration: Double(totalTime)
+        )
+
+        // 2. Schedule Clean Background Local Notification
+        NotificationManager.shared.schedulePomodoroNotification(
+            phase: phase,
+            seconds: timeRemaining,
+            nextPhaseLabel: nextPhaseLabel
         )
     }
 
@@ -66,6 +96,7 @@ public final class PomodoroStore {
         }
         syncToWidget()
 
+        // 1. Update Dynamic Island
         PomodoroActivityManager.shared.updateActivity(
             phase: phase.rawValue,
             currentSession: currentSession,
@@ -76,6 +107,9 @@ public final class PomodoroStore {
             totalDuration: Double(totalTime),
             timeRemainingWhenPaused: timeRemaining
         )
+
+        // 2. Cancel Notification while paused
+        NotificationManager.shared.cancelPomodoroNotifications()
     }
 
     public func reset() {
@@ -85,12 +119,16 @@ public final class PomodoroStore {
         timerTask = nil
         phase = .focus
         currentSession = 1
-        totalTime = phase.defaultDuration
+        totalTime = durationForPhase(.focus)
         timeRemaining = totalTime
         targetEndTime = nil
         syncToWidget()
 
+        // 1. End Dynamic Island
         PomodoroActivityManager.shared.endActivity()
+
+        // 2. Cancel Notification
+        NotificationManager.shared.cancelPomodoroNotifications()
     }
 
     private func tick() {
@@ -114,7 +152,7 @@ public final class PomodoroStore {
         let (nextPhase, nextSession) = getNextPhase(current: phase, session: currentSession)
         self.phase = nextPhase
         self.currentSession = nextSession
-        self.totalTime = nextPhase.defaultDuration
+        self.totalTime = durationForPhase(nextPhase)
         self.timeRemaining = self.totalTime
 
         // Auto-start next phase
@@ -134,6 +172,7 @@ public final class PomodoroStore {
         }
         syncToWidget()
 
+        // 1. Dynamic Island Activity for new phase
         PomodoroActivityManager.shared.startActivity(
             phase: phase.rawValue,
             currentSession: currentSession,
@@ -141,6 +180,13 @@ public final class PomodoroStore {
             startDate: self.sessionStartDate,
             targetEndTime: target,
             totalDuration: Double(totalTime)
+        )
+
+        // 2. Background Notification for new phase
+        NotificationManager.shared.schedulePomodoroNotification(
+            phase: phase,
+            seconds: timeRemaining,
+            nextPhaseLabel: nextPhaseLabel
         )
     }
 
@@ -161,11 +207,14 @@ public final class PomodoroStore {
     public var nextPhaseLabel: String {
         switch phase {
         case .focus:
-            return currentSession >= totalSessions ? "Long Break  ·  20m" : "Short Break  ·  5m"
+            let breakMins = durationForPhase(currentSession >= totalSessions ? .longBreak : .shortBreak) / 60
+            return currentSession >= totalSessions ? "Long Break (\(breakMins)m)" : "Short Break (\(breakMins)m)"
         case .shortBreak:
-            return "Focus \(currentSession + 1) of \(totalSessions)  ·  25m"
+            let focusMins = durationForPhase(.focus) / 60
+            return "Focus \(currentSession + 1) of \(totalSessions) (\(focusMins)m)"
         case .longBreak:
-            return "Focus 1 of \(totalSessions)  ·  25m"
+            let focusMins = durationForPhase(.focus) / 60
+            return "Focus 1 of \(totalSessions) (\(focusMins)m)"
         }
     }
 

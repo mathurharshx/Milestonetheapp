@@ -38,6 +38,7 @@
 		MS0029 /* PomodoroActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF032 /* PomodoroActivityAttributes.swift */; };
 		MS0030 /* PomodoroActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF033 /* PomodoroActivityManager.swift */; };
 		MS0031 /* MissionCelebrationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF034 /* MissionCelebrationSheet.swift */; };
+		MS0032 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF035 /* NotificationManager.swift */; };
 		
 		/* Widget Extension Build Files */
 		WG0001 /* MilestoneWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF001 /* MilestoneWidgetBundle.swift */; };
@@ -108,6 +109,7 @@
 		MSF032 /* PomodoroActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroActivityAttributes.swift; sourceTree = "<group>"; };
 		MSF033 /* PomodoroActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroActivityManager.swift; sourceTree = "<group>"; };
 		MSF034 /* MissionCelebrationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionCelebrationSheet.swift; sourceTree = "<group>"; };
+		MSF035 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 
 		/* Widget Extension Files */
 		WGF001 /* MilestoneWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneWidgetBundle.swift; sourceTree = "<group>"; };
@@ -200,6 +202,7 @@
 				MSF007 /* DateCalculations.swift */,
 				MSF008 /* HapticsManager.swift */,
 				MSF033 /* PomodoroActivityManager.swift */,
+				MSF035 /* NotificationManager.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -413,6 +416,7 @@
 				MS0029 /* PomodoroActivityAttributes.swift in Sources */,
 				MS0030 /* PomodoroActivityManager.swift in Sources */,
 				MS0031 /* MissionCelebrationSheet.swift in Sources */,
+				MS0032 /* NotificationManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
