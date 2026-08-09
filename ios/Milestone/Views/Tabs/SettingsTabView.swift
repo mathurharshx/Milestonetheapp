@@ -67,6 +67,7 @@ public struct SettingsTabView: View {
                             }
                         ))
                         .labelsHidden()
+                        .tint(Color(uiColor: .systemGreen))
                     }
                     .padding(.vertical, 16)
 
@@ -96,6 +97,7 @@ public struct SettingsTabView: View {
                             }
                         ))
                         .labelsHidden()
+                        .tint(Color(uiColor: .systemGreen))
                     }
                     .padding(.vertical, 16)
 
