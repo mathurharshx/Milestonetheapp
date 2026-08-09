@@ -9,7 +9,6 @@ public struct MissionCelebrationSheet: View {
     @Environment(\.theme) private var theme
     @Environment(\.dismiss) private var dismiss
     @State private var appearAnimation: Bool = false
-    @State private var sealPulse: Bool = false
 
     public init(
         mission: Mission,
@@ -43,50 +42,14 @@ public struct MissionCelebrationSheet: View {
 
                 ScrollView {
                     VStack(spacing: 28) {
-                        // ── Apple Fitness-Style Glowing Award Seal ──
-                        ZStack {
-                            // Outer Ambient Halo
-                            Circle()
-                                .fill(theme.accent.opacity(appearAnimation ? 0.15 : 0.0))
-                                .frame(width: 140, height: 140)
-                                .blur(radius: 20)
-                                .scaleEffect(sealPulse ? 1.15 : 0.95)
-
-                            // Inner Glow Ring
-                            Circle()
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [
-                                            theme.accent.opacity(0.8),
-                                            theme.accent.opacity(0.2)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 2
-                                )
-                                .frame(width: 96, height: 96)
-                                .scaleEffect(appearAnimation ? 1.0 : 0.4)
-                                .opacity(appearAnimation ? 1.0 : 0.0)
-
-                            // Seal Icon
+                        // ── Clean Minimalist Award Seal (No Blur/Shadows) ──
+                        VStack {
                             Image(systemName: "checkmark.seal.fill")
-                                .font(.system(size: 54, weight: .semibold))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [
-                                            theme.accent,
-                                            theme.accent.opacity(0.8)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .shadow(color: theme.accent.opacity(0.4), radius: 12, x: 0, y: 4)
-                                .scaleEffect(appearAnimation ? 1.0 : 0.2)
-                                .rotationEffect(.degrees(appearAnimation ? 0 : -30))
+                                .font(.system(size: 64, weight: .semibold))
+                                .foregroundStyle(theme.accent)
+                                .scaleEffect(appearAnimation ? 1.0 : 0.3)
                         }
-                        .frame(height: 140)
+                        .frame(height: 90)
 
                         // ── Milestone Title ──
                         VStack(spacing: 8) {
@@ -172,7 +135,6 @@ public struct MissionCelebrationSheet: View {
                                     RoundedRectangle(cornerRadius: 14)
                                         .fill(theme.accent)
                                 )
-                                .shadow(color: theme.accent.opacity(0.25), radius: 8, x: 0, y: 4)
                             }
 
                             // Secondary: Start New Mission
@@ -196,15 +158,12 @@ public struct MissionCelebrationSheet: View {
                 }
             }
         }
-        .presentationDetents([.fraction(0.85), .large])
+        .presentationDetents([.fraction(0.82), .large])
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(32)
         .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
                 appearAnimation = true
-            }
-            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
-                sealPulse = true
             }
         }
     }

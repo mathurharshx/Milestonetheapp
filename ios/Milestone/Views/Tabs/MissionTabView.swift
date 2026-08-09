@@ -71,11 +71,17 @@ public struct MissionTabView: View {
                             )
                             .padding(.vertical, 8)
 
-                            // To-Do List
+                            // To-Do List (Swipe to Complete / Delete & Priority Reordering)
                             MissionTodoListView(
                                 todos: mission.todos,
                                 onToggle: { id in
                                     missionStore.toggleTodo(id: id)
+                                },
+                                onDelete: { id in
+                                    missionStore.deleteTodo(id: id)
+                                },
+                                onMove: { indices, newOffset in
+                                    missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
                                 },
                                 onAddTask: { text in
                                     missionStore.addTodo(text: text)

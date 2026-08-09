@@ -109,6 +109,18 @@ public final class MissionStore {
         }
     }
 
+    public func deleteTodo(id: String) {
+        guard var mission = activeMission else { return }
+        mission.todos.removeAll(where: { $0.id == id })
+        self.activeMission = mission
+    }
+
+    public func moveTodo(fromOffsets source: IndexSet, toOffset destination: Int) {
+        guard var mission = activeMission else { return }
+        mission.todos.move(fromOffsets: source, toOffset: destination)
+        self.activeMission = mission
+    }
+
     public func addTodo(text: String) {
         guard var mission = activeMission else { return }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
