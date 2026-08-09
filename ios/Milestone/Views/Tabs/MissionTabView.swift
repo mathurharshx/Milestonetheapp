@@ -4,11 +4,16 @@ public struct MissionTabView: View {
     @Environment(MissionStore.self) private var missionStore
     @Environment(\.theme) private var theme
 
-    @State private var showCompleteConfirmation: Bool = false
-    @State private var showQuoteModal: Bool = false
-    @State private var completedQuote: Quote?
+    public var onNavigateToArchive: (() -> Void)?
 
-    public init() {}
+    @State private var isCompletingAnimation: Bool = false
+    @State private var showCelebrationSheet: Bool = false
+    @State private var completedQuote: Quote?
+    @State private var activeMissionSnapshot: Mission?
+
+    public init(onNavigateToArchive: (() -> Void)? = nil) {
+        self.onNavigateToArchive = onNavigateToArchive
+    }
 
     public var body: some View {
         ZStack {
@@ -55,13 +60,14 @@ public struct MissionTabView: View {
                             // Countdown Timer
                             CountdownTimerView(countdown: countdown)
 
-                            // Dot Grid Matrix
+                            // Dot Grid Matrix with Completion Glow Wave
                             DotGridView(
                                 totalDays: countdown.totalDays,
                                 daysElapsed: countdown.daysElapsed,
                                 totalHours: countdown.totalHours,
                                 hoursElapsed: countdown.hoursElapsed,
-                                isUnder24h: countdown.isUnder24h
+                                isUnder24h: countdown.isUnder24h,
+                                isCompleting: isCompletingAnimation
                             )
                             .padding(.vertical, 8)
 
@@ -76,20 +82,35 @@ public struct MissionTabView: View {
                                 }
                             )
 
-                            // Mark Complete Button
+                            // Apple-Style Mark Complete Action Button
                             Button {
-                                showCompleteConfirmation = true
+                                triggerCompletion(for: mission)
                             } label: {
-                                Text("MARK COMPLETE")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .tracking(3)
-                                    .foregroundStyle(theme.accent)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 52)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(theme.accent, lineWidth: 1)
-                                    )
+                                HStack(spacing: 10) {
+                                    Image(systemName: isCompletingAnimation ? "checkmark.circle.fill" : "checkmark.seal")
+                                        .font(.system(size: 16, weight: .bold))
+
+                                    Text(isCompletingAnimation ? "ACCOMPLISHED!" : "MARK COMPLETE")
+                                        .font(.system(size: 13, weight: .bold))
+                                        .tracking(2.5)
+                                }
+                                .foregroundStyle(isCompletingAnimation ? theme.background : theme.accent)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 54)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(isCompletingAnimation ? theme.accent : Color.clear)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(theme.accent, lineWidth: 1.5)
+                                )
+                                .shadow(
+                                    color: isCompletingAnimation ? theme.accent.opacity(0.4) : .clear,
+                                    radius: 12,
+                                    x: 0,
+                                    y: 4
+                                )
                             }
                             .padding(.top, 32)
                             .padding(.bottom, 24)
@@ -101,35 +122,42 @@ public struct MissionTabView: View {
                 // No active mission -> Direct creation view
                 CreateMissionSheet()
             }
-
-            // Completion Quote Modal Overlay
-            if showQuoteModal {
-                QuoteModalView(quote: completedQuote) {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        showQuoteModal = false
+        }
+        .sheet(isPresented: $showCelebrationSheet) {
+            if let mission = activeMissionSnapshot ?? missionStore.activeMission {
+                MissionCelebrationSheet(
+                    mission: mission,
+                    quote: completedQuote,
+                    onArchive: {
                         missionStore.archiveMission()
+                        isCompletingAnimation = false
+                        onNavigateToArchive?()
+                    },
+                    onNewMission: {
+                        missionStore.archiveMission()
+                        isCompletingAnimation = false
                     }
-                }
-                .transition(.opacity)
-                .zIndex(100)
+                )
             }
         }
-        .confirmationDialog(
-            "Complete Mission",
-            isPresented: $showCompleteConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Complete") {
-                HapticsManager.shared.notification(.success)
-                missionStore.completeMission()
-                completedQuote = QuoteManager.randomQuote()
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    showQuoteModal = true
-                }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Mark this mission as complete?")
+    }
+
+    private func triggerCompletion(for mission: Mission) {
+        // Capture snapshot before archiving
+        activeMissionSnapshot = mission
+        completedQuote = QuoteManager.randomQuote()
+
+        // 1. Success Haptic Pulse
+        HapticsManager.shared.notification(.success)
+
+        // 2. Cascade Dot Grid Illumination Wave
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+            isCompletingAnimation = true
+        }
+
+        // 3. Smooth slide-up of Apple Award Celebration Sheet
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            showCelebrationSheet = true
         }
     }
 }

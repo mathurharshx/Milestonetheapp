@@ -6,6 +6,7 @@ public struct DotGridView: View {
     public let totalHours: Int
     public let hoursElapsed: Int
     public let isUnder24h: Bool
+    public let isCompleting: Bool
 
     @Environment(\.theme) private var theme
 
@@ -14,13 +15,15 @@ public struct DotGridView: View {
         daysElapsed: Int,
         totalHours: Int,
         hoursElapsed: Int,
-        isUnder24h: Bool
+        isUnder24h: Bool,
+        isCompleting: Bool = false
     ) {
         self.totalDays = totalDays
         self.daysElapsed = daysElapsed
         self.totalHours = totalHours
         self.hoursElapsed = hoursElapsed
         self.isUnder24h = isUnder24h
+        self.isCompleting = isCompleting
     }
 
     private struct DotItem: Identifiable {
@@ -88,15 +91,19 @@ public struct DotGridView: View {
         if totalUnits > 0 && totalUnits <= 1095 {
             FlowLayout(spacing: dotGap) {
                 ForEach(items) { item in
+                    let isFilled = isCompleting || !item.elapsed
+
                     Circle()
-                        .fill(item.elapsed ? theme.dotElapsed : theme.dotFilled)
+                        .fill(isCompleting ? theme.accent : (item.elapsed ? theme.dotElapsed : theme.dotFilled))
                         .frame(width: dotSize, height: dotSize)
+                        .scaleEffect(isCompleting ? 1.2 : 1.0)
                         .shadow(
-                            color: item.isLead ? theme.accent.opacity(0.6) : .clear,
-                            radius: item.isLead ? 4 : 0,
+                            color: isCompleting ? theme.accent.opacity(0.8) : (item.isLead ? theme.accent.opacity(0.6) : .clear),
+                            radius: isCompleting ? 3 : (item.isLead ? 4 : 0),
                             x: 0,
                             y: 0
                         )
+                        .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isCompleting)
                 }
             }
             .padding(.horizontal, 16)

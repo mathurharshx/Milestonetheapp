@@ -10,8 +10,12 @@ public struct MainTabView: View {
         TabView(selection: $selectedTab) {
             // Tab 1: Mission
             NavigationStack {
-                MissionTabView()
-                    .toolbarBackground(theme.background, for: .navigationBar)
+                MissionTabView(onNavigateToArchive: {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                        selectedTab = .archive
+                    }
+                })
+                .toolbarBackground(theme.background, for: .navigationBar)
             }
             .tabItem {
                 Image(systemName: "scope")
