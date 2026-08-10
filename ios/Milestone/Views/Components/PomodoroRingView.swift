@@ -10,7 +10,6 @@ public struct PomodoroRingView: View {
     public let message: String
 
     @Environment(\.theme) private var theme
-    @State private var isBreathing = false
 
     private let segments = 96
     private let dotSize: CGFloat = 3.5
@@ -66,24 +65,15 @@ public struct PomodoroRingView: View {
 
             // Center Content
             VStack(spacing: 8) {
-                // Large Monospaced Digit Timer with Breathing Opacity
+                // Rock-solid Stable Monospaced Timer (Zero Bouncing / Zero Jitter)
                 Text(timeFormatted)
                     .font(.system(size: 58, weight: .ultraLight, design: .default))
                     .monospacedDigit()
                     .tracking(2)
                     .foregroundStyle(theme.textPrimary)
-                    .opacity(isRunning && isBreathing ? 0.65 : 1.0)
-                    .animation(
-                        isRunning
-                            ? Animation.easeInOut(duration: 1.8).repeatForever(autoreverses: true)
-                            : Animation.easeOut(duration: 0.3),
-                        value: isBreathing
-                    )
-                    .onAppear {
-                        if isRunning { isBreathing = true }
-                    }
-                    .onChange(of: isRunning) { _, running in
-                        isBreathing = running
+                    .animation(nil, value: timeRemaining)
+                    .transaction { transaction in
+                        transaction.animation = nil
                     }
 
                 // Status Pill

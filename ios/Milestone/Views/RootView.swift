@@ -15,7 +15,9 @@ public struct RootView: View {
         let tokens = themeStore.tokens(systemScheme: colorScheme)
 
         ZStack {
-            tokens.background.ignoresSafeArea()
+            tokens.background
+                .ignoresSafeArea()
+                .animation(.easeInOut(duration: 0.28), value: tokens.isDark)
 
             if showSplash {
                 SplashView {
@@ -39,7 +41,6 @@ public struct RootView: View {
                     .zIndex(1)
             }
         }
-        .animation(.easeInOut(duration: 0.28), value: tokens.isDark)
         .environment(\.theme, tokens)
         .preferredColorScheme(themeStore.mode.colorScheme)
         .onAppear {
