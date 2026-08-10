@@ -189,17 +189,37 @@ struct MilestoneMissionWidgetView: View {
         }
     }
 
-    // ── Lock Screen Circular ──
+    // ── Lock Screen Circular (Pixel-Perfect Alignment) ──
     private var accessoryCircularView: some View {
         ZStack {
-            Gauge(value: progressRatio) {
+            AccessoryWidgetBackground()
+
+            Circle()
+                .stroke(Color.white.opacity(0.25), lineWidth: 3.5)
+                .frame(width: 44, height: 44)
+
+            Circle()
+                .trim(from: 0, to: CGFloat(max(0.01, progressRatio)))
+                .stroke(
+                    Color.white,
+                    style: StrokeStyle(lineWidth: 3.5, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+                .frame(width: 44, height: 44)
+
+            VStack(spacing: -1) {
                 Text("\(daysRemaining)")
                     .font(.system(size: 14, weight: .bold))
-            } currentValueLabel: {
-                Text("\(daysRemaining)")
-                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Color.white)
+
+                Text("DAYS")
+                    .font(.system(size: 7, weight: .heavy))
+                    .tracking(0.5)
+                    .foregroundStyle(Color.white.opacity(0.7))
             }
-            .gaugeStyle(.accessoryCircularCapacity)
+        }
+        .containerBackground(for: .widget) {
+            Color.clear
         }
     }
 

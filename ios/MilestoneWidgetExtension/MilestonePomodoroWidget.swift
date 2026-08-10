@@ -313,21 +313,42 @@ struct MilestonePomodoroWidgetView: View {
         }
     }
 
-    // ── Lock Screen Circular ──
+    // ── Lock Screen Circular (Pixel-Perfect Alignment) ──
     private var accessoryCircularView: some View {
         ZStack {
-            Gauge(value: progressRatio) {
-                Image(systemName: "hourglass")
-            } currentValueLabel: {
+            AccessoryWidgetBackground()
+
+            Circle()
+                .stroke(Color.white.opacity(0.25), lineWidth: 3.5)
+                .frame(width: 44, height: 44)
+
+            Circle()
+                .trim(from: 0, to: CGFloat(max(0.01, progressRatio)))
+                .stroke(
+                    Color.white,
+                    style: StrokeStyle(lineWidth: 3.5, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+                .frame(width: 44, height: 44)
+
+            VStack(spacing: 0) {
                 if entry.data.pomodoroIsRunning, let target = entry.data.pomodoroTargetEndTime, target > Date().timeIntervalSince1970 {
                     Text(timerInterval: Date()...Date(timeIntervalSince1970: target), countsDown: true)
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.65)
+                        .frame(width: 36)
                 } else {
                     Text(formattedTime)
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.65)
+                        .frame(width: 36)
                 }
             }
-            .gaugeStyle(.accessoryCircularCapacity)
+        }
+        .containerBackground(for: .widget) {
+            Color.clear
         }
     }
 }

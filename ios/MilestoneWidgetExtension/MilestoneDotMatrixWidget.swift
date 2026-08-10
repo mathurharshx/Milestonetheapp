@@ -152,9 +152,9 @@ struct MilestoneDotMatrixWidgetView: View {
         }
     }
 
-    // ── Lock Screen Rectangular ──
+    // ── Lock Screen Rectangular (Pixel-Perfect Alignment) ──
     private var accessoryRectangularView: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 3) {
             HStack {
                 Text(entry.data.missionTitle ?? "Milestone")
                     .font(.system(size: 12, weight: .bold))
@@ -172,11 +172,14 @@ struct MilestoneDotMatrixWidgetView: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 8), spacing: 3) {
                 ForEach(0..<sampleCount, id: \.self) { i in
                     Circle()
-                        .fill(i < elapsedSampled ? Color.primary : Color.primary.opacity(0.25))
-                        .frame(width: 4, height: 4)
+                        .fill(i < elapsedSampled ? Color.white : Color.white.opacity(0.25))
+                        .frame(width: 4.5, height: 4.5)
                 }
             }
             .padding(.top, 2)
+        }
+        .containerBackground(for: .widget) {
+            Color.clear
         }
     }
 }
