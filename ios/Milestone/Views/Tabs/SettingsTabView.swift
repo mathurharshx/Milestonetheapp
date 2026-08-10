@@ -367,7 +367,7 @@ public struct SettingsTabView: View {
 
                     SettingsRow(
                         label: "Milestone",
-                        sublabel: "v1.0.0 (Submission Build)",
+                        sublabel: "Version 1.0.0 (1)",
                         showChevron: false
                     )
 
