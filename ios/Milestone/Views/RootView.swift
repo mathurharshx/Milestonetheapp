@@ -3,7 +3,9 @@ import SwiftUI
 public struct RootView: View {
     @Environment(UserStore.self) private var userStore
     @Environment(ThemeStore.self) private var themeStore
+    @Environment(PomodoroStore.self) private var pomodoroStore
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var showSplash: Bool = true
 
@@ -42,9 +44,16 @@ public struct RootView: View {
         .preferredColorScheme(themeStore.mode.colorScheme)
         .onAppear {
             themeStore.syncToWidget(systemScheme: colorScheme)
+            pomodoroStore.syncFromWidget()
         }
         .onChange(of: colorScheme) { _, newScheme in
             themeStore.syncToWidget(systemScheme: newScheme)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                themeStore.syncToWidget(systemScheme: colorScheme)
+                pomodoroStore.syncFromWidget()
+            }
         }
     }
 }

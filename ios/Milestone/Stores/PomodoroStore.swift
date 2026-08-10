@@ -26,6 +26,7 @@ public final class PomodoroStore {
         let initialDuration = durationForPhase(.focus)
         self.totalTime = initialDuration
         self.timeRemaining = initialDuration
+        syncFromWidget()
     }
 
     private func durationForPhase(_ p: PomodoroPhase) -> Int {
@@ -228,6 +229,7 @@ public final class PomodoroStore {
         let existing = SharedWidgetStore.load() ?? MilestoneWidgetData()
 
         let updated = MilestoneWidgetData(
+            isDarkMode: existing.isDarkMode,
             pomodoroPhase: phase.rawValue,
             pomodoroTimeRemaining: timeRemaining,
             pomodoroTotalTime: totalTime,
@@ -249,5 +251,44 @@ public final class PomodoroStore {
             lastUpdated: Date().timeIntervalSince1970
         )
         SharedWidgetStore.save(updated)
+    }
+
+    public func syncFromWidget() {
+        guard let data = SharedWidgetStore.load() else { return }
+
+        if data.pomodoroIsRunning, let target = data.pomodoroTargetEndTime {
+            let now = Date()
+            let targetDate = Date(timeIntervalSince1970: target)
+            if targetDate > now {
+                let remaining = max(0, Int(ceil(targetDate.timeIntervalSince(now))))
+                self.isRunning = true
+                self.isStarted = true
+                self.timeRemaining = remaining
+                self.totalTime = data.pomodoroTotalTime > 0 ? data.pomodoroTotalTime : 1500
+                self.targetEndTime = targetDate
+                self.phase = PomodoroPhase(rawValue: data.pomodoroPhase) ?? .focus
+                self.currentSession = data.pomodoroSession
+                self.totalSessions = data.pomodoroTotalSessions
+
+                timerTask?.cancel()
+                timerTask = Task { @MainActor [weak self] in
+                    while !Task.isCancelled {
+                        try? await Task.sleep(nanoseconds: 200_000_000)
+                        guard let self = self, self.isRunning else { break }
+                        self.tick()
+                    }
+                }
+            } else {
+                // Completed while backgrounded
+                self.isRunning = false
+                self.timeRemaining = 0
+                self.advanceToNextPhase()
+            }
+        } else if !data.pomodoroIsRunning && isRunning {
+            self.pause()
+            if data.pomodoroTimeRemaining > 0 {
+                self.timeRemaining = data.pomodoroTimeRemaining
+            }
+        }
     }
 }

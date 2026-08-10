@@ -14,7 +14,9 @@ public struct TogglePomodoroWidgetIntent: AppIntent {
             data.pomodoroIsRunning = !wasRunning
             if !wasRunning {
                 // Starting focus session
-                let target = Date().addingTimeInterval(TimeInterval(data.pomodoroTimeRemaining))
+                let duration = data.pomodoroTimeRemaining > 0 ? data.pomodoroTimeRemaining : (data.pomodoroTotalTime > 0 ? data.pomodoroTotalTime : 1500)
+                let target = Date().addingTimeInterval(TimeInterval(duration))
+                data.pomodoroTimeRemaining = duration
                 data.pomodoroTargetEndTime = target.timeIntervalSince1970
             } else {
                 // Pausing focus session
@@ -64,7 +66,14 @@ struct PomodoroWidgetProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<PomodoroWidgetEntry>) -> Void) {
         let data = SharedWidgetStore.load() ?? MilestoneWidgetData()
         let entry = PomodoroWidgetEntry(date: Date(), data: data)
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
+
+        let nextUpdate: Date
+        if data.pomodoroIsRunning, let target = data.pomodoroTargetEndTime, target > Date().timeIntervalSince1970 {
+            // Refresh when countdown completes
+            nextUpdate = Date(timeIntervalSince1970: target)
+        } else {
+            nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
+        }
         completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
     }
 }
@@ -121,7 +130,7 @@ struct MilestonePomodoroWidgetView: View {
         }
     }
 
-    // ── Small Widget (Precision Hardware Ring) ──
+    // ── Small Widget (Live Hardware Ring) ──
     private var smallView: some View {
         VStack(spacing: 0) {
             // Top Section Header
@@ -141,7 +150,7 @@ struct MilestonePomodoroWidgetView: View {
 
             Spacer(minLength: 2)
 
-            // Precision Ring (Fixed 74pt size for zero clipping)
+            // Precision Ring
             ZStack {
                 // Background Track
                 Circle()
@@ -158,11 +167,20 @@ struct MilestonePomodoroWidgetView: View {
                     .rotationEffect(.degrees(-90))
                     .frame(width: 74, height: 74)
 
-                // Monospaced Centered Digits
-                Text(formattedTime)
-                    .font(.system(size: 15, weight: .bold, design: .monospaced))
-                    .foregroundStyle(entry.data.textPrimaryColor)
-                    .contentTransition(.numericText())
+                // Real-Time Live Ticking Countdown on Home Screen
+                if entry.data.pomodoroIsRunning, let target = entry.data.pomodoroTargetEndTime, target > Date().timeIntervalSince1970 {
+                    Text(timerInterval: Date()...Date(timeIntervalSince1970: target), countsDown: true)
+                        .font(.system(size: 15, weight: .bold, design: .monospaced))
+                        .foregroundStyle(entry.data.textPrimaryColor)
+                        .multilineTextAlignment(.center)
+                        .frame(width: 58)
+                } else {
+                    Text(formattedTime)
+                        .font(.system(size: 15, weight: .bold, design: .monospaced))
+                        .foregroundStyle(entry.data.textPrimaryColor)
+                        .multilineTextAlignment(.center)
+                        .frame(width: 58)
+                }
             }
             .frame(width: 76, height: 76)
 
@@ -212,10 +230,19 @@ struct MilestonePomodoroWidgetView: View {
                     .rotationEffect(.degrees(-90))
                     .frame(width: 90, height: 90)
 
-                Text(formattedTime)
-                    .font(.system(size: 18, weight: .bold, design: .monospaced))
-                    .foregroundStyle(entry.data.textPrimaryColor)
-                    .contentTransition(.numericText())
+                if entry.data.pomodoroIsRunning, let target = entry.data.pomodoroTargetEndTime, target > Date().timeIntervalSince1970 {
+                    Text(timerInterval: Date()...Date(timeIntervalSince1970: target), countsDown: true)
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundStyle(entry.data.textPrimaryColor)
+                        .multilineTextAlignment(.center)
+                        .frame(width: 70)
+                } else {
+                    Text(formattedTime)
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundStyle(entry.data.textPrimaryColor)
+                        .multilineTextAlignment(.center)
+                        .frame(width: 70)
+                }
             }
             .frame(width: 92, height: 92)
 
@@ -292,8 +319,13 @@ struct MilestonePomodoroWidgetView: View {
             Gauge(value: progressRatio) {
                 Image(systemName: "hourglass")
             } currentValueLabel: {
-                Text(formattedTime)
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                if entry.data.pomodoroIsRunning, let target = entry.data.pomodoroTargetEndTime, target > Date().timeIntervalSince1970 {
+                    Text(timerInterval: Date()...Date(timeIntervalSince1970: target), countsDown: true)
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                } else {
+                    Text(formattedTime)
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                }
             }
             .gaugeStyle(.accessoryCircularCapacity)
         }

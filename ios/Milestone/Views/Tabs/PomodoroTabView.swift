@@ -145,5 +145,8 @@ public struct PomodoroTabView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
         }
+        .onAppear {
+            pomodoroStore.syncFromWidget()
+        }
     }
 }
