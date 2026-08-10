@@ -98,12 +98,14 @@ public final class ThemeStore {
     public var mode: AppThemeMode {
         didSet {
             UserDefaults.standard.set(mode.rawValue, forKey: "milestone:themeMode")
+            syncToWidget()
         }
     }
 
     public init() {
-        let raw = UserDefaults.standard.string(forKey: "milestone:themeMode") ?? "system"
-        self.mode = AppThemeMode(rawValue: raw) ?? .system
+        let raw = UserDefaults.standard.string(forKey: "milestone:themeMode") ?? "dark"
+        self.mode = AppThemeMode(rawValue: raw) ?? .dark
+        syncToWidget()
     }
 
     public func toggleTheme(systemScheme: ColorScheme?) {
@@ -134,5 +136,17 @@ public final class ThemeStore {
     public func tokens(systemScheme: ColorScheme?) -> ThemeTokens {
         let isDark = isDarkMode(systemScheme: systemScheme)
         return ThemeTokens(isDark: isDark)
+    }
+
+    public func syncToWidget(systemScheme: ColorScheme? = nil) {
+        let isDark = isDarkMode(systemScheme: systemScheme)
+        if var data = SharedWidgetStore.load() {
+            data.isDarkMode = isDark
+            SharedWidgetStore.save(data)
+        } else {
+            var data = MilestoneWidgetData()
+            data.isDarkMode = isDark
+            SharedWidgetStore.save(data)
+        }
     }
 }

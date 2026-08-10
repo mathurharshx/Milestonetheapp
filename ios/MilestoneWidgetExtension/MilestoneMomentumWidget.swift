@@ -49,13 +49,13 @@ struct MilestoneMomentumWidgetView: View {
                 Text("MOMENTUM")
                     .font(.system(size: 9, weight: .heavy))
                     .tracking(2.5)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
 
                 Image(systemName: "bolt.fill")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(entry.data.textPrimaryColor)
             }
 
             Spacer()
@@ -64,12 +64,12 @@ struct MilestoneMomentumWidgetView: View {
             Text("\(max(1, entry.data.focusStreak))")
                 .font(.system(size: 42, weight: .bold))
                 .tracking(-1)
-                .foregroundStyle(Color.primary)
+                .foregroundStyle(entry.data.textPrimaryColor)
 
             Text("DAY STREAK")
                 .font(.system(size: 9, weight: .semibold))
                 .tracking(1.5)
-                .foregroundStyle(Color.secondary)
+                .foregroundStyle(entry.data.textSecondaryColor)
 
             Spacer()
 
@@ -78,14 +78,14 @@ struct MilestoneMomentumWidgetView: View {
                 ForEach(0..<7, id: \.self) { i in
                     let level = (i < entry.data.weeklyFocusLevels.count) ? entry.data.weeklyFocusLevels[i] : 1
                     Circle()
-                        .fill(level > 0 ? Color.primary.opacity(Double(level) * 0.3 + 0.1) : Color.primary.opacity(0.12))
+                        .fill(level > 0 ? entry.data.textPrimaryColor.opacity(Double(level) * 0.3 + 0.1) : entry.data.trackColor)
                         .frame(width: 6, height: 6)
                 }
             }
         }
         .padding(14)
         .containerBackground(for: .widget) {
-            Color(.systemBackground)
+            entry.data.backgroundColor
         }
     }
 
@@ -101,17 +101,17 @@ struct MilestoneMomentumWidgetView: View {
                         .font(.system(size: 9, weight: .heavy))
                         .tracking(2.5)
                 }
-                .foregroundStyle(Color.secondary)
+                .foregroundStyle(entry.data.textSecondaryColor)
 
                 Text("\(max(1, entry.data.focusStreak))")
                     .font(.system(size: 38, weight: .bold))
                     .tracking(-1)
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(entry.data.textPrimaryColor)
 
                 Text("DAY FOCUS STREAK")
                     .font(.system(size: 9, weight: .semibold))
                     .tracking(1.5)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
 
@@ -120,7 +120,7 @@ struct MilestoneMomentumWidgetView: View {
                         .font(.system(size: 11, weight: .regular, design: .serif))
                         .italic()
                         .lineLimit(2)
-                        .foregroundStyle(Color.primary.opacity(0.85))
+                        .foregroundStyle(entry.data.textSecondaryColor)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -130,7 +130,7 @@ struct MilestoneMomentumWidgetView: View {
                 Text("THIS WEEK")
                     .font(.system(size: 9, weight: .heavy))
                     .tracking(2)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 // 7 columns of 3 intensity dots
                 HStack(spacing: 6) {
@@ -139,13 +139,13 @@ struct MilestoneMomentumWidgetView: View {
                         VStack(spacing: 3) {
                             ForEach(0..<3, id: \.self) { row in
                                 RoundedRectangle(cornerRadius: 2)
-                                    .fill(row < level ? Color.primary : Color.primary.opacity(0.12))
+                                    .fill(row < level ? entry.data.textPrimaryColor : entry.data.trackColor)
                                     .frame(width: 10, height: 10)
                             }
 
                             Text(dayLabels[col])
                                 .font(.system(size: 8, weight: .bold))
-                                .foregroundStyle(Color.secondary)
+                                .foregroundStyle(entry.data.textSecondaryColor)
                                 .padding(.top, 2)
                         }
                     }
@@ -155,12 +155,12 @@ struct MilestoneMomentumWidgetView: View {
             .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.primary.opacity(0.05))
+                    .fill(entry.data.surfaceColor)
             )
         }
         .padding(16)
         .containerBackground(for: .widget) {
-            Color(.systemBackground)
+            entry.data.backgroundColor
         }
     }
 }

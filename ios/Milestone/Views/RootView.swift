@@ -40,5 +40,11 @@ public struct RootView: View {
         .animation(.easeInOut(duration: 0.28), value: tokens.isDark)
         .environment(\.theme, tokens)
         .preferredColorScheme(themeStore.mode.colorScheme)
+        .onAppear {
+            themeStore.syncToWidget(systemScheme: colorScheme)
+        }
+        .onChange(of: colorScheme) { _, newScheme in
+            themeStore.syncToWidget(systemScheme: newScheme)
+        }
     }
 }

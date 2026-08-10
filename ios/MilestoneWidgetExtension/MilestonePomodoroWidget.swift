@@ -13,11 +13,11 @@ public struct TogglePomodoroWidgetIntent: AppIntent {
             let wasRunning = data.pomodoroIsRunning
             data.pomodoroIsRunning = !wasRunning
             if !wasRunning {
-                // Starting
+                // Starting focus session
                 let target = Date().addingTimeInterval(TimeInterval(data.pomodoroTimeRemaining))
                 data.pomodoroTargetEndTime = target.timeIntervalSince1970
             } else {
-                // Pausing
+                // Pausing focus session
                 if let target = data.pomodoroTargetEndTime {
                     let diff = max(0, Int(ceil(Date(timeIntervalSince1970: target).timeIntervalSinceNow)))
                     data.pomodoroTimeRemaining = diff
@@ -78,16 +78,23 @@ struct MilestonePomodoroWidgetView: View {
     let entry: PomodoroWidgetEntry
     @Environment(\.widgetFamily) var family
 
+    private var currentRemainingSeconds: Int {
+        if entry.data.pomodoroIsRunning, let target = entry.data.pomodoroTargetEndTime {
+            let diff = Int(ceil(Date(timeIntervalSince1970: target).timeIntervalSince(entry.date)))
+            return max(0, diff)
+        }
+        return entry.data.pomodoroTimeRemaining
+    }
+
     private var progressRatio: Double {
-        let total = entry.data.pomodoroTotalTime
-        guard total > 0 else { return 0 }
-        let remaining = entry.data.pomodoroTimeRemaining
+        let total = entry.data.pomodoroTotalTime > 0 ? entry.data.pomodoroTotalTime : 1500
+        let remaining = currentRemainingSeconds
         let elapsed = max(0, total - remaining)
         return min(1.0, max(0.0, Double(elapsed) / Double(total)))
     }
 
     private var formattedTime: String {
-        let seconds = entry.data.pomodoroTimeRemaining
+        let seconds = currentRemainingSeconds
         let m = seconds / 60
         let s = seconds % 60
         return String(format: "%02d:%02d", m, s)
@@ -114,134 +121,131 @@ struct MilestonePomodoroWidgetView: View {
         }
     }
 
-    // ── Small Widget ──
+    // ── Small Widget (Precision Hardware Ring) ──
     private var smallView: some View {
-        VStack(spacing: 8) {
-            // Header
+        VStack(spacing: 0) {
+            // Top Section Header
             HStack {
                 Text(phaseTitle.uppercased())
                     .font(.system(size: 9, weight: .heavy))
                     .tracking(2)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
 
                 Text("\(entry.data.pomodoroSession)/\(entry.data.pomodoroTotalSessions)")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
             }
+            .padding(.bottom, 6)
 
-            Spacer()
+            Spacer(minLength: 2)
 
-            // Circular Ring with Countdown
+            // Precision Ring (Fixed 74pt size for zero clipping)
             ZStack {
+                // Background Track
                 Circle()
-                    .stroke(Color.primary.opacity(0.12), lineWidth: 5)
-                    .frame(width: 68, height: 68)
+                    .stroke(entry.data.trackColor, lineWidth: 5.5)
+                    .frame(width: 74, height: 74)
 
+                // Active Progress Arc
                 Circle()
-                    .trim(from: 0, to: CGFloat(progressRatio))
+                    .trim(from: 0, to: CGFloat(max(0.01, progressRatio)))
                     .stroke(
-                        Color.primary,
-                        style: StrokeStyle(lineWidth: 5, lineCap: .round)
+                        entry.data.textPrimaryColor,
+                        style: StrokeStyle(lineWidth: 5.5, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
-                    .frame(width: 68, height: 68)
+                    .frame(width: 74, height: 74)
 
-                if entry.data.pomodoroIsRunning, let target = entry.data.pomodoroTargetEndTime {
-                    Text(timerInterval: Date()...Date(timeIntervalSince1970: target), countsDown: true)
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundStyle(Color.primary)
-                } else {
-                    Text(formattedTime)
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundStyle(Color.primary)
-                }
+                // Monospaced Centered Digits
+                Text(formattedTime)
+                    .font(.system(size: 15, weight: .bold, design: .monospaced))
+                    .foregroundStyle(entry.data.textPrimaryColor)
+                    .contentTransition(.numericText())
             }
+            .frame(width: 76, height: 76)
 
-            Spacer()
+            Spacer(minLength: 2)
 
-            // Interactive Start/Pause Button (iOS 17+)
+            // Tactile Interactive Start/Pause Button
             Button(intent: TogglePomodoroWidgetIntent()) {
-                HStack(spacing: 4) {
+                HStack(spacing: 5) {
                     Image(systemName: entry.data.pomodoroIsRunning ? "pause.fill" : "play.fill")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 9, weight: .heavy))
+
                     Text(entry.data.pomodoroIsRunning ? "PAUSE" : "START")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 10, weight: .heavy))
                         .tracking(1.5)
                 }
-                .foregroundStyle(entry.data.pomodoroIsRunning ? Color.primary : Color(.systemBackground))
+                .foregroundStyle(entry.data.isDarkMode ? Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0) : Color.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 28)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(entry.data.pomodoroIsRunning ? Color.primary.opacity(0.12) : Color.primary)
+                        .fill(entry.data.textPrimaryColor)
                 )
             }
             .buttonStyle(.plain)
         }
         .padding(14)
         .containerBackground(for: .widget) {
-            Color(.systemBackground)
+            entry.data.backgroundColor
         }
     }
 
-    // ── Medium Widget ──
+    // ── Medium Widget (Banner Layout) ──
     private var mediumView: some View {
         HStack(spacing: 20) {
-            // Left: Progress Ring
+            // Left: Large Precision Ring
             ZStack {
                 Circle()
-                    .stroke(Color.primary.opacity(0.12), lineWidth: 6)
-                    .frame(width: 88, height: 88)
+                    .stroke(entry.data.trackColor, lineWidth: 6.5)
+                    .frame(width: 90, height: 90)
 
                 Circle()
-                    .trim(from: 0, to: CGFloat(progressRatio))
+                    .trim(from: 0, to: CGFloat(max(0.01, progressRatio)))
                     .stroke(
-                        Color.primary,
-                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                        entry.data.textPrimaryColor,
+                        style: StrokeStyle(lineWidth: 6.5, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
-                    .frame(width: 88, height: 88)
+                    .frame(width: 90, height: 90)
 
-                if entry.data.pomodoroIsRunning, let target = entry.data.pomodoroTargetEndTime {
-                    Text(timerInterval: Date()...Date(timeIntervalSince1970: target), countsDown: true)
-                        .font(.system(size: 18, weight: .bold, design: .monospaced))
-                        .foregroundStyle(Color.primary)
-                } else {
-                    Text(formattedTime)
-                        .font(.system(size: 18, weight: .bold, design: .monospaced))
-                        .foregroundStyle(Color.primary)
-                }
+                Text(formattedTime)
+                    .font(.system(size: 18, weight: .bold, design: .monospaced))
+                    .foregroundStyle(entry.data.textPrimaryColor)
+                    .contentTransition(.numericText())
             }
+            .frame(width: 92, height: 92)
 
             // Right: Information and Controls
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text("POMODORO")
                     .font(.system(size: 9, weight: .heavy))
                     .tracking(2.5)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 Text(phaseTitle)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.primary)
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(entry.data.textPrimaryColor)
 
                 // Session Indicator Dots (4 dots)
                 HStack(spacing: 6) {
                     ForEach(1...entry.data.pomodoroTotalSessions, id: \.self) { s in
                         Circle()
-                            .fill(s <= entry.data.pomodoroSession ? Color.primary : Color.primary.opacity(0.18))
+                            .fill(s <= entry.data.pomodoroSession ? entry.data.textPrimaryColor : entry.data.trackColor)
                             .frame(width: 6, height: 6)
                     }
                     Text("Session \(entry.data.pomodoroSession) of \(entry.data.pomodoroTotalSessions)")
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(Color.secondary)
+                        .foregroundStyle(entry.data.textSecondaryColor)
                 }
-                .padding(.bottom, 2)
+                .padding(.bottom, 4)
 
                 Spacer()
 
-                // Interactive Action Buttons
+                // Dual Interactive Buttons
                 HStack(spacing: 8) {
                     Button(intent: TogglePomodoroWidgetIntent()) {
                         HStack(spacing: 4) {
@@ -251,24 +255,24 @@ struct MilestonePomodoroWidgetView: View {
                                 .font(.system(size: 10, weight: .bold))
                                 .tracking(1.5)
                         }
-                        .foregroundStyle(entry.data.pomodoroIsRunning ? Color.primary : Color(.systemBackground))
+                        .foregroundStyle(entry.data.isDarkMode ? Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0) : Color.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 32)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(entry.data.pomodoroIsRunning ? Color.primary.opacity(0.12) : Color.primary)
+                                .fill(entry.data.textPrimaryColor)
                         )
                     }
                     .buttonStyle(.plain)
 
                     Button(intent: ResetPomodoroWidgetIntent()) {
                         Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(Color.primary)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(entry.data.textPrimaryColor)
                             .frame(width: 32, height: 32)
                             .background(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.primary.opacity(0.08))
+                                    .fill(entry.data.surfaceColor)
                             )
                     }
                     .buttonStyle(.plain)
@@ -278,7 +282,7 @@ struct MilestonePomodoroWidgetView: View {
         }
         .padding(16)
         .containerBackground(for: .widget) {
-            Color(.systemBackground)
+            entry.data.backgroundColor
         }
     }
 

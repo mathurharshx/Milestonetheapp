@@ -71,14 +71,14 @@ struct MilestoneMissionWidgetView: View {
                 Text("MISSION")
                     .font(.system(size: 9, weight: .heavy))
                     .tracking(2.5)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
 
                 if entry.data.missionTodosTotal > 0 {
                     Text("\(entry.data.missionTodosDone)/\(entry.data.missionTodosTotal)")
                         .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(Color.secondary)
+                        .foregroundStyle(entry.data.textSecondaryColor)
                 }
             }
 
@@ -88,12 +88,12 @@ struct MilestoneMissionWidgetView: View {
             Text("\(daysRemaining)")
                 .font(.system(size: 42, weight: .bold))
                 .tracking(-1)
-                .foregroundStyle(Color.primary)
+                .foregroundStyle(entry.data.textPrimaryColor)
 
             Text("DAYS REMAINING")
                 .font(.system(size: 9, weight: .semibold))
                 .tracking(1.5)
-                .foregroundStyle(Color.secondary)
+                .foregroundStyle(entry.data.textSecondaryColor)
                 .padding(.bottom, 8)
 
             Spacer()
@@ -102,11 +102,11 @@ struct MilestoneMissionWidgetView: View {
             Text(entry.data.missionTitle ?? "Active Mission")
                 .font(.system(size: 13, weight: .semibold))
                 .lineLimit(1)
-                .foregroundStyle(Color.primary)
+                .foregroundStyle(entry.data.textPrimaryColor)
         }
         .padding(14)
         .containerBackground(for: .widget) {
-            Color(.systemBackground)
+            entry.data.backgroundColor
         }
     }
 
@@ -118,24 +118,24 @@ struct MilestoneMissionWidgetView: View {
                 Text("MISSION")
                     .font(.system(size: 9, weight: .heavy))
                     .tracking(2.5)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 Text("\(daysRemaining)")
                     .font(.system(size: 38, weight: .bold))
                     .tracking(-1)
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(entry.data.textPrimaryColor)
 
                 Text("DAYS REMAINING")
                     .font(.system(size: 9, weight: .semibold))
                     .tracking(1.5)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
 
                 Text(entry.data.missionTitle ?? "No active mission")
                     .font(.system(size: 13, weight: .semibold))
                     .lineLimit(1)
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(entry.data.textPrimaryColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -145,20 +145,20 @@ struct MilestoneMissionWidgetView: View {
                     Text("PRIORITY TASK")
                         .font(.system(size: 9, weight: .heavy))
                         .tracking(1.5)
-                        .foregroundStyle(Color.secondary)
+                        .foregroundStyle(entry.data.textSecondaryColor)
 
                     Spacer()
 
                     if entry.data.missionTodosTotal > 0 {
                         Text("\(entry.data.missionTodosDone)/\(entry.data.missionTodosTotal)")
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(Color.secondary)
+                            .foregroundStyle(entry.data.textSecondaryColor)
                     }
                 }
 
                 Text(entry.data.topPendingTaskText ?? (entry.data.missionTodosTotal > 0 ? "All tasks completed" : "No pending tasks"))
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(entry.data.textPrimaryColor)
                     .lineLimit(2)
                     .frame(maxHeight: .infinity, alignment: .topLeading)
 
@@ -166,11 +166,11 @@ struct MilestoneMissionWidgetView: View {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule()
-                            .fill(Color.primary.opacity(0.12))
+                            .fill(entry.data.trackColor)
                             .frame(height: 4)
 
                         Capsule()
-                            .fill(Color.primary)
+                            .fill(entry.data.textPrimaryColor)
                             .frame(width: geo.size.width * CGFloat(progressRatio), height: 4)
                     }
                 }
@@ -180,12 +180,12 @@ struct MilestoneMissionWidgetView: View {
             .frame(width: 148)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.primary.opacity(0.05))
+                    .fill(entry.data.surfaceColor)
             )
         }
         .padding(16)
         .containerBackground(for: .widget) {
-            Color(.systemBackground)
+            entry.data.backgroundColor
         }
     }
 

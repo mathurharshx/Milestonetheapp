@@ -68,13 +68,13 @@ struct MilestoneDotMatrixWidgetView: View {
                 Text("MATRIX")
                     .font(.system(size: 9, weight: .heavy))
                     .tracking(2.5)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
 
                 Text("\(daysRemaining)D")
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(entry.data.textPrimaryColor)
             }
             .padding(.bottom, 8)
 
@@ -85,7 +85,7 @@ struct MilestoneDotMatrixWidgetView: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 6), spacing: 4) {
                 ForEach(0..<sampleCount, id: \.self) { i in
                     Circle()
-                        .fill(i < elapsedSampled ? Color.primary.opacity(0.85) : (i == elapsedSampled ? Color.primary : Color.primary.opacity(0.12)))
+                        .fill(i < elapsedSampled ? entry.data.textPrimaryColor.opacity(0.85) : (i == elapsedSampled ? entry.data.textPrimaryColor : entry.data.trackColor))
                         .frame(width: 6, height: 6)
                 }
             }
@@ -96,11 +96,11 @@ struct MilestoneDotMatrixWidgetView: View {
             Text(entry.data.missionTitle ?? "Active Mission")
                 .font(.system(size: 12, weight: .medium))
                 .lineLimit(1)
-                .foregroundStyle(Color.primary)
+                .foregroundStyle(entry.data.textPrimaryColor)
         }
         .padding(14)
         .containerBackground(for: .widget) {
-            Color(.systemBackground)
+            entry.data.backgroundColor
         }
     }
 
@@ -112,24 +112,24 @@ struct MilestoneDotMatrixWidgetView: View {
                 Text("MILESTONE")
                     .font(.system(size: 9, weight: .heavy))
                     .tracking(2.5)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 Text("\(daysRemaining)")
                     .font(.system(size: 38, weight: .bold))
                     .tracking(-1)
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(entry.data.textPrimaryColor)
 
                 Text("DAYS LEFT")
                     .font(.system(size: 9, weight: .semibold))
                     .tracking(1.5)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
 
                 Text(entry.data.missionTitle ?? "No active mission")
                     .font(.system(size: 13, weight: .semibold))
                     .lineLimit(1)
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(entry.data.textPrimaryColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -140,7 +140,7 @@ struct MilestoneDotMatrixWidgetView: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 10), spacing: 4) {
                 ForEach(0..<sampleCount, id: \.self) { i in
                     Circle()
-                        .fill(i < elapsedSampled ? Color.primary.opacity(0.85) : (i == elapsedSampled ? Color.primary : Color.primary.opacity(0.12)))
+                        .fill(i < elapsedSampled ? entry.data.textPrimaryColor.opacity(0.85) : (i == elapsedSampled ? entry.data.textPrimaryColor : entry.data.trackColor))
                         .frame(width: 5.5, height: 5.5)
                 }
             }
@@ -148,7 +148,7 @@ struct MilestoneDotMatrixWidgetView: View {
         }
         .padding(16)
         .containerBackground(for: .widget) {
-            Color(.systemBackground)
+            entry.data.backgroundColor
         }
     }
 

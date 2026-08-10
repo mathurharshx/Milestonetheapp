@@ -1,7 +1,11 @@
 import Foundation
+import SwiftUI
 import WidgetKit
 
 public struct MilestoneWidgetData: Codable {
+    // ── Theme State (Default Dark Mode) ──
+    public var isDarkMode: Bool
+
     // ── Pomodoro state ──
     public var pomodoroPhase: String        // "focus" | "shortBreak" | "longBreak"
     public var pomodoroTimeRemaining: Int   // seconds
@@ -30,6 +34,7 @@ public struct MilestoneWidgetData: Codable {
     public var lastUpdated: Double          // Unix timestamp (seconds)
 
     public init(
+        isDarkMode: Bool = true,
         pomodoroPhase: String = "focus",
         pomodoroTimeRemaining: Int = 1500,
         pomodoroTotalTime: Int = 1500,
@@ -50,6 +55,7 @@ public struct MilestoneWidgetData: Codable {
         quoteAuthor: String? = "Marcus Aurelius",
         lastUpdated: Double = Date().timeIntervalSince1970
     ) {
+        self.isDarkMode = isDarkMode
         self.pomodoroPhase = pomodoroPhase
         self.pomodoroTimeRemaining = pomodoroTimeRemaining
         self.pomodoroTotalTime = pomodoroTotalTime
@@ -69,6 +75,33 @@ public struct MilestoneWidgetData: Codable {
         self.quoteText = quoteText
         self.quoteAuthor = quoteAuthor
         self.lastUpdated = lastUpdated
+    }
+}
+
+// ── Shared Color Palette Helper for Widgets ──
+extension MilestoneWidgetData {
+    public var backgroundColor: Color {
+        isDarkMode ? Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0) : Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0)
+    }
+
+    public var surfaceColor: Color {
+        isDarkMode ? Color(red: 0x2A/255.0, green: 0x2A/255.0, blue: 0x2A/255.0) : Color(red: 0xE5/255.0, green: 0xE5/255.0, blue: 0xEA/255.0)
+    }
+
+    public var textPrimaryColor: Color {
+        isDarkMode ? Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0) : Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0)
+    }
+
+    public var textSecondaryColor: Color {
+        textPrimaryColor.opacity(0.60)
+    }
+
+    public var textTertiaryColor: Color {
+        textPrimaryColor.opacity(0.35)
+    }
+
+    public var trackColor: Color {
+        isDarkMode ? Color(red: 0x33/255.0, green: 0x33/255.0, blue: 0x33/255.0) : Color(red: 0xD1/255.0, green: 0xD1/255.0, blue: 0xD6/255.0)
     }
 }
 
