@@ -49,18 +49,21 @@ struct MilestoneMissionWidgetView: View {
     }
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            smallView
-        case .systemMedium:
-            mediumView
-        case .accessoryCircular:
-            accessoryCircularView
-        case .accessoryInline:
-            accessoryInlineView
-        default:
-            smallView
+        Group {
+            switch family {
+            case .systemSmall:
+                smallView
+            case .systemMedium:
+                mediumView
+            case .accessoryCircular:
+                accessoryCircularView
+            case .accessoryInline:
+                accessoryInlineView
+            default:
+                smallView
+            }
         }
+        .widgetURL(URL(string: "milestone://mission"))
     }
 
     // ── Small Widget ──

@@ -1,18 +1,20 @@
 import SwiftUI
 
 public struct MainTabView: View {
-    @State private var selectedTab: TabItem = .mission
+    @Environment(UserStore.self) private var userStore
     @Environment(\.theme) private var theme
 
     public init() {}
 
     public var body: some View {
-        TabView(selection: $selectedTab) {
+        @Bindable var store = userStore
+
+        TabView(selection: $store.selectedTab) {
             // Tab 1: Mission
             NavigationStack {
                 MissionTabView(onNavigateToArchive: {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                        selectedTab = .archive
+                        userStore.selectedTab = .archive
                     }
                 })
                 .toolbarBackground(theme.background, for: .navigationBar)

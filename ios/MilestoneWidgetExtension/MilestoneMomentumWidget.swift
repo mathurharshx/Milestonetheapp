@@ -31,14 +31,17 @@ struct MilestoneMomentumWidgetView: View {
     private let dayLabels = ["M", "T", "W", "T", "F", "S", "S"]
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            smallView
-        case .systemMedium:
-            mediumView
-        default:
-            smallView
+        Group {
+            switch family {
+            case .systemSmall:
+                smallView
+            case .systemMedium:
+                mediumView
+            default:
+                smallView
+            }
         }
+        .widgetURL(URL(string: "milestone://archive"))
     }
 
     // ── Small Widget ──

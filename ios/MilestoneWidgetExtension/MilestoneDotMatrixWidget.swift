@@ -48,16 +48,19 @@ struct MilestoneDotMatrixWidgetView: View {
     }
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            smallView
-        case .systemMedium:
-            mediumView
-        case .accessoryRectangular:
-            accessoryRectangularView
-        default:
-            smallView
+        Group {
+            switch family {
+            case .systemSmall:
+                smallView
+            case .systemMedium:
+                mediumView
+            case .accessoryRectangular:
+                accessoryRectangularView
+            default:
+                smallView
+            }
         }
+        .widgetURL(URL(string: "milestone://mission"))
     }
 
     // ── Small Widget (2x2 Matrix) ──

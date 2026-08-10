@@ -22,6 +22,24 @@ public final class UserStore {
         }
     }
 
+    // ── Active Navigation Tab ──
+    public var selectedTab: TabItem = .mission
+
+    public func handleDeepLink(url: URL) {
+        let str = url.absoluteString.lowercased()
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+            if str.contains("pomodoro") {
+                selectedTab = .pomodoro
+            } else if str.contains("mission") {
+                selectedTab = .mission
+            } else if str.contains("archive") {
+                selectedTab = .archive
+            } else if str.contains("settings") {
+                selectedTab = .settings
+            }
+        }
+    }
+
     // ── Customizable Pomodoro Durations (Minutes) ──
     public var focusDurationMinutes: Int {
         didSet {

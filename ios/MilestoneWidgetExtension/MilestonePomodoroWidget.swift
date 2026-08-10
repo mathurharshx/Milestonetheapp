@@ -118,16 +118,19 @@ struct MilestonePomodoroWidgetView: View {
     }
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            smallView
-        case .systemMedium:
-            mediumView
-        case .accessoryCircular:
-            accessoryCircularView
-        default:
-            smallView
+        Group {
+            switch family {
+            case .systemSmall:
+                smallView
+            case .systemMedium:
+                mediumView
+            case .accessoryCircular:
+                accessoryCircularView
+            default:
+                smallView
+            }
         }
+        .widgetURL(URL(string: "milestone://pomodoro"))
     }
 
     // ── Small Widget (Live Hardware Ring) ──

@@ -56,5 +56,10 @@ public struct RootView: View {
                 pomodoroStore.syncFromWidget()
             }
         }
+        .onOpenURL { url in
+            showSplash = false
+            pomodoroStore.syncFromWidget()
+            userStore.handleDeepLink(url: url)
+        }
     }
 }
