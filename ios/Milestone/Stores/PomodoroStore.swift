@@ -201,14 +201,15 @@ public final class PomodoroStore {
     private func scheduleNotificationsIfEnabled() {
         let notificationsEnabled = UserDefaults.standard.object(forKey: "milestone:timerNotificationsEnabled") as? Bool ?? true
         if notificationsEnabled {
-            NotificationManager.shared.schedulePomodoroCycle(
+            let (nextPhase, _) = getNextPhase(current: phase, session: currentSession)
+            let nextDuration = durationForPhase(nextPhase)
+            NotificationManager.shared.schedulePomodoroNotification(
                 currentPhase: phase,
+                remainingSeconds: timeRemaining,
+                nextPhase: nextPhase,
+                nextPhaseDuration: nextDuration,
                 currentSession: currentSession,
-                totalSessions: totalSessions,
-                remainingInCurrentPhase: timeRemaining,
-                focusDuration: durationForPhase(.focus),
-                shortBreakDuration: durationForPhase(.shortBreak),
-                longBreakDuration: durationForPhase(.longBreak)
+                totalSessions: totalSessions
             )
         }
     }
