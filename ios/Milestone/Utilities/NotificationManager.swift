@@ -1,7 +1,6 @@
 import Foundation
 import UserNotifications
 
-@MainActor
 public final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     public static let shared = NotificationManager()
 
@@ -46,7 +45,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         return settings.authorizationStatus
     }
 
-    // ── Pomodoro Notifications (Multi-Phase Pre-Scheduled Lock Screen Notifications) ──
+    // ── Non-Blocking Asynchronous Background Schedule ──
     public func schedulePomodoroCycle(
         currentPhase: PomodoroPhase,
         currentSession: Int,
@@ -56,128 +55,142 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         shortBreakDuration: Int,
         longBreakDuration: Int
     ) {
-        cancelPomodoroNotifications()
+        Task.detached(priority: .utility) { [weak self] in
+            guard let self = self else { return }
+            self.cancelPomodoroNotificationsInternal()
 
-        var cumulativeOffset = 0
-        var phase = currentPhase
-        var session = currentSession
+            var cumulativeOffset = 0
+            var phase = currentPhase
+            var session = currentSession
 
-        // Pre-schedule upcoming notifications (up to 8 phase transitions)
-        for i in 0..<8 {
-            let durationForThisPhase: Int
-            if i == 0 {
-                durationForThisPhase = remainingInCurrentPhase
-            } else {
+            for i in 0..<8 {
+                let durationForThisPhase: Int
+                if i == 0 {
+                    durationForThisPhase = remainingInCurrentPhase
+                } else {
+                    switch phase {
+                    case .focus: durationForThisPhase = focusDuration
+                    case .shortBreak: durationForThisPhase = shortBreakDuration
+                    case .longBreak: durationForThisPhase = longBreakDuration
+                    }
+                }
+
+                cumulativeOffset += max(1, durationForThisPhase)
+
+                let nextPhase: PomodoroPhase
+                let nextSession: Int
+                if phase == .focus {
+                    if session >= totalSessions {
+                        nextPhase = .longBreak
+                        nextSession = session
+                    } else {
+                        nextPhase = .shortBreak
+                        nextSession = session
+                    }
+                } else if phase == .shortBreak {
+                    nextPhase = .focus
+                    nextSession = session + 1
+                } else {
+                    nextPhase = .focus
+                    nextSession = 1
+                }
+
+                let content = UNMutableNotificationContent()
+                content.sound = .default
+                content.interruptionLevel = .timeSensitive
+
                 switch phase {
-                case .focus: durationForThisPhase = focusDuration
-                case .shortBreak: durationForThisPhase = shortBreakDuration
-                case .longBreak: durationForThisPhase = longBreakDuration
+                case .focus:
+                    content.title = "Focus Session \(session) Complete"
+                    if nextPhase == .longBreak {
+                        content.body = "Great work! Time for your long break."
+                    } else {
+                        content.body = "Time for your short break."
+                    }
+                case .shortBreak:
+                    content.title = "Break Complete"
+                    content.body = "Ready for Focus Session \(nextSession) of \(totalSessions)."
+                case .longBreak:
+                    content.title = "Long Break Complete"
+                    content.body = "Cycle completed! Ready to start a new focus cycle."
                 }
-            }
 
-            cumulativeOffset += max(1, durationForThisPhase)
+                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(cumulativeOffset), repeats: false)
+                let identifier = "milestone.notification.pomodoro.\(i)"
+                let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
 
-            // Compute next phase after this phase finishes
-            let nextPhase: PomodoroPhase
-            let nextSession: Int
-            if phase == .focus {
-                if session >= totalSessions {
-                    nextPhase = .longBreak
-                    nextSession = session
-                } else {
-                    nextPhase = .shortBreak
-                    nextSession = session
+                self.center.add(request) { error in
+                    if let error = error {
+                        print("Failed to schedule notification \(i): \(error.localizedDescription)")
+                    }
                 }
-            } else if phase == .shortBreak {
-                nextPhase = .focus
-                nextSession = session + 1
-            } else {
-                nextPhase = .focus
-                nextSession = 1
+
+                phase = nextPhase
+                session = nextSession
             }
-
-            let content = UNMutableNotificationContent()
-            content.sound = .default
-            content.interruptionLevel = .timeSensitive // Ensures Lock Screen delivery even during Focus mode
-
-            switch phase {
-            case .focus:
-                content.title = "Focus Session \(session) Complete"
-                if nextPhase == .longBreak {
-                    content.body = "Great work! Time for your long break."
-                } else {
-                    content.body = "Time for your short break."
-                }
-            case .shortBreak:
-                content.title = "Break Complete"
-                content.body = "Ready for Focus Session \(nextSession) of \(totalSessions)."
-            case .longBreak:
-                content.title = "Long Break Complete"
-                content.body = "Cycle completed! Ready to start a new focus cycle."
-            }
-
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(cumulativeOffset), repeats: false)
-            let identifier = "milestone.notification.pomodoro.\(i)"
-            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-
-            center.add(request) { error in
-                if let error = error {
-                    print("Failed to schedule pomodoro notification \(i): \(error.localizedDescription)")
-                }
-            }
-
-            // Advance local state for next iteration
-            phase = nextPhase
-            session = nextSession
         }
     }
 
     public func cancelPomodoroNotifications() {
+        Task.detached(priority: .utility) { [weak self] in
+            self?.cancelPomodoroNotificationsInternal()
+        }
+    }
+
+    private func cancelPomodoroNotificationsInternal() {
         let ids = (0..<12).map { "milestone.notification.pomodoro.\($0)" } + [pomodoroIdentifier]
         center.removePendingNotificationRequests(withIdentifiers: ids)
         center.removeDeliveredNotifications(withIdentifiers: ids)
     }
 
-    // ── Daily Morning Accountability Notification (Clean, Minimal, No Emojis) ──
     public func scheduleDailyMorningReminder(mission: Mission?, hour: Int = 9, minute: Int = 0) {
-        cancelDailyMorningReminder()
+        Task.detached(priority: .utility) { [weak self] in
+            guard let self = self else { return }
+            self.cancelDailyMorningReminderInternal()
 
-        guard let mission = mission, mission.isActive else { return }
+            guard let mission = mission, mission.isActive else { return }
 
-        let content = UNMutableNotificationContent()
-        content.title = "Daily Mission Update"
-        content.sound = .default
+            let content = UNMutableNotificationContent()
+            content.title = "Daily Mission Update"
+            content.sound = .default
 
-        let daysRemaining = DateCalculations.getDaysRemaining(targetDate: mission.targetDate)
-        let pendingTasks = mission.todos.filter { !$0.done }.count
+            let daysRemaining = DateCalculations.getDaysRemaining(targetDate: mission.targetDate)
+            let pendingTasks = mission.todos.filter { !$0.done }.count
 
-        if daysRemaining == 0 {
-            content.body = "Today is the target date for '\(mission.title)'."
-        } else if daysRemaining == 1 {
-            content.body = "1 day remaining for '\(mission.title)'."
-        } else {
-            content.body = "\(daysRemaining) days remaining for '\(mission.title)'."
-        }
+            if daysRemaining == 0 {
+                content.body = "Today is the target date for '\(mission.title)'."
+            } else if daysRemaining == 1 {
+                content.body = "1 day remaining for '\(mission.title)'."
+            } else {
+                content.body = "\(daysRemaining) days remaining for '\(mission.title)'."
+            }
 
-        if pendingTasks > 0 {
-            content.body += " \(pendingTasks) task\(pendingTasks == 1 ? "" : "s") pending."
-        }
+            if pendingTasks > 0 {
+                content.body += " \(pendingTasks) task\(pendingTasks == 1 ? "" : "s") pending."
+            }
 
-        var dateComponents = DateComponents()
-        dateComponents.hour = hour
-        dateComponents.minute = minute
+            var dateComponents = DateComponents()
+            dateComponents.hour = hour
+            dateComponents.minute = minute
 
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-        let request = UNNotificationRequest(identifier: morningIdentifier, content: content, trigger: trigger)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+            let request = UNNotificationRequest(identifier: self.morningIdentifier, content: content, trigger: trigger)
 
-        center.add(request) { error in
-            if let error = error {
-                print("Failed to schedule morning reminder: \(error.localizedDescription)")
+            self.center.add(request) { error in
+                if let error = error {
+                    print("Failed to schedule morning reminder: \(error.localizedDescription)")
+                }
             }
         }
     }
 
     public func cancelDailyMorningReminder() {
+        Task.detached(priority: .utility) { [weak self] in
+            self?.cancelDailyMorningReminderInternal()
+        }
+    }
+
+    private func cancelDailyMorningReminderInternal() {
         center.removePendingNotificationRequests(withIdentifiers: [morningIdentifier])
     }
 }

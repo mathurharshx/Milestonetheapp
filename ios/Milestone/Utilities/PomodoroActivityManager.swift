@@ -19,11 +19,7 @@ public final class PomodoroActivityManager {
     ) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
 
-        // End any existing activities first
-        endActivity()
-
-        let attributes = PomodoroActivityAttributes()
-        let initialContentState = PomodoroActivityAttributes.ContentState(
+        let state = PomodoroActivityAttributes.ContentState(
             phase: phase,
             currentSession: currentSession,
             totalSessions: totalSessions,
@@ -34,10 +30,29 @@ public final class PomodoroActivityManager {
             timeRemainingWhenPaused: 0
         )
 
+        // If an active activity already exists for this app, update it instead of destroying/re-requesting
+        if let existing = currentActivity, existing.activityState == .active {
+            Task {
+                await existing.update(.init(state: state, staleDate: targetEndTime.addingTimeInterval(60)))
+            }
+            return
+        }
+
+        // Clean up any stale orphaned activities from previous app runs without resetting currentActivity
+        let activeActivities = Activity<PomodoroActivityAttributes>.activities.filter { $0.activityState == .active }
+        if let existingActive = activeActivities.first {
+            self.currentActivity = existingActive
+            Task {
+                await existingActive.update(.init(state: state, staleDate: targetEndTime.addingTimeInterval(60)))
+            }
+            return
+        }
+
+        let attributes = PomodoroActivityAttributes()
         do {
             let activity = try Activity.request(
                 attributes: attributes,
-                content: .init(state: initialContentState, staleDate: targetEndTime.addingTimeInterval(60)),
+                content: .init(state: state, staleDate: targetEndTime.addingTimeInterval(60)),
                 pushType: nil
             )
             self.currentActivity = activity
@@ -56,21 +71,9 @@ public final class PomodoroActivityManager {
         totalDuration: Double,
         timeRemainingWhenPaused: Int = 0
     ) {
-        guard let activity = currentActivity else {
-            if isRunning {
-                startActivity(
-                    phase: phase,
-                    currentSession: currentSession,
-                    totalSessions: totalSessions,
-                    startDate: startDate,
-                    targetEndTime: targetEndTime,
-                    totalDuration: totalDuration
-                )
-            }
-            return
-        }
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
 
-        let updatedContentState = PomodoroActivityAttributes.ContentState(
+        let state = PomodoroActivityAttributes.ContentState(
             phase: phase,
             currentSession: currentSession,
             totalSessions: totalSessions,
@@ -81,26 +84,34 @@ public final class PomodoroActivityManager {
             timeRemainingWhenPaused: timeRemainingWhenPaused
         )
 
-        Task {
-            await activity.update(
-                .init(state: updatedContentState, staleDate: targetEndTime.addingTimeInterval(60))
+        if let activity = currentActivity, activity.activityState == .active {
+            Task {
+                await activity.update(.init(state: state, staleDate: targetEndTime.addingTimeInterval(60)))
+            }
+        } else if isRunning {
+            startActivity(
+                phase: phase,
+                currentSession: currentSession,
+                totalSessions: totalSessions,
+                startDate: startDate,
+                targetEndTime: targetEndTime,
+                totalDuration: totalDuration
             )
         }
     }
 
     public func endActivity() {
-        guard let activity = currentActivity else {
-            for act in Activity<PomodoroActivityAttributes>.activities {
-                Task {
-                    await act.end(nil, dismissalPolicy: .immediate)
-                }
+        if let activity = currentActivity {
+            Task {
+                await activity.end(nil, dismissalPolicy: .immediate)
             }
-            return
+            self.currentActivity = nil
         }
 
-        Task {
-            await activity.end(nil, dismissalPolicy: .immediate)
+        for act in Activity<PomodoroActivityAttributes>.activities {
+            Task {
+                await act.end(nil, dismissalPolicy: .immediate)
+            }
         }
-        self.currentActivity = nil
     }
 }
