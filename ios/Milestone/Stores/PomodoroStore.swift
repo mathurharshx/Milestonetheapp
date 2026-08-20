@@ -93,15 +93,8 @@ public final class PomodoroStore {
             totalDuration: Double(totalTime)
         )
 
-        // 2. Schedule Clean Background Local Notification
-        let notificationsEnabled = UserDefaults.standard.object(forKey: "milestone:timerNotificationsEnabled") as? Bool ?? true
-        if notificationsEnabled {
-            NotificationManager.shared.schedulePomodoroNotification(
-                phase: phase,
-                seconds: timeRemaining,
-                nextPhaseLabel: nextPhaseLabel
-            )
-        }
+        // 2. Schedule Pre-Calculated Multi-Phase Cycle Notifications for Lock Screen
+        scheduleNotificationsIfEnabled()
     }
 
     public func pause() {
@@ -201,13 +194,21 @@ public final class PomodoroStore {
             totalDuration: Double(totalTime)
         )
 
-        // 2. Background Notification for new phase
+        // 2. Schedule Pre-Calculated Multi-Phase Cycle Notifications for Lock Screen
+        scheduleNotificationsIfEnabled()
+    }
+
+    private func scheduleNotificationsIfEnabled() {
         let notificationsEnabled = UserDefaults.standard.object(forKey: "milestone:timerNotificationsEnabled") as? Bool ?? true
         if notificationsEnabled {
-            NotificationManager.shared.schedulePomodoroNotification(
-                phase: phase,
-                seconds: timeRemaining,
-                nextPhaseLabel: nextPhaseLabel
+            NotificationManager.shared.schedulePomodoroCycle(
+                currentPhase: phase,
+                currentSession: currentSession,
+                totalSessions: totalSessions,
+                remainingInCurrentPhase: timeRemaining,
+                focusDuration: durationForPhase(.focus),
+                shortBreakDuration: durationForPhase(.shortBreak),
+                longBreakDuration: durationForPhase(.longBreak)
             )
         }
     }

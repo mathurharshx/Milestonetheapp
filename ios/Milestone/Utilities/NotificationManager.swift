@@ -46,42 +46,96 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         return settings.authorizationStatus
     }
 
-    // ── Pomodoro Notifications (Time Sensitive, Crisp & Lock Screen Ready) ──
-    public func schedulePomodoroNotification(phase: PomodoroPhase, seconds: Int, nextPhaseLabel: String) {
-        guard seconds > 0 else { return }
-
-        // Cancel any pending timer notification first
+    // ── Pomodoro Notifications (Multi-Phase Pre-Scheduled Lock Screen Notifications) ──
+    public func schedulePomodoroCycle(
+        currentPhase: PomodoroPhase,
+        currentSession: Int,
+        totalSessions: Int,
+        remainingInCurrentPhase: Int,
+        focusDuration: Int,
+        shortBreakDuration: Int,
+        longBreakDuration: Int
+    ) {
         cancelPomodoroNotifications()
 
-        let content = UNMutableNotificationContent()
-        content.sound = .default
-        content.interruptionLevel = .timeSensitive // Time sensitive for Lock Screen delivery
+        var cumulativeOffset = 0
+        var phase = currentPhase
+        var session = currentSession
 
-        switch phase {
-        case .focus:
-            content.title = "Focus Session Complete"
-            content.body = "Time for your \(nextPhaseLabel.lowercased())."
-        case .shortBreak:
-            content.title = "Break Complete"
-            content.body = "Ready to start your next focus session."
-        case .longBreak:
-            content.title = "Extended Break Complete"
-            content.body = "Ready to begin a new focus cycle."
-        }
-
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(seconds), repeats: false)
-        let request = UNNotificationRequest(identifier: pomodoroIdentifier, content: content, trigger: trigger)
-
-        center.add(request) { error in
-            if let error = error {
-                print("Failed to schedule pomodoro notification: \(error.localizedDescription)")
+        // Pre-schedule upcoming notifications (up to 8 phase transitions)
+        for i in 0..<8 {
+            let durationForThisPhase: Int
+            if i == 0 {
+                durationForThisPhase = remainingInCurrentPhase
+            } else {
+                switch phase {
+                case .focus: durationForThisPhase = focusDuration
+                case .shortBreak: durationForThisPhase = shortBreakDuration
+                case .longBreak: durationForThisPhase = longBreakDuration
+                }
             }
+
+            cumulativeOffset += max(1, durationForThisPhase)
+
+            // Compute next phase after this phase finishes
+            let nextPhase: PomodoroPhase
+            let nextSession: Int
+            if phase == .focus {
+                if session >= totalSessions {
+                    nextPhase = .longBreak
+                    nextSession = session
+                } else {
+                    nextPhase = .shortBreak
+                    nextSession = session
+                }
+            } else if phase == .shortBreak {
+                nextPhase = .focus
+                nextSession = session + 1
+            } else {
+                nextPhase = .focus
+                nextSession = 1
+            }
+
+            let content = UNMutableNotificationContent()
+            content.sound = .default
+            content.interruptionLevel = .timeSensitive // Ensures Lock Screen delivery even during Focus mode
+
+            switch phase {
+            case .focus:
+                content.title = "Focus Session \(session) Complete"
+                if nextPhase == .longBreak {
+                    content.body = "Great work! Time for your long break."
+                } else {
+                    content.body = "Time for your short break."
+                }
+            case .shortBreak:
+                content.title = "Break Complete"
+                content.body = "Ready for Focus Session \(nextSession) of \(totalSessions)."
+            case .longBreak:
+                content.title = "Long Break Complete"
+                content.body = "Cycle completed! Ready to start a new focus cycle."
+            }
+
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(cumulativeOffset), repeats: false)
+            let identifier = "milestone.notification.pomodoro.\(i)"
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+
+            center.add(request) { error in
+                if let error = error {
+                    print("Failed to schedule pomodoro notification \(i): \(error.localizedDescription)")
+                }
+            }
+
+            // Advance local state for next iteration
+            phase = nextPhase
+            session = nextSession
         }
     }
 
     public func cancelPomodoroNotifications() {
-        center.removePendingNotificationRequests(withIdentifiers: [pomodoroIdentifier])
-        center.removeDeliveredNotifications(withIdentifiers: [pomodoroIdentifier])
+        let ids = (0..<12).map { "milestone.notification.pomodoro.\($0)" } + [pomodoroIdentifier]
+        center.removePendingNotificationRequests(withIdentifiers: ids)
+        center.removeDeliveredNotifications(withIdentifiers: ids)
     }
 
     // ── Daily Morning Accountability Notification (Clean, Minimal, No Emojis) ──
