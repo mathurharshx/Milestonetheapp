@@ -27,7 +27,7 @@ public struct MissionTabView: View {
                     )
 
                     ScrollView {
-                        VStack(spacing: 24) {
+                        VStack(spacing: 28) {
                             // Top Brand
                             HStack {
                                 Text("MILESTONE")
@@ -38,13 +38,13 @@ public struct MissionTabView: View {
 
                                 Spacer()
                             }
-                            .padding(.top, 16)
+                            .padding(.top, 24)
 
                             // Mission Title & Note
                             VStack(spacing: 8) {
                                 Text(mission.title)
-                                    .font(.system(size: 28, weight: .medium))
-                                    .tracking(-0.5)
+                                    .font(.system(size: 32, weight: .medium))
+                                    .tracking(-0.6)
                                     .foregroundStyle(theme.textPrimary)
                                     .multilineTextAlignment(.center)
 
@@ -118,8 +118,8 @@ public struct MissionTabView: View {
                                     y: 4
                                 )
                             }
-                            .padding(.top, 32)
-                            .padding(.bottom, 24)
+                            .padding(.top, 24)
+                            .padding(.bottom, 48)
                         }
                         .padding(.horizontal, 24)
                     }
