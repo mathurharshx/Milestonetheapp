@@ -14,6 +14,7 @@ public struct CreateMissionSheet: View {
         return Calendar.current.date(from: comps) ?? Date().addingTimeInterval(86400)
     }()
     @State private var hasTime: Bool = false
+    @State private var isDatePickerExpanded: Bool = false
     @State private var todos: [TodoTask] = []
     @State private var todoInput: String = ""
     @State private var showAlert: Bool = false
@@ -24,6 +25,16 @@ public struct CreateMissionSheet: View {
 
     private var isReady: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var formattedDateString: String {
+        let formatter = DateFormatter()
+        if hasTime {
+            formatter.dateFormat = "EEEE, d MMM yyyy 'at' h:mm a"
+        } else {
+            formatter.dateFormat = "EEEE, d MMM yyyy"
+        }
+        return formatter.string(from: targetDate)
     }
 
     public var body: some View {
@@ -71,8 +82,8 @@ public struct CreateMissionSheet: View {
                             )
                     }
 
-                    // Native Apple Graphical Calendar & Time Picker (Reminders / Clock Style)
-                    VStack(alignment: .leading, spacing: 12) {
+                    // Target Date & Time (Tap to Open Apple Wheel Slider Picker)
+                    VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             Text("TARGET DATE & TIME")
                                 .font(.system(size: 11, weight: .bold))
@@ -105,24 +116,82 @@ public struct CreateMissionSheet: View {
                             }
                         }
 
-                        DatePicker(
-                            "",
-                            selection: $targetDate,
-                            in: Date()...,
-                            displayedComponents: hasTime ? [.date, .hourAndMinute] : [.date]
-                        )
-                        .datePickerStyle(.graphical)
-                        .tint(theme.accent)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(theme.surfaceLight.opacity(0.4))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(theme.border.opacity(0.5), lineWidth: 1)
-                        )
+                        // Compact Clickable Pill Card
+                        Button {
+                            HapticsManager.shared.impact(.light)
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                isDatePickerExpanded.toggle()
+                            }
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "calendar")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundStyle(theme.accent)
+
+                                Text(formattedDateString)
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundStyle(theme.textPrimary)
+
+                                Spacer()
+
+                                Image(systemName: isDatePickerExpanded ? "chevron.up" : "chevron.down")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(theme.textTertiary)
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(theme.surfaceLight.opacity(0.6))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .stroke(isDatePickerExpanded ? theme.accent : theme.border.opacity(0.6), lineWidth: isDatePickerExpanded ? 1.5 : 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        // Collapsible Apple Wheel Slider Picker (Clock & Alarm Style)
+                        if isDatePickerExpanded {
+                            VStack(spacing: 0) {
+                                DatePicker(
+                                    "",
+                                    selection: $targetDate,
+                                    in: Date()...,
+                                    displayedComponents: hasTime ? [.date, .hourAndMinute] : [.date]
+                                )
+                                .datePickerStyle(.wheel)
+                                .labelsHidden()
+                                .tint(theme.accent)
+                                .frame(maxWidth: .infinity)
+
+                                Button {
+                                    HapticsManager.shared.impact(.light)
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        isDatePickerExpanded = false
+                                    }
+                                } label: {
+                                    Text("DONE")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .tracking(2)
+                                        .foregroundStyle(theme.accent)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
+                                }
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.top, 4)
+                            .padding(.bottom, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(theme.surfaceLight.opacity(0.4))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(theme.border.opacity(0.5), lineWidth: 1)
+                            )
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
                     }
 
                     // Tasks Checklist (Optional)
