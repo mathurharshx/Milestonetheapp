@@ -19,8 +19,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        // When app is in foreground, suppress system notifications completely.
-        // Inbuilt custom audio & haptics handle foreground feedback.
+        // When app is open in foreground, suppress notification banner/sound since built-in audio handles it
         completionHandler([])
     }
 
@@ -47,7 +46,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         return settings.authorizationStatus
     }
 
-    // ── Ultra-Clean 2-Step Pomodoro Notifications (Current + Next Phase Only) ──
+    // ── Permanent Lock Screen Notifications (Never Disappear) ──
     public func schedulePomodoroNotification(
         currentPhase: PomodoroPhase,
         remainingSeconds: Int,
@@ -58,11 +57,13 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
     ) {
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
-            self.cancelPomodoroNotificationsInternal()
+            self.cancelPendingPomodoroRequestsInternal()
 
             guard remainingSeconds > 0 else { return }
 
-            // 1. Current Phase End Notification
+            let timestamp = Int(Date().timeIntervalSince1970)
+
+            // 1. Current Phase End Notification (Unique ID so it stays permanently on Lock Screen)
             let content1 = UNMutableNotificationContent()
             content1.sound = .default
             content1.interruptionLevel = .timeSensitive
@@ -80,7 +81,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
             }
 
             let trigger1 = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(remainingSeconds), repeats: false)
-            let req1 = UNNotificationRequest(identifier: "milestone.notification.pomodoro.current", content: content1, trigger: trigger1)
+            let req1 = UNNotificationRequest(identifier: "milestone.notification.pomodoro.\(timestamp).current", content: content1, trigger: trigger1)
             self.center.add(req1)
 
             // 2. Pre-Scheduled Next Phase Backup Notification
@@ -102,7 +103,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
                 }
 
                 let trigger2 = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(remainingSeconds + nextPhaseDuration), repeats: false)
-                let req2 = UNNotificationRequest(identifier: "milestone.notification.pomodoro.next", content: content2, trigger: trigger2)
+                let req2 = UNNotificationRequest(identifier: "milestone.notification.pomodoro.\(timestamp).next", content: content2, trigger: trigger2)
                 self.center.add(req2)
             }
         }
@@ -110,14 +111,17 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
 
     public func cancelPomodoroNotifications() {
         Task.detached(priority: .utility) { [weak self] in
-            self?.cancelPomodoroNotificationsInternal()
+            self?.cancelPendingPomodoroRequestsInternal()
         }
     }
 
-    private func cancelPomodoroNotificationsInternal() {
-        let ids = ["milestone.notification.pomodoro.current", "milestone.notification.pomodoro.next", pomodoroIdentifier]
-        center.removePendingNotificationRequests(withIdentifiers: ids)
-        center.removeDeliveredNotifications(withIdentifiers: ids)
+    private func cancelPendingPomodoroRequestsInternal() {
+        center.getPendingNotificationRequests { [weak self] requests in
+            let pendingIds = requests
+                .map { $0.identifier }
+                .filter { $0.hasPrefix("milestone.notification.pomodoro.") }
+            self?.center.removePendingNotificationRequests(withIdentifiers: pendingIds)
+        }
     }
 
     // ── Daily Morning Accountability Notification ──
