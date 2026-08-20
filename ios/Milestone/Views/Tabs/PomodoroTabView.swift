@@ -96,6 +96,7 @@ public struct PomodoroTabView: View {
                     if !pomodoroStore.isRunning {
                         Button {
                             HapticsManager.shared.impact(.medium)
+                            AudioManager.shared.play(.pomodoroStart)
                             pomodoroStore.start()
                         } label: {
                             Text(pomodoroStore.isStarted ? "RESUME" : "START")
@@ -181,8 +182,10 @@ public struct PomodoroTabView: View {
     private func triggerPhaseFlash() {
         if pomodoroStore.phase == .focus {
             flashColor = theme.accent.opacity(0.8)
+            AudioManager.shared.play(.breakComplete)
         } else {
             flashColor = Color(red: 0.32, green: 0.72, blue: 0.53) // Serene Emerald
+            AudioManager.shared.play(.focusComplete)
         }
 
         withAnimation(.easeIn(duration: 0.28)) {

@@ -121,6 +121,37 @@ public struct SettingsTabView: View {
 
                     Divider().overlay(theme.divider)
 
+                    // Sound Effects Toggle
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Sound Effects")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(theme.textPrimary)
+
+                            Text(userStore.soundEnabled ? "On" : "Off")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(theme.textTertiary)
+                        }
+
+                        Spacer()
+
+                        Toggle("", isOn: Binding(
+                            get: { userStore.soundEnabled },
+                            set: { newValue in
+                                userStore.soundEnabled = newValue
+                                if newValue {
+                                    AudioManager.shared.play(.pomodoroStart)
+                                    HapticsManager.shared.impact(.medium)
+                                }
+                            }
+                        ))
+                        .labelsHidden()
+                        .tint(Color(uiColor: .systemGreen))
+                    }
+                    .padding(.vertical, 14)
+
+                    Divider().overlay(theme.divider)
+
                     // ── FOCUS TIMERS (ADHD RHYTHM) ──
                     SectionHeader(title: "FOCUS TIMERS")
                         .padding(.top, 24)

@@ -39,6 +39,12 @@
 		MS0030 /* PomodoroActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF033 /* PomodoroActivityManager.swift */; };
 		MS0031 /* MissionCelebrationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF034 /* MissionCelebrationSheet.swift */; };
 		MS0032 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF035 /* NotificationManager.swift */; };
+		MS0033 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF036 /* AudioManager.swift */; };
+		MS0034 /* mission_start.caf in Resources */ = {isa = PBXBuildFile; fileRef = MSF037 /* mission_start.caf */; };
+		MS0035 /* mission_complete.caf in Resources */ = {isa = PBXBuildFile; fileRef = MSF038 /* mission_complete.caf */; };
+		MS0036 /* pomodoro_start.caf in Resources */ = {isa = PBXBuildFile; fileRef = MSF039 /* pomodoro_start.caf */; };
+		MS0037 /* focus_complete.caf in Resources */ = {isa = PBXBuildFile; fileRef = MSF040 /* focus_complete.caf */; };
+		MS0038 /* break_complete.caf in Resources */ = {isa = PBXBuildFile; fileRef = MSF041 /* break_complete.caf */; };
 		
 		/* Widget Extension Build Files */
 		WG0001 /* MilestoneWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF001 /* MilestoneWidgetBundle.swift */; };
@@ -112,6 +118,12 @@
 		MSF033 /* PomodoroActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroActivityManager.swift; sourceTree = "<group>"; };
 		MSF034 /* MissionCelebrationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionCelebrationSheet.swift; sourceTree = "<group>"; };
 		MSF035 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		MSF036 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		MSF037 /* mission_start.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = mission_start.caf; sourceTree = "<group>"; };
+		MSF038 /* mission_complete.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = mission_complete.caf; sourceTree = "<group>"; };
+		MSF039 /* pomodoro_start.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = pomodoro_start.caf; sourceTree = "<group>"; };
+		MSF040 /* focus_complete.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = focus_complete.caf; sourceTree = "<group>"; };
+		MSF041 /* break_complete.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = break_complete.caf; sourceTree = "<group>"; };
 
 		/* Widget Extension Files */
 		WGF001 /* MilestoneWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneWidgetBundle.swift; sourceTree = "<group>"; };
@@ -162,6 +174,7 @@
 				GRP007 /* Stores */,
 				GRP008 /* Utilities */,
 				GRP009 /* Views */,
+				GRP020 /* Audio */,
 				MSF028 /* Images.xcassets */,
 				MSF029 /* Info.plist */,
 				MSF030 /* Milestone.entitlements */,
@@ -207,8 +220,21 @@
 				MSF008 /* HapticsManager.swift */,
 				MSF033 /* PomodoroActivityManager.swift */,
 				MSF035 /* NotificationManager.swift */,
+				MSF036 /* AudioManager.swift */,
 			);
 			path = Utilities;
+			sourceTree = "<group>";
+		};
+		GRP020 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				MSF037 /* mission_start.caf */,
+				MSF038 /* mission_complete.caf */,
+				MSF039 /* pomodoro_start.caf */,
+				MSF040 /* focus_complete.caf */,
+				MSF041 /* break_complete.caf */,
+			);
+			path = Resources/Audio;
 			sourceTree = "<group>";
 		};
 		GRP009 /* Views */ = {
@@ -375,6 +401,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				MS0028 /* Images.xcassets in Resources */,
+				MS0034 /* mission_start.caf in Resources */,
+				MS0035 /* mission_complete.caf in Resources */,
+				MS0036 /* pomodoro_start.caf in Resources */,
+				MS0037 /* focus_complete.caf in Resources */,
+				MS0038 /* break_complete.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,6 +431,7 @@
 				MS0006 /* SharedWidgetData.swift in Sources */,
 				MS0007 /* DateCalculations.swift in Sources */,
 				MS0008 /* HapticsManager.swift in Sources */,
+				MS0033 /* AudioManager.swift in Sources */,
 				MS0009 /* MissionStore.swift in Sources */,
 				MS0010 /* PomodoroStore.swift in Sources */,
 				MS0011 /* UserStore.swift in Sources */,

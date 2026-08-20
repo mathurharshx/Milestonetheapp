@@ -22,6 +22,12 @@ public final class UserStore {
         }
     }
 
+    public var soundEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(soundEnabled, forKey: "milestone:soundEnabled")
+        }
+    }
+
     // ── Active Navigation Tab ──
     public var selectedTab: TabItem = .mission
 
@@ -116,6 +122,7 @@ public final class UserStore {
         let savedMin = UserDefaults.standard.object(forKey: "milestone:morningReminderMinute") as? Int ?? 0
         self.morningReminderMinute = savedMin
         self.isTestModeEnabled = UserDefaults.standard.bool(forKey: "milestone:isTestModeEnabled")
+        self.soundEnabled = UserDefaults.standard.object(forKey: "milestone:soundEnabled") as? Bool ?? true
     }
 }
 

@@ -261,6 +261,7 @@ public struct CreateMissionSheet: View {
         }
 
         HapticsManager.shared.impact(.medium)
+        AudioManager.shared.play(.missionStart)
         missionStore.createMission(
             title: trimmedTitle,
             targetDate: targetDate,

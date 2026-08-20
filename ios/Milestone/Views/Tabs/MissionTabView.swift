@@ -153,8 +153,9 @@ public struct MissionTabView: View {
         activeMissionSnapshot = mission
         completedQuote = QuoteManager.randomQuote()
 
-        // 1. Success Haptic Pulse
+        // 1. Success Haptic Pulse & Luxury Audio Chord
         HapticsManager.shared.notification(.success)
+        AudioManager.shared.play(.missionComplete)
 
         // 2. Cascade Dot Grid Illumination Wave
         withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
