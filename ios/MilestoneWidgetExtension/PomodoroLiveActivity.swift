@@ -9,14 +9,14 @@ public struct PomodoroLiveActivity: Widget {
         ActivityConfiguration(for: PomodoroActivityAttributes.self) { context in
             // ── Lock Screen / Banner View ──
             PomodoroLockScreenBannerView(context: context)
-                .activityBackgroundTint(Color(red: 0x16/255.0, green: 0x16/255.0, blue: 0x16/255.0))
+                .activityBackgroundTint(Color(red: 0x14/255.0, green: 0x14/255.0, blue: 0x14/255.0))
         } dynamicIsland: { context in
             DynamicIsland {
                 // ── Expanded Dynamic Island (Long Press) ──
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: 8) {
-                        Image(systemName: "hourglass")
-                            .font(.system(size: 16, weight: .medium))
+                        Image(systemName: phaseIconName(for: context.state.phase))
+                            .font(.system(size: 15, weight: .bold))
                             .foregroundStyle(phaseAccentColor(for: context.state.phase))
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -39,18 +39,18 @@ public struct PomodoroLiveActivity: Widget {
                     VStack(alignment: .trailing, spacing: 2) {
                         if context.state.isRunning {
                             Text(timerInterval: context.state.startDate...context.state.targetEndTime, countsDown: true)
-                                .font(.system(size: 26, weight: .light, design: .default))
+                                .font(.system(size: 26, weight: .light))
                                 .monospacedDigit()
                                 .foregroundStyle(Color.white)
                         } else {
                             Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
-                                .font(.system(size: 26, weight: .light, design: .default))
+                                .font(.system(size: 26, weight: .light))
                                 .monospacedDigit()
-                                .foregroundStyle(Color.white)
+                                .foregroundStyle(Color.white.opacity(0.7))
                         }
                     }
                     .padding(.trailing, 6)
-                    .padding(.top, 4)
+                    .padding(.top, 6)
                 }
 
                 DynamicIslandExpandedRegion(.bottom) {
@@ -69,40 +69,45 @@ public struct PomodoroLiveActivity: Widget {
 
                         Spacer()
 
-                        Text("Milestone Focus")
-                            .font(.system(size: 10, weight: .medium))
-                            .tracking(1.5)
-                            .foregroundStyle(Color.white.opacity(0.35))
+                        Text("MILESTONE FOCUS")
+                            .font(.system(size: 10, weight: .bold))
+                            .tracking(2)
+                            .foregroundStyle(Color.white.opacity(0.4))
                     }
                     .padding(.horizontal, 6)
                     .padding(.top, 8)
                     .padding(.bottom, 6)
                 }
             } compactLeading: {
-                // ── Compact Leading: Exactly like Apple Clock App (Hourglass Icon) ──
-                Image(systemName: "hourglass")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(phaseAccentColor(for: context.state.phase))
-            } compactTrailing: {
-                // ── Compact Trailing: Exactly like Apple Clock App (Live Native Timer) ──
-                if context.state.isRunning {
-                    Text(timerInterval: context.state.startDate...context.state.targetEndTime, countsDown: true)
-                        .monospacedDigit()
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color.white)
-                        .frame(width: 44, alignment: .trailing)
-                } else {
-                    Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
-                        .monospacedDigit()
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color.white.opacity(0.8))
-                        .frame(width: 44, alignment: .trailing)
+                // ── Compact Leading: Hourglass / Timer Icon ──
+                HStack(spacing: 0) {
+                    Image(systemName: phaseIconName(for: context.state.phase))
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(phaseAccentColor(for: context.state.phase))
                 }
+                .frame(width: 20, height: 20, alignment: .center)
+            } compactTrailing: {
+                // ── Compact Trailing: Aligned Native Monospaced Timer ──
+                HStack(spacing: 0) {
+                    if context.state.isRunning {
+                        Text(timerInterval: context.state.startDate...context.state.targetEndTime, countsDown: true)
+                            .monospacedDigit()
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color.white)
+                    } else {
+                        Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
+                            .monospacedDigit()
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color.white.opacity(0.75))
+                    }
+                }
+                .frame(width: 48, height: 20, alignment: .trailing)
             } minimal: {
                 // ── Minimal Single Bubble ──
-                Image(systemName: "hourglass")
+                Image(systemName: phaseIconName(for: context.state.phase))
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(phaseAccentColor(for: context.state.phase))
+                    .frame(width: 20, height: 20, alignment: .center)
             }
         }
     }
@@ -114,9 +119,9 @@ private struct PomodoroLockScreenBannerView: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            // Left: Hourglass Icon + Session Info
+            // Left Side: Phase Badge & Title
             HStack(spacing: 12) {
-                Image(systemName: "hourglass")
+                Image(systemName: phaseIconName(for: context.state.phase))
                     .font(.system(size: 20, weight: .medium))
                     .foregroundStyle(phaseAccentColor(for: context.state.phase))
 
@@ -134,7 +139,7 @@ private struct PomodoroLockScreenBannerView: View {
 
             Spacer()
 
-            // Right: Timer + Session Dots
+            // Right Side: Large Timer & Session Dots
             VStack(alignment: .trailing, spacing: 6) {
                 if context.state.isRunning {
                     Text(timerInterval: context.state.startDate...context.state.targetEndTime, countsDown: true)
@@ -145,7 +150,7 @@ private struct PomodoroLockScreenBannerView: View {
                     Text(formatPausedTime(seconds: context.state.timeRemainingWhenPaused))
                         .font(.system(size: 30, weight: .light))
                         .monospacedDigit()
-                        .foregroundStyle(Color.white)
+                        .foregroundStyle(Color.white.opacity(0.7))
                 }
 
                 HStack(spacing: 6) {
@@ -166,6 +171,19 @@ private struct PomodoroLockScreenBannerView: View {
 }
 
 // ── Helpers ──
+private func phaseIconName(for phase: String) -> String {
+    switch phase {
+    case "focus":
+        return "hourglass"
+    case "shortBreak":
+        return "cup.and.saucer.fill"
+    case "longBreak":
+        return "figure.walk"
+    default:
+        return "hourglass"
+    }
+}
+
 private func phaseTitle(for phase: String, session: Int, total: Int) -> String {
     switch phase {
     case "focus":
