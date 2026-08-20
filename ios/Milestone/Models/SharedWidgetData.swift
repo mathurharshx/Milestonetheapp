@@ -123,7 +123,11 @@ public enum SharedWidgetStore {
         if let encoded = try? JSONEncoder().encode(data),
            let jsonString = String(data: encoded, encoding: .utf8) {
             defaults.set(jsonString, forKey: widgetDataKey)
-            defaults.synchronize()
+        }
+    }
+
+    public static func reloadWidgetTimelines() {
+        Task.detached(priority: .utility) {
             WidgetCenter.shared.reloadAllTimelines()
         }
     }

@@ -76,7 +76,7 @@ public final class PomodoroStore {
         timerTask?.cancel()
         timerTask = Task { @MainActor [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 200_000_000) // 0.2s
+                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5s
                 guard let self = self, self.isRunning else { break }
                 self.tick()
             }
@@ -177,7 +177,7 @@ public final class PomodoroStore {
         timerTask?.cancel()
         timerTask = Task { @MainActor [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 200_000_000)
+                try? await Task.sleep(nanoseconds: 500_000_000)
                 guard let self = self, self.isRunning else { break }
                 self.tick()
             }
@@ -267,6 +267,7 @@ public final class PomodoroStore {
             lastUpdated: Date().timeIntervalSince1970
         )
         SharedWidgetStore.save(updated)
+        SharedWidgetStore.reloadWidgetTimelines()
     }
 
     public func syncFromWidget() {
@@ -289,7 +290,7 @@ public final class PomodoroStore {
                 timerTask?.cancel()
                 timerTask = Task { @MainActor [weak self] in
                     while !Task.isCancelled {
-                        try? await Task.sleep(nanoseconds: 200_000_000)
+                        try? await Task.sleep(nanoseconds: 500_000_000)
                         guard let self = self, self.isRunning else { break }
                         self.tick()
                     }
