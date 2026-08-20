@@ -45,7 +45,6 @@
 		MS0036 /* pomodoro_start.caf in Resources */ = {isa = PBXBuildFile; fileRef = MSF039 /* pomodoro_start.caf */; };
 		MS0037 /* focus_complete.caf in Resources */ = {isa = PBXBuildFile; fileRef = MSF040 /* focus_complete.caf */; };
 		MS0038 /* break_complete.caf in Resources */ = {isa = PBXBuildFile; fileRef = MSF041 /* break_complete.caf */; };
-		MS0039 /* HorizontalCalendarSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF042 /* HorizontalCalendarSliderView.swift */; };
 		
 		/* Widget Extension Build Files */
 		WG0001 /* MilestoneWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF001 /* MilestoneWidgetBundle.swift */; };
@@ -125,7 +124,6 @@
 		MSF039 /* pomodoro_start.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = pomodoro_start.caf; sourceTree = "<group>"; };
 		MSF040 /* focus_complete.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = focus_complete.caf; sourceTree = "<group>"; };
 		MSF041 /* break_complete.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = break_complete.caf; sourceTree = "<group>"; };
-		MSF042 /* HorizontalCalendarSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizontalCalendarSliderView.swift; sourceTree = "<group>"; };
 
 		/* Widget Extension Files */
 		WGF001 /* MilestoneWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneWidgetBundle.swift; sourceTree = "<group>"; };
@@ -262,7 +260,6 @@
 				MSF014 /* MissionTodoListView.swift */,
 				MSF015 /* PomodoroRingView.swift */,
 				MSF016 /* GlassTabBarView.swift */,
-				MSF042 /* HorizontalCalendarSliderView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -458,7 +455,6 @@
 				MS0030 /* PomodoroActivityManager.swift in Sources */,
 				MS0031 /* MissionCelebrationSheet.swift in Sources */,
 				MS0032 /* NotificationManager.swift in Sources */,
-				MS0039 /* HorizontalCalendarSliderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

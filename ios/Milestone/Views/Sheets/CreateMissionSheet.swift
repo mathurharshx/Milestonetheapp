@@ -71,7 +71,7 @@ public struct CreateMissionSheet: View {
                             )
                     }
 
-                    // Interactive Horizontal Target Date Slider Calendar
+                    // Native Apple Graphical Calendar & Time Picker (Reminders / Clock Style)
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             Text("TARGET DATE & TIME")
@@ -105,9 +105,23 @@ public struct CreateMissionSheet: View {
                             }
                         }
 
-                        HorizontalCalendarSliderView(
-                            selectedDate: $targetDate,
-                            hasTime: $hasTime
+                        DatePicker(
+                            "",
+                            selection: $targetDate,
+                            in: Date()...,
+                            displayedComponents: hasTime ? [.date, .hourAndMinute] : [.date]
+                        )
+                        .datePickerStyle(.graphical)
+                        .tint(theme.accent)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(theme.surfaceLight.opacity(0.4))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(theme.border.opacity(0.5), lineWidth: 1)
                         )
                     }
 
