@@ -35,7 +35,8 @@ ios/
 └── MilestoneWidgetExtension/      # WidgetKit & ActivityKit Extension
     ├── MilestoneMissionWidget.swift
     ├── MilestonePomodoroWidget.swift
-    ├── PomodoroLiveActivity.swift # Dynamic Island & Lock Screen Live Activity
+    ├── PomodoroLiveActivi
+    ty.swift # Dynamic Island & Lock Screen Live Activity
     └── Info.plist
 ```
 

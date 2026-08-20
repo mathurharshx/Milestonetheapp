@@ -4,19 +4,29 @@ public struct PomodoroTabView: View {
     @Environment(PomodoroStore.self) private var pomodoroStore
     @Environment(\.theme) private var theme
 
+    @State private var flashOpacity: Double = 0.0
+    @State private var flashColor: Color = Color(red: 0.32, green: 0.72, blue: 0.53)
+
     public init() {}
 
     private var phaseColor: Color {
         switch pomodoroStore.phase {
-        case .focus: return theme.accent
-        case .shortBreak: return theme.accent.opacity(0.7)
-        case .longBreak: return theme.accent.opacity(0.5)
+        case .focus:
+            return theme.accent
+        case .shortBreak, .longBreak:
+            return Color(red: 0.32, green: 0.72, blue: 0.53) // Serene Sage Emerald
         }
     }
 
     public var body: some View {
         ZStack {
             theme.background.ignoresSafeArea()
+
+            // Subtle Ambient Screen Flash Pulse on Phase Transition
+            flashColor
+                .opacity(flashOpacity)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
 
             VStack(spacing: 0) {
                 Spacer()
@@ -30,7 +40,7 @@ public struct PomodoroTabView: View {
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
-                            .fill(phaseColor.opacity(0.12))
+                            .fill(phaseColor.opacity(0.14))
                     )
                     .padding(.bottom, 20)
 
@@ -62,7 +72,7 @@ public struct PomodoroTabView: View {
                     isStarted: pomodoroStore.isStarted,
                     phase: pomodoroStore.phase,
                     color: phaseColor,
-                    message: pomodoroStore.phase.message
+                    message: pomodoroStore.activeBreakPrompt
                 )
                 .padding(.bottom, 36)
 
@@ -147,6 +157,37 @@ public struct PomodoroTabView: View {
         }
         .onAppear {
             pomodoroStore.syncFromWidget()
+        }
+        .onChange(of: pomodoroStore.phaseTransitionCount) { _, _ in
+            triggerPhaseFlash()
+        }
+    }
+
+    private func triggerPhaseFlash() {
+        if pomodoroStore.phase == .focus {
+            flashColor = theme.accent.opacity(0.8)
+        } else {
+            flashColor = Color(red: 0.32, green: 0.72, blue: 0.53) // Serene Emerald
+        }
+
+        withAnimation(.easeIn(duration: 0.28)) {
+            flashOpacity = 0.25
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) {
+            withAnimation(.easeOut(duration: 0.28)) {
+                flashOpacity = 0.05
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) {
+                withAnimation(.easeIn(duration: 0.22)) {
+                    flashOpacity = 0.20
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
+                    withAnimation(.easeOut(duration: 0.38)) {
+                        flashOpacity = 0.0
+                    }
+                }
+            }
         }
     }
 }

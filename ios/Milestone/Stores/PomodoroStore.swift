@@ -11,6 +11,11 @@ public final class PomodoroStore {
     public var currentSession: Int = 1
     public var totalSessions: Int = 4
     public var isStarted: Bool = false
+    public var phaseTransitionCount: Int = 0
+
+    public var activeBreakPrompt: String {
+        PomodoroPhase.breakPrompt(for: phase, session: currentSession)
+    }
 
     private var timerTask: Task<Void, Never>?
     private var targetEndTime: Date?
@@ -158,6 +163,7 @@ public final class PomodoroStore {
         self.currentSession = nextSession
         self.totalTime = durationForPhase(nextPhase)
         self.timeRemaining = self.totalTime
+        self.phaseTransitionCount += 1
 
         // Auto-start next phase
         self.isRunning = true

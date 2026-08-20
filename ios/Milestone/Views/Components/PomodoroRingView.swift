@@ -10,6 +10,7 @@ public struct PomodoroRingView: View {
     public let message: String
 
     @Environment(\.theme) private var theme
+    @State private var isBreathingPulse: Bool = false
 
     private let segments = 96
     private let dotSize: CGFloat = 3.5
@@ -39,8 +40,25 @@ public struct PomodoroRingView: View {
         return String(format: "%02d:%02d", mins, secs)
     }
 
+    private var isBreakPhase: Bool {
+        phase == .shortBreak || phase == .longBreak
+    }
+
     public var body: some View {
         ZStack {
+            // Ambient Calming Breathing Aura for Breaks
+            if isBreakPhase && isRunning {
+                Circle()
+                    .fill(color.opacity(isBreathingPulse ? 0.08 : 0.02))
+                    .frame(width: ringSize - 20, height: ringSize - 20)
+                    .blur(radius: 20)
+                    .scaleEffect(isBreathingPulse ? 1.08 : 0.95)
+                    .animation(
+                        Animation.easeInOut(duration: 3.8).repeatForever(autoreverses: true),
+                        value: isBreathingPulse
+                    )
+            }
+
             // 96-Dot Circular Progress Ring
             let radius = (ringSize - dotSize * 2) / 2
             let filledCount = Int(round(progress * Double(segments)))
@@ -61,6 +79,13 @@ public struct PomodoroRingView: View {
                     )
                     .offset(x: x, y: y)
             }
+            .scaleEffect(isBreakPhase && isRunning && isBreathingPulse ? 1.02 : 1.0)
+            .animation(
+                isBreakPhase && isRunning
+                    ? Animation.easeInOut(duration: 3.8).repeatForever(autoreverses: true)
+                    : .default,
+                value: isBreathingPulse
+            )
             .allowsHitTesting(false)
 
             // Center Content
@@ -77,7 +102,7 @@ public struct PomodoroRingView: View {
                     }
 
                 // Status Pill
-                Text(isRunning ? "RUNNING" : (isStarted ? "PAUSED" : "READY"))
+                Text(isRunning ? (isBreakPhase ? "RESTING" : "RUNNING") : (isStarted ? "PAUSED" : "READY"))
                     .font(.system(size: 9, weight: .bold))
                     .tracking(3)
                     .foregroundStyle(color)
@@ -85,18 +110,39 @@ public struct PomodoroRingView: View {
                     .padding(.vertical, 3)
                     .background(
                         Capsule()
-                            .fill(color.opacity(0.12))
+                            .fill(color.opacity(0.14))
                     )
 
-                // Message
+                // Micro-prompt Message
                 Text(message)
-                    .font(.system(size: 12, weight: .regular))
-                    .tracking(0.5)
-                    .foregroundStyle(theme.textTertiary)
+                    .font(.system(size: 12, weight: .medium))
+                    .tracking(0.3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(isBreakPhase ? color.opacity(0.9) : theme.textTertiary)
+                    .padding(.horizontal, 24)
                     .padding(.top, 2)
             }
             .allowsHitTesting(false)
         }
         .frame(width: ringSize, height: ringSize)
+        .onAppear {
+            if isBreakPhase && isRunning {
+                isBreathingPulse = true
+            }
+        }
+        .onChange(of: isRunning) { _, running in
+            if isBreakPhase && running {
+                isBreathingPulse = true
+            } else {
+                isBreathingPulse = false
+            }
+        }
+        .onChange(of: phase) { _, newPhase in
+            if (newPhase == .shortBreak || newPhase == .longBreak) && isRunning {
+                isBreathingPulse = true
+            } else {
+                isBreathingPulse = false
+            }
+        }
     }
 }

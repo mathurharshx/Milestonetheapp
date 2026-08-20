@@ -16,8 +16,34 @@ public enum PomodoroPhase: String, Codable, CaseIterable {
     public var message: String {
         switch self {
         case .focus: return "Stay locked in."
-        case .shortBreak: return "Rest your eyes."
-        case .longBreak: return "You earned this."
+        case .shortBreak: return "Hydrate: Grab a glass of water."
+        case .longBreak: return "Unplug & recharge your mind."
+        }
+    }
+
+    public static func breakPrompt(for phase: PomodoroPhase, session: Int) -> String {
+        switch phase {
+        case .focus:
+            return "Stay locked in."
+        case .shortBreak:
+            let prompts = [
+                "Hydrate: Grab a glass of water",
+                "Screen Detox: Look 20ft away",
+                "Physical Reset: Stretch your shoulders",
+                "Breathe: Take 3 deep breaths",
+                "Step Away: Rest your eyes"
+            ]
+            let index = max(0, session - 1) % prompts.count
+            return prompts[index]
+        case .longBreak:
+            let prompts = [
+                "Step Away: Walk around for a bit",
+                "Mental Reset: Unplug your mind",
+                "Nourish: Grab a healthy snack or tea",
+                "Full Recharge: You earned this break"
+            ]
+            let index = max(0, session - 1) % prompts.count
+            return prompts[index]
         }
     }
 
