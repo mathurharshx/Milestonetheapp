@@ -40,6 +40,13 @@ public final class UserStore {
         }
     }
 
+    // ── Test Mode for Rapid Pomodoro Testing ──
+    public var isTestModeEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isTestModeEnabled, forKey: "milestone:isTestModeEnabled")
+        }
+    }
+
     // ── Customizable Pomodoro Durations (Minutes) ──
     public var focusDurationMinutes: Int {
         didSet {
@@ -108,6 +115,7 @@ public final class UserStore {
         self.morningReminderHour = savedHour
         let savedMin = UserDefaults.standard.object(forKey: "milestone:morningReminderMinute") as? Int ?? 0
         self.morningReminderMinute = savedMin
+        self.isTestModeEnabled = UserDefaults.standard.bool(forKey: "milestone:isTestModeEnabled")
     }
 }
 

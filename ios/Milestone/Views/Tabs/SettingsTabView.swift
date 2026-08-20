@@ -125,6 +125,35 @@ public struct SettingsTabView: View {
                     SectionHeader(title: "FOCUS TIMERS")
                         .padding(.top, 24)
 
+                    // Test / Demo Mode Toggle (Rapid 10s / 5s)
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Test / Demo Mode")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(theme.textPrimary)
+
+                            Text("Rapid 10s Focus & 5s Break for testing animations")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(theme.accent)
+                        }
+
+                        Spacer()
+
+                        Toggle("", isOn: Binding(
+                            get: { userStore.isTestModeEnabled },
+                            set: { newValue in
+                                userStore.isTestModeEnabled = newValue
+                                pomodoroStore.reloadDurationsIfIdle()
+                                HapticsManager.shared.impact(.light)
+                            }
+                        ))
+                        .labelsHidden()
+                        .tint(Color(uiColor: .systemGreen))
+                    }
+                    .padding(.vertical, 14)
+
+                    Divider().overlay(theme.divider)
+
                     // Focus Duration Picker
                     HStack {
                         Text("Focus Duration")

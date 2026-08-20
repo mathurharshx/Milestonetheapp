@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct PomodoroTabView: View {
     @Environment(PomodoroStore.self) private var pomodoroStore
+    @Environment(UserStore.self) private var userStore
     @Environment(\.theme) private var theme
 
     @State private var flashOpacity: Double = 0.0
@@ -29,6 +30,20 @@ public struct PomodoroTabView: View {
                 .allowsHitTesting(false)
 
             VStack(spacing: 0) {
+                if userStore.isTestModeEnabled {
+                    Text("TEST MODE (10s Focus / 5s Break)")
+                        .font(.system(size: 9, weight: .bold))
+                        .tracking(2)
+                        .foregroundStyle(theme.accent)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .stroke(theme.accent.opacity(0.4), lineWidth: 1)
+                        )
+                        .padding(.top, 16)
+                }
+
                 Spacer()
 
                 // Phase Badge

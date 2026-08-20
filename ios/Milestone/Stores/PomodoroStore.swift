@@ -35,6 +35,15 @@ public final class PomodoroStore {
     }
 
     private func durationForPhase(_ p: PomodoroPhase) -> Int {
+        let isTestMode = UserDefaults.standard.bool(forKey: "milestone:isTestModeEnabled")
+        if isTestMode {
+            switch p {
+            case .focus: return 10
+            case .shortBreak: return 5
+            case .longBreak: return 8
+            }
+        }
+
         switch p {
         case .focus:
             let mins = UserDefaults.standard.integer(forKey: "milestone:focusDuration")
