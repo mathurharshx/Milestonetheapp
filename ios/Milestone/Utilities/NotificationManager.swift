@@ -19,8 +19,9 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        // Clean presentation without jarring main thread banner collision
-        completionHandler([.sound, .list, .badge])
+        // When app is in foreground, suppress system notifications completely.
+        // Inbuilt custom audio & haptics handle foreground feedback.
+        completionHandler([])
     }
 
     public nonisolated func userNotificationCenter(
