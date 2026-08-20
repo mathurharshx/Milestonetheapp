@@ -294,9 +294,9 @@ public final class PomodoroStore {
                     }
                 }
             } else {
-                // Completed while backgrounded
-                self.isRunning = false
-                self.timeRemaining = 0
+                // Completed while backgrounded/locked
+                self.phase = PomodoroPhase(rawValue: data.pomodoroPhase) ?? .focus
+                self.currentSession = data.pomodoroSession
                 self.advanceToNextPhase()
             }
         } else if !data.pomodoroIsRunning && isRunning {

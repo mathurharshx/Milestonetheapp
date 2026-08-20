@@ -2,18 +2,38 @@ import Foundation
 import UserNotifications
 
 @MainActor
-public final class NotificationManager {
+public final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     public static let shared = NotificationManager()
 
     private let center = UNUserNotificationCenter.current()
     private let pomodoroIdentifier = "milestone.notification.pomodoro"
     private let morningIdentifier = "milestone.notification.morning"
 
-    private init() {}
+    private override init() {
+        super.init()
+        center.delegate = self
+    }
+
+    // ── UNUserNotificationCenterDelegate ──
+    public nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound, .list, .badge])
+    }
+
+    public nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        completionHandler()
+    }
 
     public func requestAuthorization() async -> Bool {
         do {
-            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge, .criticalAlert])
             return granted
         } catch {
             print("Notification authorization error: \(error.localizedDescription)")
@@ -26,7 +46,7 @@ public final class NotificationManager {
         return settings.authorizationStatus
     }
 
-    // ── Pomodoro Notifications (Clean, Minimal, No Emojis) ──
+    // ── Pomodoro Notifications (Time Sensitive, Crisp & Lock Screen Ready) ──
     public func schedulePomodoroNotification(phase: PomodoroPhase, seconds: Int, nextPhaseLabel: String) {
         guard seconds > 0 else { return }
 
@@ -35,6 +55,7 @@ public final class NotificationManager {
 
         let content = UNMutableNotificationContent()
         content.sound = .default
+        content.interruptionLevel = .timeSensitive // Time sensitive for Lock Screen delivery
 
         switch phase {
         case .focus:
@@ -65,7 +86,6 @@ public final class NotificationManager {
 
     // ── Daily Morning Accountability Notification (Clean, Minimal, No Emojis) ──
     public func scheduleDailyMorningReminder(mission: Mission?, hour: Int = 9, minute: Int = 0) {
-        // Cancel existing first
         cancelDailyMorningReminder()
 
         guard let mission = mission, mission.isActive else { return }
