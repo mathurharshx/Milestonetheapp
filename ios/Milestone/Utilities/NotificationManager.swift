@@ -33,7 +33,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
 
     public func requestAuthorization() async -> Bool {
         do {
-            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge, .criticalAlert])
+            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
             return granted
         } catch {
             print("Notification authorization error: \(error.localizedDescription)")

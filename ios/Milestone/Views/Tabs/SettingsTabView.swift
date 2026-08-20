@@ -156,6 +156,7 @@ public struct SettingsTabView: View {
                     SectionHeader(title: "FOCUS TIMERS")
                         .padding(.top, 24)
 
+#if DEBUG
                     // Test / Demo Mode Toggle (Rapid 10s / 5s)
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
@@ -184,6 +185,7 @@ public struct SettingsTabView: View {
                     .padding(.vertical, 14)
 
                     Divider().overlay(theme.divider)
+#endif
 
                     // Focus Duration Picker
                     HStack {

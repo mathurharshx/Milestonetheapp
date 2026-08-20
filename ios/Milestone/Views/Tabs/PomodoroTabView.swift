@@ -30,6 +30,7 @@ public struct PomodoroTabView: View {
                 .allowsHitTesting(false)
 
             VStack(spacing: 0) {
+#if DEBUG
                 if userStore.isTestModeEnabled {
                     Text("TEST MODE (10s Focus / 5s Break)")
                         .font(.system(size: 9, weight: .bold))
@@ -43,6 +44,7 @@ public struct PomodoroTabView: View {
                         )
                         .padding(.top, 16)
                 }
+#endif
 
                 Spacer()
 
