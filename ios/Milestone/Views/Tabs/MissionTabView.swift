@@ -129,7 +129,7 @@ public struct MissionTabView: View {
                 CreateMissionSheet()
             }
         }
-        .sheet(isPresented: $showCelebrationSheet) {
+        .fullScreenCover(isPresented: $showCelebrationSheet) {
             if let mission = activeMissionSnapshot ?? missionStore.activeMission {
                 MissionCelebrationSheet(
                     mission: mission,
