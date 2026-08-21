@@ -406,12 +406,6 @@ public struct CreateMissionSheet: View {
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(isReady ? theme.accent : theme.surfaceLight)
                             )
-                            .shadow(
-                                color: isReady ? theme.accent.opacity(0.35) : .clear,
-                                radius: 12,
-                                x: 0,
-                                y: 4
-                            )
                     }
                     .disabled(!isReady)
                     .padding(.top, 8)
