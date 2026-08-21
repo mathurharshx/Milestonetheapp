@@ -57,14 +57,56 @@ public final class MissionStore {
            let mission = try? decoder.decode(Mission.self, from: activeData) {
             self.activeMission = mission
         } else {
-            self.activeMission = nil
+            let now = Date()
+            let created = now.addingTimeInterval(-14 * 86400) // 14 days ago
+            let target = now.addingTimeInterval(16 * 86400)   // 16 days in future (30 days total)
+
+            let defaultMission = Mission(
+                title: "Launch Milestone v1.0",
+                note: "Single goal focus. Complete core features & submit for App Store review.",
+                todos: [
+                    TodoTask(text: "Xcode Store Pre-Flight Audit", done: true),
+                    TodoTask(text: "Dynamic Island & Lock Screen Alignment", done: true),
+                    TodoTask(text: "App Store Screenshots & Visual Metadata", done: false),
+                    TodoTask(text: "Submit for App Store Review", done: false)
+                ],
+                targetDate: target,
+                createdAt: created
+            )
+            self.activeMission = defaultMission
         }
 
         if let archiveData = UserDefaults.standard.data(forKey: archiveKey),
            let missions = try? decoder.decode([Mission].self, from: archiveData) {
             self.archivedMissions = missions
         } else {
-            self.archivedMissions = []
+            let now = Date()
+            self.archivedMissions = [
+                Mission(
+                    title: "Master Swift 6 Concurrency",
+                    note: "Zero isolation warnings across main actor & background stores.",
+                    todos: [
+                        TodoTask(text: "Audit @Observable stores", done: true),
+                        TodoTask(text: "Implement MainActor tasks", done: true)
+                    ],
+                    targetDate: now.addingTimeInterval(-3 * 86400),
+                    createdAt: now.addingTimeInterval(-17 * 86400),
+                    completedAt: now.addingTimeInterval(-3 * 86400),
+                    isActive: false
+                ),
+                Mission(
+                    title: "Design Monolith Engine",
+                    note: "Craft dark obsidian design system & custom haptics.",
+                    todos: [
+                        TodoTask(text: "Build 96-dot grid matrix", done: true),
+                        TodoTask(text: "Custom audio chimes", done: true)
+                    ],
+                    targetDate: now.addingTimeInterval(-10 * 86400),
+                    createdAt: now.addingTimeInterval(-31 * 86400),
+                    completedAt: now.addingTimeInterval(-10 * 86400),
+                    isActive: false
+                )
+            ]
         }
 
         syncToWidget()
@@ -176,6 +218,7 @@ public final class MissionStore {
         let topTask = activeMission?.todos.first(where: { !$0.done })?.text
 
         let updated = MilestoneWidgetData(
+            isDarkMode: existing.isDarkMode,
             pomodoroPhase: existing.pomodoroPhase,
             pomodoroTimeRemaining: existing.pomodoroTimeRemaining,
             pomodoroTotalTime: existing.pomodoroTotalTime,
@@ -197,5 +240,6 @@ public final class MissionStore {
             lastUpdated: Date().timeIntervalSince1970
         )
         SharedWidgetStore.save(updated)
+        SharedWidgetStore.reloadWidgetTimelines()
     }
 }

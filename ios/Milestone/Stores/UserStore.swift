@@ -100,7 +100,7 @@ public final class UserStore {
     public init() {
         self.userName = UserDefaults.standard.string(forKey: "milestone:userName") ?? ""
         let seenString = UserDefaults.standard.string(forKey: "milestone:hasSeenOnboarding")
-        self.hasSeenOnboarding = seenString == "true"
+        self.hasSeenOnboarding = seenString != "false"
         
         let savedHaptics = UserDefaults.standard.object(forKey: "milestone:hapticsEnabled") as? Bool ?? true
         self.hapticsEnabled = savedHaptics
