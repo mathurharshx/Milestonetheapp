@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 public struct MissionCelebrationSheet: View {
     public let mission: Mission
@@ -13,8 +12,6 @@ public struct MissionCelebrationSheet: View {
     @State private var sealAnimation: Bool = false
     @State private var contentAnimation: Bool = false
     @State private var matrixWaveAnimation: Bool = false
-    @State private var showShareSheet: Bool = false
-    @State private var exportedImage: UIImage? = nil
 
     public init(
         mission: Mission,
@@ -186,7 +183,7 @@ public struct MissionCelebrationSheet: View {
                             .offset(y: contentAnimation ? 0 : 20)
                         }
 
-                        // ── 8. Certificate Actions ──
+                        // ── 8. Ceremony Actions ──
                         VStack(spacing: 14) {
                             // Primary: View in Archive
                             Button {
@@ -210,27 +207,7 @@ public struct MissionCelebrationSheet: View {
                                 )
                             }
 
-                            // Secondary: Share Certificate
-                            Button {
-                                renderCertificateImage()
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "square.and.arrow.up")
-                                        .font(.system(size: 13, weight: .semibold))
-                                    Text("SHARE CERTIFICATE")
-                                        .font(.system(size: 12, weight: .bold))
-                                        .tracking(2)
-                                }
-                                .foregroundStyle(theme.textPrimary)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 48)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .stroke(theme.border, lineWidth: 1)
-                                )
-                            }
-
-                            // Tertiary: Start New Mission
+                            // Secondary: Start New Mission
                             Button {
                                 HapticsManager.shared.impact(.light)
                                 dismiss()
@@ -243,17 +220,12 @@ public struct MissionCelebrationSheet: View {
                                     .padding(.vertical, 8)
                             }
                         }
-                        .padding(.top, 8)
+                        .padding(.top, 12)
                         .padding(.bottom, 36)
                         .opacity(contentAnimation ? 1.0 : 0.0)
                     }
                     .padding(.horizontal, 24)
                 }
-            }
-        }
-        .sheet(isPresented: $showShareSheet) {
-            if let image = exportedImage {
-                ActivityViewController(activityItems: [image])
             }
         }
         .onAppear {
@@ -271,18 +243,6 @@ public struct MissionCelebrationSheet: View {
             withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
                 matrixWaveAnimation = true
             }
-        }
-    }
-
-    @MainActor
-    private func renderCertificateImage() {
-        HapticsManager.shared.impact(.light)
-        let certificateView = CertificateCardView(mission: mission, totalDays: totalDays, theme: theme)
-        let renderer = ImageRenderer(content: certificateView)
-        renderer.scale = UIScreen.main.scale
-        if let image = renderer.uiImage {
-            self.exportedImage = image
-            self.showShareSheet = true
         }
     }
 }
@@ -319,88 +279,4 @@ private struct StatBadgeCard: View {
                 .stroke(theme.border.opacity(0.6), lineWidth: 1)
         )
     }
-}
-
-// ── Exportable Certificate Image View (9:16 Story Format) ──
-private struct CertificateCardView: View {
-    let mission: Mission
-    let totalDays: Int
-    let theme: ThemeTokens
-
-    var body: some View {
-        VStack(spacing: 24) {
-            ZStack {
-                Circle()
-                    .stroke(theme.accent, lineWidth: 2)
-                    .frame(width: 72, height: 72)
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundStyle(theme.accent)
-            }
-
-            VStack(spacing: 6) {
-                Text("MILESTONE ACCOMPLISHED")
-                    .font(.system(size: 10, weight: .black))
-                    .tracking(3)
-                    .foregroundStyle(theme.accent)
-
-                Text(mission.title)
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(theme.textPrimary)
-                    .multilineTextAlignment(.center)
-            }
-
-            HStack(spacing: 16) {
-                VStack(spacing: 2) {
-                    Text("\(totalDays) DAYS")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(theme.textPrimary)
-                    Text("GOAL MET")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(theme.textTertiary)
-                }
-
-                Divider().frame(height: 24).overlay(theme.border)
-
-                VStack(spacing: 2) {
-                    Text("100% DONE")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(theme.textPrimary)
-                    Text("CHECKLIST")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(theme.textTertiary)
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(
-                Capsule()
-                    .fill(theme.surfaceLight)
-            )
-
-            Text("milestones.app")
-                .font(.system(size: 9, weight: .bold))
-                .tracking(2)
-                .foregroundStyle(theme.textTertiary.opacity(0.6))
-        }
-        .padding(32)
-        .frame(width: 320, height: 420)
-        .background(theme.background)
-        .cornerRadius(24)
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(theme.border, lineWidth: 1.5)
-        )
-    }
-}
-
-// ── UIActivityViewController Wrapper for Sharing Certificate Image ──
-private struct ActivityViewController: UIViewControllerRepresentable {
-    let activityItems: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
