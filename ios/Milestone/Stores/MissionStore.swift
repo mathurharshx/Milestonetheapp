@@ -197,15 +197,28 @@ public final class MissionStore {
     }
 
     public func refreshMorningNotification() {
+        refreshMissionNotifications()
+    }
+
+    public func refreshMissionNotifications() {
         let isEnabled = UserDefaults.standard.object(forKey: "milestone:morningReminderEnabled") as? Bool ?? true
         let hour = UserDefaults.standard.object(forKey: "milestone:morningReminderHour") as? Int ?? 9
         let min = UserDefaults.standard.object(forKey: "milestone:morningReminderMinute") as? Int ?? 0
 
         Task { @MainActor in
-            if isEnabled, let mission = activeMission {
-                NotificationManager.shared.scheduleDailyMorningReminder(mission: mission, hour: hour, minute: min)
+            if let mission = activeMission, mission.isActive {
+                // 1. Daily morning accountability reminder
+                if isEnabled {
+                    NotificationManager.shared.scheduleDailyMorningReminder(mission: mission, hour: hour, minute: min)
+                } else {
+                    NotificationManager.shared.cancelDailyMorningReminder()
+                }
+
+                // 2. Exact mission target deadline reached alert
+                NotificationManager.shared.scheduleMissionDeadlineNotification(mission: mission)
             } else {
                 NotificationManager.shared.cancelDailyMorningReminder()
+                NotificationManager.shared.cancelMissionDeadlineNotification()
             }
         }
     }

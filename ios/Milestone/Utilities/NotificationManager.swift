@@ -7,6 +7,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
     private let center = UNUserNotificationCenter.current()
     private let pomodoroIdentifier = "milestone.notification.pomodoro"
     private let morningIdentifier = "milestone.notification.morning"
+    private let deadlineIdentifier = "milestone.notification.deadline"
 
     private override init() {
         super.init()
@@ -174,5 +175,46 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
 
     private func cancelDailyMorningReminderInternal() {
         center.removePendingNotificationRequests(withIdentifiers: [morningIdentifier])
+    }
+
+    // ── Mission Target Deadline Reached Notification ──
+    public func scheduleMissionDeadlineNotification(mission: Mission?) {
+        Task.detached(priority: .utility) { [weak self] in
+            guard let self = self else { return }
+            self.cancelMissionDeadlineNotificationInternal()
+
+            guard let mission = mission, mission.isActive else { return }
+
+            let targetDate = mission.targetDate
+            let timeInterval = targetDate.timeIntervalSince(Date())
+
+            // Only schedule if the target deadline is in the future
+            guard timeInterval > 0 else { return }
+
+            let content = UNMutableNotificationContent()
+            content.title = "Mission Target Date Reached"
+            content.body = "Time is up for '\(mission.title)'! Open Milestone to review and mark it accomplished."
+            content.sound = .default
+            content.interruptionLevel = .timeSensitive
+
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
+            let request = UNNotificationRequest(identifier: self.deadlineIdentifier, content: content, trigger: trigger)
+
+            self.center.add(request) { error in
+                if let error = error {
+                    print("Failed to schedule mission deadline notification: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    public func cancelMissionDeadlineNotification() {
+        Task.detached(priority: .utility) { [weak self] in
+            self?.cancelMissionDeadlineNotificationInternal()
+        }
+    }
+
+    private func cancelMissionDeadlineNotificationInternal() {
+        center.removePendingNotificationRequests(withIdentifiers: [deadlineIdentifier])
     }
 }
