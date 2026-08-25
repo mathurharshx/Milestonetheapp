@@ -26,7 +26,7 @@ public struct MissionTabView: View {
                         targetDate: mission.targetDate
                     )
 
-                    ScrollView {
+                    ScrollView(showsIndicators: false) {
                         VStack(spacing: 28) {
                             // Top Brand
                             HStack {
@@ -56,9 +56,19 @@ public struct MissionTabView: View {
                                 }
                             }
                             .padding(.horizontal, 16)
+                            .scrollTransition(.interactive) { content, phase in
+                                content
+                                    .opacity(phase.isIdentity ? 1.0 : 0.85)
+                                    .scaleEffect(phase.isIdentity ? 1.0 : 0.98)
+                            }
 
                             // Countdown Timer
                             CountdownTimerView(countdown: countdown)
+                                .scrollTransition(.interactive) { content, phase in
+                                    content
+                                        .opacity(phase.isIdentity ? 1.0 : 0.85)
+                                        .scaleEffect(phase.isIdentity ? 1.0 : 0.98)
+                                }
 
                             // Dot Grid Matrix with Completion Glow Wave
                             DotGridView(
@@ -70,6 +80,11 @@ public struct MissionTabView: View {
                                 isCompleting: isCompletingAnimation
                             )
                             .padding(.vertical, 8)
+                            .scrollTransition(.interactive) { content, phase in
+                                content
+                                    .opacity(phase.isIdentity ? 1.0 : 0.88)
+                                    .scaleEffect(phase.isIdentity ? 1.0 : 0.97)
+                            }
 
                             // To-Do List (Swipe to Complete / Delete & Priority Reordering)
                             MissionTodoListView(
@@ -87,6 +102,11 @@ public struct MissionTabView: View {
                                     missionStore.addTodo(text: text)
                                 }
                             )
+                            .scrollTransition(.interactive) { content, phase in
+                                content
+                                    .opacity(phase.isIdentity ? 1.0 : 0.85)
+                                    .scaleEffect(phase.isIdentity ? 1.0 : 0.98)
+                            }
 
                             // Apple-Style Mark Complete Action Button
                             Button {
@@ -120,9 +140,15 @@ public struct MissionTabView: View {
                             }
                             .padding(.top, 24)
                             .padding(.bottom, 48)
+                            .scrollTransition(.interactive) { content, phase in
+                                content
+                                    .opacity(phase.isIdentity ? 1.0 : 0.75)
+                                    .scaleEffect(phase.isIdentity ? 1.0 : 0.95)
+                            }
                         }
                         .padding(.horizontal, 24)
                     }
+                    .scrollIndicators(.hidden)
                 }
             } else {
                 // No active mission -> Direct creation view

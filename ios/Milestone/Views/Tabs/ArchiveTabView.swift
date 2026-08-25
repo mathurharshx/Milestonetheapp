@@ -92,7 +92,7 @@ public struct ArchiveTabView: View {
                     }
                     .frame(maxWidth: .infinity)
                 } else {
-                    ScrollView {
+                    ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 0) {
                             ForEach(missionStore.archivedMissions) { mission in
                                 ArchiveCardView(
@@ -107,6 +107,12 @@ public struct ArchiveTabView: View {
                                         }
                                     }
                                 )
+                                .scrollTransition(.interactive) { content, phase in
+                                    content
+                                        .opacity(phase.isIdentity ? 1.0 : 0.8)
+                                        .scaleEffect(phase.isIdentity ? 1.0 : 0.98)
+                                }
+
                                 Divider()
                                     .overlay(theme.divider)
                             }
@@ -114,6 +120,7 @@ public struct ArchiveTabView: View {
                         .padding(.horizontal, 24)
                         .padding(.bottom, 24)
                     }
+                    .scrollIndicators(.hidden)
                 }
             }
 

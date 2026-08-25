@@ -39,7 +39,7 @@ public struct SettingsTabView: View {
             .padding(.bottom, 20)
 
             // Settings Rows
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     // ── GENERAL SECTION ──
                     SectionHeader(title: "GENERAL")
@@ -438,6 +438,7 @@ public struct SettingsTabView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)
             }
+            .scrollIndicators(.hidden)
         }
         .background(theme.background.ignoresSafeArea())
         .sheet(isPresented: $showProfileSheet) {
