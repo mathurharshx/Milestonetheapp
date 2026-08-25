@@ -26,112 +26,106 @@ public struct MissionTabView: View {
                         targetDate: mission.targetDate
                     )
 
-                    ScrollView(showsIndicators: false) {
-                        LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                            // ── Top Brand & Mission Title (Scrolls Away) ──
-                            VStack(spacing: 12) {
-                                // Top Brand
-                                HStack {
-                                    Text("MILESTONE")
-                                        .font(.system(size: 11, weight: .heavy))
-                                        .tracking(4)
-                                        .foregroundStyle(theme.accent)
-                                        .padding(.leading, 4)
+                    VStack(spacing: 0) {
+                        // ── Pinned Hero Unit (Brand + Title + Countdown + Dot Matrix) ──
+                        VStack(spacing: 6) {
+                            // Top Brand
+                            HStack {
+                                Text("MILESTONE")
+                                    .font(.system(size: 11, weight: .heavy))
+                                    .tracking(4)
+                                    .foregroundStyle(theme.accent)
+                                    .padding(.leading, 4)
 
-                                    Spacer()
+                                Spacer()
+                            }
+                            .padding(.top, 16)
+
+                            // Mission Title
+                            Text(mission.title)
+                                .font(.system(size: 30, weight: .medium))
+                                .tracking(-0.6)
+                                .foregroundStyle(theme.textPrimary)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 2)
+
+                            // Countdown Timer
+                            CountdownTimerView(countdown: countdown)
+
+                            // Dot Grid Matrix with Completion Glow Wave
+                            DotGridView(
+                                totalDays: countdown.totalDays,
+                                daysElapsed: countdown.daysElapsed,
+                                totalHours: countdown.totalHours,
+                                hoursElapsed: countdown.hoursElapsed,
+                                isUnder24h: countdown.isUnder24h,
+                                isCompleting: isCompletingAnimation
+                            )
+                            .padding(.bottom, 12)
+                        }
+                        .padding(.horizontal, 24)
+                        .background(theme.background)
+
+                        // ── Scrollable Tasks & Complete Action ──
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 28) {
+                                // To-Do List (Swipe to Complete / Delete & Priority Reordering)
+                                MissionTodoListView(
+                                    todos: mission.todos,
+                                    onToggle: { id in
+                                        missionStore.toggleTodo(id: id)
+                                    },
+                                    onDelete: { id in
+                                        missionStore.deleteTodo(id: id)
+                                    },
+                                    onMove: { indices, newOffset in
+                                        missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
+                                    },
+                                    onAddTask: { text in
+                                        missionStore.addTodo(text: text)
+                                    }
+                                )
+                                .padding(.top, 14)
+
+                                // Apple-Style Mark Complete Action Button
+                                Button {
+                                    triggerCompletion(for: mission)
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: isCompletingAnimation ? "checkmark.circle.fill" : "checkmark.seal")
+                                            .font(.system(size: 16, weight: .bold))
+
+                                        Text(isCompletingAnimation ? "ACCOMPLISHED!" : "MARK COMPLETE")
+                                            .font(.system(size: 13, weight: .bold))
+                                            .tracking(2.5)
+                                    }
+                                    .foregroundStyle(isCompletingAnimation ? theme.background : theme.accent)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 54)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .fill(isCompletingAnimation ? theme.accent : Color.clear)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .stroke(theme.accent, lineWidth: 1.5)
+                                    )
+                                    .shadow(
+                                        color: isCompletingAnimation ? theme.accent.opacity(0.4) : .clear,
+                                        radius: 12,
+                                        x: 0,
+                                        y: 4
+                                    )
                                 }
-                                .padding(.top, 20)
-
-                                // Mission Title (Clean, no description)
-                                Text(mission.title)
-                                    .font(.system(size: 32, weight: .medium))
-                                    .tracking(-0.6)
-                                    .foregroundStyle(theme.textPrimary)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 16)
-                                    .padding(.top, 4)
-                                    .padding(.bottom, 8)
+                                .padding(.top, 8)
+                                .padding(.bottom, 96)
                             }
                             .padding(.horizontal, 24)
-
-                            // ── Sticky Countdown & Dot Grid Section ──
-                            Section {
-                                VStack(spacing: 28) {
-                                    // To-Do List (Swipe to Complete / Delete & Priority Reordering)
-                                    MissionTodoListView(
-                                        todos: mission.todos,
-                                        onToggle: { id in
-                                            missionStore.toggleTodo(id: id)
-                                        },
-                                        onDelete: { id in
-                                            missionStore.deleteTodo(id: id)
-                                        },
-                                        onMove: { indices, newOffset in
-                                            missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
-                                        },
-                                        onAddTask: { text in
-                                            missionStore.addTodo(text: text)
-                                        }
-                                    )
-                                    .padding(.top, 16)
-
-                                    // Apple-Style Mark Complete Action Button
-                                    Button {
-                                        triggerCompletion(for: mission)
-                                    } label: {
-                                        HStack(spacing: 10) {
-                                            Image(systemName: isCompletingAnimation ? "checkmark.circle.fill" : "checkmark.seal")
-                                                .font(.system(size: 16, weight: .bold))
-
-                                            Text(isCompletingAnimation ? "ACCOMPLISHED!" : "MARK COMPLETE")
-                                                .font(.system(size: 13, weight: .bold))
-                                                .tracking(2.5)
-                                        }
-                                        .foregroundStyle(isCompletingAnimation ? theme.background : theme.accent)
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 54)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 14)
-                                                .fill(isCompletingAnimation ? theme.accent : Color.clear)
-                                        )
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 14)
-                                                .stroke(theme.accent, lineWidth: 1.5)
-                                        )
-                                        .shadow(
-                                            color: isCompletingAnimation ? theme.accent.opacity(0.4) : .clear,
-                                            radius: 12,
-                                            x: 0,
-                                            y: 4
-                                        )
-                                    }
-                                    .padding(.top, 12)
-                                    .padding(.bottom, 64)
-                                }
-                                .padding(.horizontal, 24)
-                            } header: {
-                                VStack(spacing: 8) {
-                                    // Countdown Timer
-                                    CountdownTimerView(countdown: countdown)
-
-                                    // Dot Grid Matrix with Completion Glow Wave
-                                    DotGridView(
-                                        totalDays: countdown.totalDays,
-                                        daysElapsed: countdown.daysElapsed,
-                                        totalHours: countdown.totalHours,
-                                        hoursElapsed: countdown.hoursElapsed,
-                                        isUnder24h: countdown.isUnder24h,
-                                        isCompleting: isCompletingAnimation
-                                    )
-                                    .padding(.bottom, 12)
-                                }
-                                .padding(.horizontal, 24)
-                                .frame(maxWidth: .infinity)
-                                .background(theme.background)
-                            }
                         }
+                        .scrollIndicators(.hidden)
                     }
-                    .scrollIndicators(.hidden)
                 }
             } else {
                 // No active mission -> Direct creation view
