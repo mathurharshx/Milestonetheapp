@@ -27,126 +27,109 @@ public struct MissionTabView: View {
                     )
 
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: 28) {
-                            // Top Brand
-                            HStack {
-                                Text("MILESTONE")
-                                    .font(.system(size: 11, weight: .heavy))
-                                    .tracking(4)
-                                    .foregroundStyle(theme.accent)
-                                    .padding(.leading, 4)
+                        LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                            // ── Top Brand & Mission Title (Scrolls Away) ──
+                            VStack(spacing: 12) {
+                                // Top Brand
+                                HStack {
+                                    Text("MILESTONE")
+                                        .font(.system(size: 11, weight: .heavy))
+                                        .tracking(4)
+                                        .foregroundStyle(theme.accent)
+                                        .padding(.leading, 4)
 
-                                Spacer()
-                            }
-                            .padding(.top, 24)
+                                    Spacer()
+                                }
+                                .padding(.top, 20)
 
-                            // Mission Title & Note
-                            VStack(spacing: 8) {
+                                // Mission Title (Clean, no description)
                                 Text(mission.title)
                                     .font(.system(size: 32, weight: .medium))
                                     .tracking(-0.6)
                                     .foregroundStyle(theme.textPrimary)
                                     .multilineTextAlignment(.center)
-
-                                if let note = mission.note, !note.isEmpty {
-                                    Text(note)
-                                        .font(.system(size: 15, weight: .regular))
-                                        .foregroundStyle(theme.textTertiary)
-                                        .multilineTextAlignment(.center)
-                                }
+                                    .padding(.horizontal, 16)
+                                    .padding(.top, 4)
+                                    .padding(.bottom, 8)
                             }
-                            .padding(.horizontal, 16)
-                            .scrollTransition(.interactive) { content, phase in
-                                content
-                                    .opacity(phase.isIdentity ? 1.0 : 0.85)
-                                    .scaleEffect(phase.isIdentity ? 1.0 : 0.98)
-                            }
+                            .padding(.horizontal, 24)
 
-                            // Countdown Timer
-                            CountdownTimerView(countdown: countdown)
-                                .scrollTransition(.interactive) { content, phase in
-                                    content
-                                        .opacity(phase.isIdentity ? 1.0 : 0.85)
-                                        .scaleEffect(phase.isIdentity ? 1.0 : 0.98)
+                            // ── Sticky Countdown & Dot Grid Section ──
+                            Section {
+                                VStack(spacing: 28) {
+                                    // To-Do List (Swipe to Complete / Delete & Priority Reordering)
+                                    MissionTodoListView(
+                                        todos: mission.todos,
+                                        onToggle: { id in
+                                            missionStore.toggleTodo(id: id)
+                                        },
+                                        onDelete: { id in
+                                            missionStore.deleteTodo(id: id)
+                                        },
+                                        onMove: { indices, newOffset in
+                                            missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
+                                        },
+                                        onAddTask: { text in
+                                            missionStore.addTodo(text: text)
+                                        }
+                                    )
+                                    .padding(.top, 16)
+
+                                    // Apple-Style Mark Complete Action Button
+                                    Button {
+                                        triggerCompletion(for: mission)
+                                    } label: {
+                                        HStack(spacing: 10) {
+                                            Image(systemName: isCompletingAnimation ? "checkmark.circle.fill" : "checkmark.seal")
+                                                .font(.system(size: 16, weight: .bold))
+
+                                            Text(isCompletingAnimation ? "ACCOMPLISHED!" : "MARK COMPLETE")
+                                                .font(.system(size: 13, weight: .bold))
+                                                .tracking(2.5)
+                                        }
+                                        .foregroundStyle(isCompletingAnimation ? theme.background : theme.accent)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 54)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .fill(isCompletingAnimation ? theme.accent : Color.clear)
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .stroke(theme.accent, lineWidth: 1.5)
+                                        )
+                                        .shadow(
+                                            color: isCompletingAnimation ? theme.accent.opacity(0.4) : .clear,
+                                            radius: 12,
+                                            x: 0,
+                                            y: 4
+                                        )
+                                    }
+                                    .padding(.top, 12)
+                                    .padding(.bottom, 64)
                                 }
+                                .padding(.horizontal, 24)
+                            } header: {
+                                VStack(spacing: 8) {
+                                    // Countdown Timer
+                                    CountdownTimerView(countdown: countdown)
 
-                            // Dot Grid Matrix with Completion Glow Wave
-                            DotGridView(
-                                totalDays: countdown.totalDays,
-                                daysElapsed: countdown.daysElapsed,
-                                totalHours: countdown.totalHours,
-                                hoursElapsed: countdown.hoursElapsed,
-                                isUnder24h: countdown.isUnder24h,
-                                isCompleting: isCompletingAnimation
-                            )
-                            .padding(.vertical, 8)
-                            .scrollTransition(.interactive) { content, phase in
-                                content
-                                    .opacity(phase.isIdentity ? 1.0 : 0.88)
-                                    .scaleEffect(phase.isIdentity ? 1.0 : 0.97)
-                            }
-
-                            // To-Do List (Swipe to Complete / Delete & Priority Reordering)
-                            MissionTodoListView(
-                                todos: mission.todos,
-                                onToggle: { id in
-                                    missionStore.toggleTodo(id: id)
-                                },
-                                onDelete: { id in
-                                    missionStore.deleteTodo(id: id)
-                                },
-                                onMove: { indices, newOffset in
-                                    missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
-                                },
-                                onAddTask: { text in
-                                    missionStore.addTodo(text: text)
+                                    // Dot Grid Matrix with Completion Glow Wave
+                                    DotGridView(
+                                        totalDays: countdown.totalDays,
+                                        daysElapsed: countdown.daysElapsed,
+                                        totalHours: countdown.totalHours,
+                                        hoursElapsed: countdown.hoursElapsed,
+                                        isUnder24h: countdown.isUnder24h,
+                                        isCompleting: isCompletingAnimation
+                                    )
+                                    .padding(.bottom, 12)
                                 }
-                            )
-                            .scrollTransition(.interactive) { content, phase in
-                                content
-                                    .opacity(phase.isIdentity ? 1.0 : 0.85)
-                                    .scaleEffect(phase.isIdentity ? 1.0 : 0.98)
-                            }
-
-                            // Apple-Style Mark Complete Action Button
-                            Button {
-                                triggerCompletion(for: mission)
-                            } label: {
-                                HStack(spacing: 10) {
-                                    Image(systemName: isCompletingAnimation ? "checkmark.circle.fill" : "checkmark.seal")
-                                        .font(.system(size: 16, weight: .bold))
-
-                                    Text(isCompletingAnimation ? "ACCOMPLISHED!" : "MARK COMPLETE")
-                                        .font(.system(size: 13, weight: .bold))
-                                        .tracking(2.5)
-                                }
-                                .foregroundStyle(isCompletingAnimation ? theme.background : theme.accent)
+                                .padding(.horizontal, 24)
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 54)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .fill(isCompletingAnimation ? theme.accent : Color.clear)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .stroke(theme.accent, lineWidth: 1.5)
-                                )
-                                .shadow(
-                                    color: isCompletingAnimation ? theme.accent.opacity(0.4) : .clear,
-                                    radius: 12,
-                                    x: 0,
-                                    y: 4
-                                )
-                            }
-                            .padding(.top, 24)
-                            .padding(.bottom, 48)
-                            .scrollTransition(.interactive) { content, phase in
-                                content
-                                    .opacity(phase.isIdentity ? 1.0 : 0.75)
-                                    .scaleEffect(phase.isIdentity ? 1.0 : 0.95)
+                                .background(theme.background)
                             }
                         }
-                        .padding(.horizontal, 24)
                     }
                     .scrollIndicators(.hidden)
                 }
