@@ -42,216 +42,93 @@ public struct CreateMissionSheet: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 26) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("MILESTONE")
-                            .font(.system(size: 11, weight: .heavy))
-                            .tracking(4)
-                            .foregroundStyle(theme.accent)
-                            .padding(.leading, 2)
-
-                        Text("New Mission")
-                            .font(.system(size: 34, weight: .medium))
-                            .tracking(-0.8)
-                            .foregroundStyle(theme.textPrimary)
-
-                        Text("One goal at a time.")
-                            .font(.system(size: 15, weight: .regular))
-                            .foregroundStyle(theme.textTertiary)
-                    }
-                    .padding(.top, 28)
-
-                    // 1. TITLE (REQUIRED)
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 4) {
-                            Text("TITLE")
-                                .font(.system(size: 11, weight: .bold))
-                                .tracking(2)
-                                .foregroundStyle(theme.textSecondary)
-
-                            Text("REQUIRED")
-                                .font(.system(size: 9, weight: .semibold))
-                                .tracking(1.5)
+            VStack(spacing: 0) {
+                // ── Scrollable Form Area ──
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 26) {
+                        // Header
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("MILESTONE")
+                                .font(.system(size: 11, weight: .heavy))
+                                .tracking(4)
                                 .foregroundStyle(theme.accent)
+                                .padding(.leading, 2)
+
+                            Text("New Mission")
+                                .font(.system(size: 34, weight: .medium))
+                                .tracking(-0.8)
+                                .foregroundStyle(theme.textPrimary)
+
+                            Text("One goal at a time.")
+                                .font(.system(size: 15, weight: .regular))
+                                .foregroundStyle(theme.textTertiary)
                         }
+                        .padding(.top, 20)
 
-                        TextField("Define your mission", text: $title)
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(theme.textPrimary)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 14)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .fill(theme.surfaceLight.opacity(0.6))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(theme.border.opacity(0.6), lineWidth: 1)
-                            )
-                    }
-
-                    // 2. TARGET DATE (REQUIRED)
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 4) {
-                            Text("TARGET DATE")
-                                .font(.system(size: 11, weight: .bold))
-                                .tracking(2)
-                                .foregroundStyle(theme.textSecondary)
-
-                            Text("REQUIRED")
-                                .font(.system(size: 9, weight: .semibold))
-                                .tracking(1.5)
-                                .foregroundStyle(theme.accent)
-                        }
-
-                        Button {
-                            HapticsManager.shared.impact(.light)
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                isDatePickerExpanded.toggle()
-                                if isDatePickerExpanded {
-                                    isTimePickerExpanded = false
-                                }
-                            }
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "calendar")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundStyle(theme.accent)
-
-                                Text(formattedDateString)
-                                    .font(.system(size: 15, weight: .medium))
-                                    .foregroundStyle(theme.textPrimary)
-
-                                Spacer()
-
-                                Image(systemName: isDatePickerExpanded ? "chevron.up" : "chevron.down")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundStyle(theme.textTertiary)
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 14)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .fill(theme.surfaceLight.opacity(0.6))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(isDatePickerExpanded ? theme.accent : theme.border.opacity(0.6), lineWidth: isDatePickerExpanded ? 1.5 : 1)
-                            )
-                        }
-                        .buttonStyle(.plain)
-
-                        if isDatePickerExpanded {
-                            VStack(spacing: 0) {
-                                DatePicker(
-                                    "",
-                                    selection: $targetDate,
-                                    in: Date()...,
-                                    displayedComponents: [.date]
-                                )
-                                .datePickerStyle(.wheel)
-                                .labelsHidden()
-                                .tint(theme.accent)
-                                .frame(maxWidth: .infinity)
-
-                                Button {
-                                    HapticsManager.shared.impact(.light)
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        isDatePickerExpanded = false
-                                    }
-                                } label: {
-                                    Text("DONE")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .tracking(2)
-                                        .foregroundStyle(theme.accent)
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 10)
-                                }
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.top, 4)
-                            .padding(.bottom, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(theme.surfaceLight.opacity(0.4))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(theme.border.opacity(0.5), lineWidth: 1)
-                            )
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                        }
-                    }
-
-                    // 3. TARGET TIME (OPTIONAL)
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
+                        // 1. TITLE (REQUIRED)
+                        VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 4) {
-                                Text("TARGET TIME")
+                                Text("TITLE")
                                     .font(.system(size: 11, weight: .bold))
                                     .tracking(2)
                                     .foregroundStyle(theme.textSecondary)
 
-                                Text("OPTIONAL")
-                                    .font(.system(size: 9, weight: .regular))
+                                Text("REQUIRED")
+                                    .font(.system(size: 9, weight: .semibold))
                                     .tracking(1.5)
-                                    .foregroundStyle(theme.textTertiary)
+                                    .foregroundStyle(theme.accent)
                             }
 
-                            Spacer()
-
-                            Button {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                    hasTime.toggle()
-                                    if !hasTime {
-                                        isTimePickerExpanded = false
-                                        var comps = Calendar.current.dateComponents([.year, .month, .day], from: targetDate)
-                                        comps.hour = 23
-                                        comps.minute = 59
-                                        comps.second = 59
-                                        targetDate = Calendar.current.date(from: comps) ?? targetDate
-                                    } else {
-                                        isTimePickerExpanded = true
-                                        isDatePickerExpanded = false
-                                    }
-                                }
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: hasTime ? "clock.fill" : "clock")
-                                        .font(.system(size: 11))
-
-                                    Text(hasTime ? "REMOVE" : "ADD TIME")
-                                        .font(.system(size: 10, weight: .bold))
-                                        .tracking(1.5)
-                                }
-                                .foregroundStyle(theme.accent)
-                            }
+                            TextField("Define your mission", text: $title)
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundStyle(theme.textPrimary)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(theme.surfaceLight.opacity(0.6))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(theme.border.opacity(0.6), lineWidth: 1)
+                                )
                         }
 
-                        if hasTime {
+                        // 2. TARGET DATE (REQUIRED)
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 4) {
+                                Text("TARGET DATE")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .tracking(2)
+                                    .foregroundStyle(theme.textSecondary)
+
+                                Text("REQUIRED")
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .tracking(1.5)
+                                    .foregroundStyle(theme.accent)
+                            }
+
                             Button {
                                 HapticsManager.shared.impact(.light)
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                    isTimePickerExpanded.toggle()
-                                    if isTimePickerExpanded {
-                                        isDatePickerExpanded = false
+                                    isDatePickerExpanded.toggle()
+                                    if isDatePickerExpanded {
+                                        isTimePickerExpanded = false
                                     }
                                 }
                             } label: {
                                 HStack(spacing: 12) {
-                                    Image(systemName: "clock")
+                                    Image(systemName: "calendar")
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundStyle(theme.accent)
 
-                                    Text(formattedTimeString)
+                                    Text(formattedDateString)
                                         .font(.system(size: 15, weight: .medium))
                                         .foregroundStyle(theme.textPrimary)
 
                                     Spacer()
 
-                                    Image(systemName: isTimePickerExpanded ? "chevron.up" : "chevron.down")
+                                    Image(systemName: isDatePickerExpanded ? "chevron.up" : "chevron.down")
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundStyle(theme.textTertiary)
                                 }
@@ -263,28 +140,28 @@ public struct CreateMissionSheet: View {
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 14)
-                                        .stroke(isTimePickerExpanded ? theme.accent : theme.border.opacity(0.6), lineWidth: isTimePickerExpanded ? 1.5 : 1)
+                                        .stroke(isDatePickerExpanded ? theme.accent : theme.border.opacity(0.6), lineWidth: isDatePickerExpanded ? 1.5 : 1)
                                 )
                             }
                             .buttonStyle(.plain)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
 
-                            if isTimePickerExpanded {
+                            if isDatePickerExpanded {
                                 VStack(spacing: 0) {
                                     DatePicker(
                                         "",
                                         selection: $targetDate,
-                                        displayedComponents: [.hourAndMinute]
+                                        in: Date()...,
+                                        displayedComponents: [.date]
                                     )
-                                    .datePickerStyle(.wheel)
-                                    .labelsHidden()
+                                    .datePickerStyle(.graphical)
                                     .tint(theme.accent)
-                                    .frame(maxWidth: .infinity)
+                                    .padding(.horizontal, 8)
+                                    .padding(.top, 4)
 
                                     Button {
                                         HapticsManager.shared.impact(.light)
                                         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                            isTimePickerExpanded = false
+                                            isDatePickerExpanded = false
                                         }
                                     } label: {
                                         Text("DONE")
@@ -295,8 +172,6 @@ public struct CreateMissionSheet: View {
                                             .padding(.vertical, 10)
                                     }
                                 }
-                                .padding(.horizontal, 8)
-                                .padding(.top, 4)
                                 .padding(.bottom, 8)
                                 .background(
                                     RoundedRectangle(cornerRadius: 16)
@@ -309,90 +184,209 @@ public struct CreateMissionSheet: View {
                                 .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                         }
-                    }
 
-                    // 4. TASKS (OPTIONAL)
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 4) {
-                            Text("TASKS")
-                                .font(.system(size: 11, weight: .bold))
-                                .tracking(2)
-                                .foregroundStyle(theme.textSecondary)
+                        // 3. TARGET TIME (OPTIONAL TOGGLE)
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                HStack(spacing: 4) {
+                                    Text("SPECIFIC TIME")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .tracking(2)
+                                        .foregroundStyle(theme.textSecondary)
 
-                            Text("OPTIONAL")
-                                .font(.system(size: 9, weight: .regular))
-                                .tracking(1.5)
-                                .foregroundStyle(theme.textTertiary)
+                                    Text("OPTIONAL")
+                                        .font(.system(size: 9, weight: .regular))
+                                        .tracking(1.5)
+                                        .foregroundStyle(theme.textTertiary)
+                                }
+
+                                Spacer()
+
+                                Toggle("", isOn: $hasTime)
+                                    .labelsHidden()
+                                    .tint(theme.accent)
+                                    .onChange(of: hasTime) { _, newValue in
+                                        HapticsManager.shared.impact(.light)
+                                        if !newValue {
+                                            isTimePickerExpanded = false
+                                            var comps = Calendar.current.dateComponents([.year, .month, .day], from: targetDate)
+                                            comps.hour = 23
+                                            comps.minute = 59
+                                            comps.second = 59
+                                            targetDate = Calendar.current.date(from: comps) ?? targetDate
+                                        }
+                                    }
+                            }
+
+                            if hasTime {
+                                Button {
+                                    HapticsManager.shared.impact(.light)
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                        isTimePickerExpanded.toggle()
+                                        if isTimePickerExpanded {
+                                            isDatePickerExpanded = false
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "clock")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundStyle(theme.accent)
+
+                                        Text(formattedTimeString)
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundStyle(theme.textPrimary)
+
+                                        Spacer()
+
+                                        Image(systemName: isTimePickerExpanded ? "chevron.up" : "chevron.down")
+                                            .font(.system(size: 13, weight: .semibold))
+                                            .foregroundStyle(theme.textTertiary)
+                                    }
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 14)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .fill(theme.surfaceLight.opacity(0.6))
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .stroke(isTimePickerExpanded ? theme.accent : theme.border.opacity(0.6), lineWidth: isTimePickerExpanded ? 1.5 : 1)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+
+                                if isTimePickerExpanded {
+                                    VStack(spacing: 0) {
+                                        DatePicker(
+                                            "",
+                                            selection: $targetDate,
+                                            displayedComponents: [.hourAndMinute]
+                                        )
+                                        .datePickerStyle(.wheel)
+                                        .labelsHidden()
+                                        .tint(theme.accent)
+                                        .frame(maxWidth: .infinity)
+
+                                        Button {
+                                            HapticsManager.shared.impact(.light)
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                                isTimePickerExpanded = false
+                                            }
+                                        } label: {
+                                            Text("DONE")
+                                                .font(.system(size: 11, weight: .bold))
+                                                .tracking(2)
+                                                .foregroundStyle(theme.accent)
+                                                .frame(maxWidth: .infinity)
+                                                .padding(.vertical, 10)
+                                        }
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.top, 4)
+                                    .padding(.bottom, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(theme.surfaceLight.opacity(0.4))
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(theme.border.opacity(0.5), lineWidth: 1)
+                                    )
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                                }
+                            }
                         }
 
-                        VStack(spacing: 8) {
-                            // Existing Tasks
-                            ForEach(todos) { task in
+                        // 4. TASKS (OPTIONAL)
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 4) {
+                                Text("TASKS")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .tracking(2)
+                                    .foregroundStyle(theme.textSecondary)
+
+                                Text("OPTIONAL")
+                                    .font(.system(size: 9, weight: .regular))
+                                    .tracking(1.5)
+                                    .foregroundStyle(theme.textTertiary)
+                            }
+
+                            VStack(spacing: 8) {
+                                // Existing Tasks
+                                ForEach(todos) { task in
+                                    HStack(spacing: 12) {
+                                        Circle()
+                                            .fill(theme.accent)
+                                            .frame(width: 6, height: 6)
+
+                                        Text(task.text)
+                                            .font(.system(size: 15))
+                                            .foregroundStyle(theme.textPrimary)
+
+                                        Spacer()
+
+                                        Button {
+                                            todos.removeAll(where: { $0.id == task.id })
+                                        } label: {
+                                            Image(systemName: "xmark")
+                                                .font(.system(size: 12))
+                                                .foregroundStyle(theme.textTertiary)
+                                        }
+                                    }
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 10)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(theme.surfaceLight.opacity(0.4))
+                                    )
+                                }
+
+                                // Add Task Row
                                 HStack(spacing: 12) {
                                     Circle()
-                                        .fill(theme.accent)
+                                        .stroke(theme.textTertiary, lineWidth: 1)
                                         .frame(width: 6, height: 6)
 
-                                    Text(task.text)
+                                    TextField("Add a task…", text: $todoInput)
                                         .font(.system(size: 15))
                                         .foregroundStyle(theme.textPrimary)
+                                        .submitLabel(.done)
+                                        .onSubmit {
+                                            addTodo()
+                                        }
 
-                                    Spacer()
-
-                                    Button {
-                                        todos.removeAll(where: { $0.id == task.id })
-                                    } label: {
-                                        Image(systemName: "xmark")
-                                            .font(.system(size: 12))
-                                            .foregroundStyle(theme.textTertiary)
+                                    if !todoInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                        Button {
+                                            addTodo()
+                                        } label: {
+                                            Image(systemName: "plus")
+                                                .font(.system(size: 14, weight: .bold))
+                                                .foregroundStyle(theme.accent)
+                                        }
                                     }
                                 }
                                 .padding(.horizontal, 14)
-                                .padding(.vertical, 10)
+                                .padding(.vertical, 12)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(theme.surfaceLight.opacity(0.4))
+                                        .fill(theme.surfaceLight.opacity(0.6))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(theme.border.opacity(0.5), lineWidth: 1)
                                 )
                             }
-
-                            // Add Task Row
-                            HStack(spacing: 12) {
-                                Circle()
-                                    .stroke(theme.textTertiary, lineWidth: 1)
-                                    .frame(width: 6, height: 6)
-
-                                TextField("Add a task…", text: $todoInput)
-                                    .font(.system(size: 15))
-                                    .foregroundStyle(theme.textPrimary)
-                                    .submitLabel(.done)
-                                    .onSubmit {
-                                        addTodo()
-                                    }
-
-                                if !todoInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                    Button {
-                                        addTodo()
-                                    } label: {
-                                        Image(systemName: "plus")
-                                            .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(theme.accent)
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(theme.surfaceLight.opacity(0.6))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(theme.border.opacity(0.5), lineWidth: 1)
-                            )
                         }
                     }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
+                }
+                .scrollIndicators(.hidden)
 
-                    // 5. BEGIN MISSION BUTTON
+                // ── Pinned Bottom Action (BEGIN MISSION) ──
+                VStack(spacing: 0) {
                     Button {
                         handleSubmit()
                     } label: {
@@ -408,10 +402,11 @@ public struct CreateMissionSheet: View {
                             )
                     }
                     .disabled(!isReady)
-                    .padding(.top, 8)
-                    .padding(.bottom, 60)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
+                    .padding(.bottom, 16)
                 }
-                .padding(.horizontal, 24)
+                .background(theme.background)
             }
             .background(theme.background.ignoresSafeArea())
             .alert(alertTitle, isPresented: $showAlert) {
