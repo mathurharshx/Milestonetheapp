@@ -63,68 +63,70 @@ public struct MissionTabView: View {
                                 isUnder24h: countdown.isUnder24h,
                                 isCompleting: isCompletingAnimation
                             )
-                            .padding(.bottom, 12)
+                            .padding(.bottom, 8)
                         }
                         .padding(.horizontal, 24)
                         .background(theme.background)
 
-                        // ── Scrollable Tasks & Complete Action ──
+                        // ── Scrollable Tasks (Only Tasks Scroll) ──
                         ScrollView(showsIndicators: false) {
-                            VStack(spacing: 28) {
-                                // To-Do List (Swipe to Complete / Delete & Priority Reordering)
-                                MissionTodoListView(
-                                    todos: mission.todos,
-                                    onToggle: { id in
-                                        missionStore.toggleTodo(id: id)
-                                    },
-                                    onDelete: { id in
-                                        missionStore.deleteTodo(id: id)
-                                    },
-                                    onMove: { indices, newOffset in
-                                        missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
-                                    },
-                                    onAddTask: { text in
-                                        missionStore.addTodo(text: text)
-                                    }
-                                )
-                                .padding(.top, 14)
-
-                                // Apple-Style Mark Complete Action Button
-                                Button {
-                                    triggerCompletion(for: mission)
-                                } label: {
-                                    HStack(spacing: 10) {
-                                        Image(systemName: isCompletingAnimation ? "checkmark.circle.fill" : "checkmark.seal")
-                                            .font(.system(size: 16, weight: .bold))
-
-                                        Text(isCompletingAnimation ? "ACCOMPLISHED!" : "MARK COMPLETE")
-                                            .font(.system(size: 13, weight: .bold))
-                                            .tracking(2.5)
-                                    }
-                                    .foregroundStyle(isCompletingAnimation ? theme.background : theme.accent)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 54)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 14)
-                                            .fill(isCompletingAnimation ? theme.accent : Color.clear)
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 14)
-                                            .stroke(theme.accent, lineWidth: 1.5)
-                                    )
-                                    .shadow(
-                                        color: isCompletingAnimation ? theme.accent.opacity(0.4) : .clear,
-                                        radius: 12,
-                                        x: 0,
-                                        y: 4
-                                    )
+                            MissionTodoListView(
+                                todos: mission.todos,
+                                onToggle: { id in
+                                    missionStore.toggleTodo(id: id)
+                                },
+                                onDelete: { id in
+                                    missionStore.deleteTodo(id: id)
+                                },
+                                onMove: { indices, newOffset in
+                                    missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
+                                },
+                                onAddTask: { text in
+                                    missionStore.addTodo(text: text)
                                 }
-                                .padding(.top, 8)
-                                .padding(.bottom, 96)
-                            }
-                            .padding(.horizontal, 24)
+                            )
+                            .padding(.top, 10)
+                            .padding(.bottom, 16)
                         }
                         .scrollIndicators(.hidden)
+                        .padding(.horizontal, 24)
+
+                        // ── Pinned Bottom Action (Mark Complete) ──
+                        VStack(spacing: 0) {
+                            Button {
+                                triggerCompletion(for: mission)
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: isCompletingAnimation ? "checkmark.circle.fill" : "checkmark.seal")
+                                        .font(.system(size: 16, weight: .bold))
+
+                                    Text(isCompletingAnimation ? "ACCOMPLISHED!" : "MARK COMPLETE")
+                                        .font(.system(size: 13, weight: .bold))
+                                        .tracking(2.5)
+                                }
+                                .foregroundStyle(isCompletingAnimation ? theme.background : theme.accent)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 52)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(isCompletingAnimation ? theme.accent : Color.clear)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(theme.accent, lineWidth: 1.5)
+                                )
+                                .shadow(
+                                    color: isCompletingAnimation ? theme.accent.opacity(0.4) : .clear,
+                                    radius: 12,
+                                    x: 0,
+                                    y: 4
+                                )
+                            }
+                            .padding(.horizontal, 24)
+                            .padding(.top, 10)
+                            .padding(.bottom, 16)
+                        }
+                        .background(theme.background)
                     }
                 }
             } else {
