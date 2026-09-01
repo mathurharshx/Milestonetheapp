@@ -106,7 +106,7 @@ extension MilestoneWidgetData {
 }
 
 public enum SharedWidgetStore {
-    public static let suiteName = "group.com.mathurharsh.milestone"
+    public static let suiteName = "group.com.mathurharsh.milestonetheapp"
     public static let widgetDataKey = "milestoneWidgetData"
 
     public static func load() -> MilestoneWidgetData? {
