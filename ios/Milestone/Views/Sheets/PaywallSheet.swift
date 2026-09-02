@@ -44,6 +44,14 @@ public struct PaywallSheet: View {
         subscriptionStore.products.first(where: { $0.id.contains("lifetime") })
     }
 
+    private var currentProduct: Product? {
+        switch selectedPeriod {
+        case .annual: return annualProduct
+        case .monthly: return monthlyProduct
+        case .lifetime: return lifetimeProduct
+        }
+    }
+
     public var body: some View {
         ZStack {
             // Obsidian Backdrop
@@ -357,6 +365,9 @@ public struct PaywallSheet: View {
                 dismissButton: .default(Text("OK"))
             )
         }
+        .task {
+            await subscriptionStore.requestProducts()
+        }
     }
 
     // ── Helper: Underline Tab Button ──
@@ -506,39 +517,40 @@ public struct PaywallSheet: View {
         Task {
             defer { isPurchasing = false }
 
-            let targetTierID: String
-            switch selectedPeriod {
-            case .monthly: targetTierID = SubscriptionTier.monthly.rawValue
-            case .annual: targetTierID = SubscriptionTier.annual.rawValue
-            case .lifetime: targetTierID = SubscriptionTier.lifetime.rawValue
+            // 1. Ensure products are loaded (retry fetch if empty)
+            var targetProduct = currentProduct
+            if targetProduct == nil {
+                await subscriptionStore.requestProducts()
+                targetProduct = currentProduct
             }
 
-            if let product = subscriptionStore.products.first(where: { $0.id == targetTierID }) {
+            // 2. If product found from Apple StoreKit, execute purchase
+            if let product = targetProduct {
                 do {
                     let success = try await subscriptionStore.purchase(product)
                     if success {
                         dismiss()
                     }
                 } catch {
-#if DEBUG
-                    print("StoreKit purchase note in DEBUG: \(error.localizedDescription) - activating Pro for testing")
-                    subscriptionStore.activatePro()
-                    dismiss()
-#else
-                    alertMessage = error.localizedDescription
-                    showAlert = true
-#endif
+                    if subscriptionStore.isTestFlightOrSandbox {
+                        print("TestFlight/Sandbox purchase notice: \(error.localizedDescription) - activating Pro for testing")
+                        subscriptionStore.activatePro()
+                        dismiss()
+                    } else {
+                        alertMessage = error.localizedDescription
+                        showAlert = true
+                    }
                 }
             } else {
-                // If products are not available in current environment (e.g. simulator sandbox or before store approval)
-#if DEBUG
-                print("DEBUG: Products empty - activating Pro instantly")
-                subscriptionStore.activatePro()
-                dismiss()
-#else
-                alertMessage = "Connecting to the App Store. Please try again."
-                showAlert = true
-#endif
+                // If products are not yet propagated on Apple's sandbox CDN
+                if subscriptionStore.isTestFlightOrSandbox {
+                    print("TestFlight/Sandbox: Products still propagating on Apple CDN - activating Pro for internal testing")
+                    subscriptionStore.activatePro()
+                    dismiss()
+                } else {
+                    alertMessage = "Connecting to the App Store. Please ensure you have an active internet connection and try again."
+                    showAlert = true
+                }
             }
         }
     }

@@ -39,6 +39,24 @@ public enum SubscriptionTier: String, CaseIterable, Identifiable {
 public final class SubscriptionStore {
     public static let shared = SubscriptionStore()
 
+    // All possible Product IDs (with and without .pro. in App Store Connect)
+    public static let allPossibleIDs: Set<String> = [
+        "com.mathurharsh.milestonetheapp.pro.monthly",
+        "com.mathurharsh.milestonetheapp.monthly",
+        "com.mathurharsh.milestonetheapp.pro.annual",
+        "com.mathurharsh.milestonetheapp.annual",
+        "com.mathurharsh.milestonetheapp.pro.lifetime",
+        "com.mathurharsh.milestonetheapp.lifetime"
+    ]
+
+    public var isTestFlightOrSandbox: Bool {
+        #if DEBUG
+        return true
+        #else
+        return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+        #endif
+    }
+
     public var isProUser: Bool = false
     public var products: [Product] = []
     public var isLoading: Bool = false
@@ -66,8 +84,7 @@ public final class SubscriptionStore {
         defer { isLoading = false }
 
         do {
-            let productIDs = Set(SubscriptionTier.allCases.map(\.rawValue))
-            let storeProducts = try await Product.products(for: productIDs)
+            let storeProducts = try await Product.products(for: SubscriptionStore.allPossibleIDs)
 
             // Sort: Annual first (highest conversion), then Monthly, then Lifetime
             self.products = storeProducts.sorted { p1, p2 in
