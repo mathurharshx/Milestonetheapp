@@ -59,9 +59,37 @@ public struct CreateMissionSheet: View {
                                 .tracking(-0.8)
                                 .foregroundStyle(theme.textPrimary)
 
-                            Text("One goal at a time.")
-                                .font(.system(size: 15, weight: .regular))
-                                .foregroundStyle(theme.textTertiary)
+                            HStack {
+                                Text("One goal at a time.")
+                                    .font(.system(size: 15, weight: .regular))
+                                    .foregroundStyle(theme.textTertiary)
+
+                                Spacer()
+
+#if DEBUG
+                                Button {
+                                    HapticsManager.shared.impact(.light)
+                                    title = "Launch Milestone v1.0"
+                                    todos = [
+                                        TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
+                                        TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false),
+                                        TodoTask(id: "3", text: "Publish Launch Announcement", done: false)
+                                    ]
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "wand.and.stars")
+                                        Text("DEMO FILL")
+                                    }
+                                    .font(.system(size: 10, weight: .bold))
+                                    .tracking(1)
+                                    .foregroundStyle(theme.accent)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(Capsule().fill(theme.accentDim))
+                                }
+                                .buttonStyle(.plain)
+#endif
+                            }
                         }
                         .padding(.top, 20)
 

@@ -6,10 +6,12 @@ public struct SettingsTabView: View {
     @Environment(ThemeStore.self) private var themeStore
     @Environment(PomodoroStore.self) private var pomodoroStore
     @Environment(MissionStore.self) private var missionStore
+    @Environment(SubscriptionStore.self) private var subscriptionStore
     @Environment(\.theme) private var theme
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var showProfileSheet: Bool = false
+    @State private var showPaywallSheet: Bool = false
     @State private var isDarkMode: Bool = false
     @State private var reminderDate: Date = Date()
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
@@ -41,6 +43,64 @@ public struct SettingsTabView: View {
             // Settings Rows
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
+                    // ── SOVEREIGN PRO BANNER ──
+                    Button {
+                        HapticsManager.shared.impact(.medium)
+                        showPaywallSheet = true
+                    } label: {
+                        HStack(spacing: 14) {
+                            ZStack {
+                                Circle()
+                                    .fill(theme.accent.opacity(0.16))
+                                    .frame(width: 44, height: 44)
+
+                                Image(systemName: subscriptionStore.isProUser ? "crown.fill" : "sparkles")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundStyle(theme.accent)
+                            }
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                HStack(spacing: 6) {
+                                    Text(subscriptionStore.isProUser ? "MILESTONE SOVEREIGN" : "UPGRADE TO SOVEREIGN")
+                                        .font(.system(size: 13, weight: .bold))
+                                        .tracking(1.5)
+                                        .foregroundStyle(theme.textPrimary)
+
+                                    if subscriptionStore.isProUser {
+                                        Text("ACTIVE")
+                                            .font(.system(size: 9, weight: .black))
+                                            .tracking(1)
+                                            .foregroundStyle(theme.accent)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Capsule().fill(theme.accentDim))
+                                    }
+                                }
+
+                                Text(subscriptionStore.isProUser ? "All features & focus soundscapes unlocked" : "Unlock ADHD soundscapes, the vault & dual-track")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundStyle(theme.textTertiary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(theme.textTertiary)
+                        }
+                        .padding(14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(theme.surfaceLight.opacity(0.6))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(theme.accent.opacity(subscriptionStore.isProUser ? 0.35 : 0.65), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.bottom, 20)
+
                     // ── GENERAL SECTION ──
                     SectionHeader(title: "GENERAL")
 
@@ -183,6 +243,34 @@ public struct SettingsTabView: View {
                         .tint(Color(uiColor: .systemGreen))
                     }
                     .padding(.vertical, 14)
+
+                    Divider().overlay(theme.divider)
+
+                    Button {
+                        HapticsManager.shared.notification(.success)
+                        let target = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
+                        missionStore.createMission(
+                            title: "Launch Milestone v1.0",
+                            targetDate: target,
+                            todos: [
+                                TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
+                                TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false),
+                                TodoTask(id: "3", text: "Publish Launch Announcement", done: false)
+                            ]
+                        )
+                        userStore.selectedTab = .mission
+                    } label: {
+                        HStack {
+                            Text("Seed Test Mission & Tasks")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(theme.accent)
+                            Spacer()
+                            Image(systemName: "sparkles")
+                                .foregroundStyle(theme.accent)
+                        }
+                        .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.plain)
 
                     Divider().overlay(theme.divider)
 #endif
@@ -443,6 +531,9 @@ public struct SettingsTabView: View {
         .background(theme.background.ignoresSafeArea())
         .sheet(isPresented: $showProfileSheet) {
             ProfileSheet()
+        }
+        .sheet(isPresented: $showPaywallSheet) {
+            PaywallSheet()
         }
         .onAppear {
             isDarkMode = themeStore.isDarkMode(systemScheme: colorScheme)

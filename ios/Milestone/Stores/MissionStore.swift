@@ -15,10 +15,16 @@ public final class MissionStore {
             saveArchivedMissions()
         }
     }
+    public var vaultMissions: [Mission] = [] {
+        didSet {
+            saveVaultMissions()
+        }
+    }
     public var isLoading: Bool = true
 
     private let activeKey = "milestone:activeMission"
     private let archiveKey = "milestone:archivedMissions"
+    private let vaultKey = "milestone:vaultMissions"
 
     private var encoder: JSONEncoder {
         let enc = JSONEncoder()
@@ -65,6 +71,13 @@ public final class MissionStore {
             self.archivedMissions = missions
         } else {
             self.archivedMissions = []
+        }
+
+        if let vaultData = UserDefaults.standard.data(forKey: vaultKey),
+           let missions = try? decoder.decode([Mission].self, from: vaultData) {
+            self.vaultMissions = missions
+        } else {
+            self.vaultMissions = []
         }
 
         syncToWidget()
@@ -212,5 +225,36 @@ public final class MissionStore {
         )
         SharedWidgetStore.save(updated)
         SharedWidgetStore.reloadWidgetTimelines()
+    }
+
+    // ── MISSION VAULT ──
+    public func addToVault(title: String, targetDate: Date, note: String? = nil, todos: [TodoTask] = []) {
+        let mission = Mission(
+            id: "\(Int(Date().timeIntervalSince1970 * 1000))",
+            title: title.trimmingCharacters(in: .whitespacesAndNewlines),
+            note: note?.trimmingCharacters(in: .whitespacesAndNewlines),
+            todos: todos,
+            targetDate: targetDate,
+            createdAt: Date(),
+            isActive: false
+        )
+        self.vaultMissions.insert(mission, at: 0)
+    }
+
+    public func deleteFromVault(id: String) {
+        self.vaultMissions.removeAll(where: { $0.id == id })
+    }
+
+    public func promoteToActiveMission(vaultMissionId: String) {
+        guard let index = vaultMissions.firstIndex(where: { $0.id == vaultMissionId }) else { return }
+        var mission = vaultMissions.remove(at: index)
+        mission.isActive = true
+        self.activeMission = mission
+    }
+
+    private func saveVaultMissions() {
+        if let data = try? encoder.encode(vaultMissions) {
+            UserDefaults.standard.set(data, forKey: vaultKey)
+        }
     }
 }

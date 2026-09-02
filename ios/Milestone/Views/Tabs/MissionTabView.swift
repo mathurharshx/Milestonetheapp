@@ -2,12 +2,15 @@ import SwiftUI
 
 public struct MissionTabView: View {
     @Environment(MissionStore.self) private var missionStore
+    @Environment(PomodoroStore.self) private var pomodoroStore
+    @Environment(UserStore.self) private var userStore
     @Environment(\.theme) private var theme
 
     public var onNavigateToArchive: (() -> Void)?
 
     @State private var isCompletingAnimation: Bool = false
     @State private var showCelebrationSheet: Bool = false
+    @State private var showVaultSheet: Bool = false
     @State private var completedQuote: Quote?
     @State private var activeMissionSnapshot: Mission?
 
@@ -38,6 +41,36 @@ public struct MissionTabView: View {
                                     .padding(.leading, 4)
 
                                 Spacer()
+
+                                Button {
+                                    HapticsManager.shared.impact(.light)
+                                    showVaultSheet = true
+                                } label: {
+                                    HStack(spacing: 5) {
+                                        Image(systemName: "archivebox")
+                                            .font(.system(size: 10, weight: .bold))
+                                        Text("VAULT")
+                                            .font(.system(size: 10, weight: .black))
+                                            .tracking(1.5)
+
+                                        if !missionStore.vaultMissions.isEmpty {
+                                            Text("\(missionStore.vaultMissions.count)")
+                                                .font(.system(size: 9, weight: .black))
+                                                .foregroundStyle(theme.background)
+                                                .padding(.horizontal, 5)
+                                                .padding(.vertical, 1)
+                                                .background(Capsule().fill(theme.accent))
+                                        }
+                                    }
+                                    .foregroundStyle(theme.textSecondary)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(
+                                        Capsule()
+                                            .fill(theme.surfaceLight.opacity(0.6))
+                                    )
+                                }
+                                .buttonStyle(.plain)
                             }
                             .padding(.top, 16)
 
@@ -83,6 +116,13 @@ public struct MissionTabView: View {
                                 },
                                 onAddTask: { text in
                                     missionStore.addTodo(text: text)
+                                },
+                                onFocusTask: { id, text in
+                                    HapticsManager.shared.impact(.medium)
+                                    pomodoroStore.focusOn(taskId: id, taskTitle: text)
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                        userStore.selectedTab = .pomodoro
+                                    }
                                 }
                             )
                             .padding(.top, 10)
@@ -150,6 +190,9 @@ public struct MissionTabView: View {
                     }
                 )
             }
+        }
+        .sheet(isPresented: $showVaultSheet) {
+            VaultSheet()
         }
     }
 

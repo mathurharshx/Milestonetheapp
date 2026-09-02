@@ -23,6 +23,11 @@
 		MS0014 /* MissionTodoListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF014 /* MissionTodoListView.swift */; };
 		MS0015 /* PomodoroRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF015 /* PomodoroRingView.swift */; };
 		MS0016 /* GlassTabBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF016 /* GlassTabBarView.swift */; };
+		MS0080 /* VictoryCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF080 /* VictoryCardView.swift */; };
+		MS0081 /* SubscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF081 /* SubscriptionStore.swift */; };
+		MS0082 /* PaywallSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF082 /* PaywallSheet.swift */; };
+		MS0084 /* SoundscapeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF084 /* SoundscapeManager.swift */; };
+		MS0085 /* VaultSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF085 /* VaultSheet.swift */; };
 		MS0017 /* CreateMissionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF017 /* CreateMissionSheet.swift */; };
 		MS0018 /* ProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF018 /* ProfileSheet.swift */; };
 		MS0019 /* QuoteModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF019 /* QuoteModalView.swift */; };
@@ -99,6 +104,11 @@
 		MSF014 /* MissionTodoListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionTodoListView.swift; sourceTree = "<group>"; };
 		MSF015 /* PomodoroRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroRingView.swift; sourceTree = "<group>"; };
 		MSF016 /* GlassTabBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassTabBarView.swift; sourceTree = "<group>"; };
+		MSF080 /* VictoryCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VictoryCardView.swift; sourceTree = "<group>"; };
+		MSF081 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
+		MSF082 /* PaywallSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallSheet.swift; sourceTree = "<group>"; };
+		MSF084 /* SoundscapeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundscapeManager.swift; sourceTree = "<group>"; };
+		MSF085 /* VaultSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSheet.swift; sourceTree = "<group>"; };
 		MSF017 /* CreateMissionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMissionSheet.swift; sourceTree = "<group>"; };
 		MSF018 /* ProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSheet.swift; sourceTree = "<group>"; };
 		MSF019 /* QuoteModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuoteModalView.swift; sourceTree = "<group>"; };
@@ -209,6 +219,7 @@
 				MSF009 /* MissionStore.swift */,
 				MSF010 /* PomodoroStore.swift */,
 				MSF011 /* UserStore.swift */,
+				MSF081 /* SubscriptionStore.swift */,
 			);
 			path = Stores;
 			sourceTree = "<group>";
@@ -221,6 +232,7 @@
 				MSF033 /* PomodoroActivityManager.swift */,
 				MSF035 /* NotificationManager.swift */,
 				MSF036 /* AudioManager.swift */,
+				MSF084 /* SoundscapeManager.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -260,6 +272,7 @@
 				MSF014 /* MissionTodoListView.swift */,
 				MSF015 /* PomodoroRingView.swift */,
 				MSF016 /* GlassTabBarView.swift */,
+				MSF080 /* VictoryCardView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -270,6 +283,8 @@
 				MSF017 /* CreateMissionSheet.swift */,
 				MSF018 /* ProfileSheet.swift */,
 				MSF034 /* MissionCelebrationSheet.swift */,
+				MSF082 /* PaywallSheet.swift */,
+				MSF085 /* VaultSheet.swift */,
 			);
 			path = Sheets;
 			sourceTree = "<group>";
@@ -440,6 +455,11 @@
 				MS0014 /* MissionTodoListView.swift in Sources */,
 				MS0015 /* PomodoroRingView.swift in Sources */,
 				MS0016 /* GlassTabBarView.swift in Sources */,
+				MS0080 /* VictoryCardView.swift in Sources */,
+				MS0081 /* SubscriptionStore.swift in Sources */,
+				MS0082 /* PaywallSheet.swift in Sources */,
+				MS0084 /* SoundscapeManager.swift in Sources */,
+				MS0085 /* VaultSheet.swift in Sources */,
 				MS0017 /* CreateMissionSheet.swift in Sources */,
 				MS0018 /* ProfileSheet.swift in Sources */,
 				MS0019 /* QuoteModalView.swift in Sources */,

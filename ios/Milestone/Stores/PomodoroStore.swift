@@ -17,6 +17,20 @@ public final class PomodoroStore {
         PomodoroPhase.breakPrompt(for: phase, session: currentSession)
     }
 
+    // ── Task-to-Pomodoro Linking ──
+    public var activeTaskId: String?
+    public var activeTaskTitle: String?
+
+    public func focusOn(taskId: String, taskTitle: String) {
+        self.activeTaskId = taskId
+        self.activeTaskTitle = taskTitle
+    }
+
+    public func clearActiveTask() {
+        self.activeTaskId = nil
+        self.activeTaskTitle = nil
+    }
+
     private var timerTask: Task<Void, Never>?
     private var targetEndTime: Date?
     private var sessionStartDate: Date = Date()

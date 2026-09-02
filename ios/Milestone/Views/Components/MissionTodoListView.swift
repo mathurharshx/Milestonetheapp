@@ -6,6 +6,7 @@ public struct MissionTodoListView: View {
     public let onDelete: (String) -> Void
     public let onMove: (IndexSet, Int) -> Void
     public let onAddTask: (String) -> Void
+    public let onFocusTask: ((String, String) -> Void)?
 
     @State private var newTaskText: String = ""
     @State private var isReordering: Bool = false
@@ -17,13 +18,15 @@ public struct MissionTodoListView: View {
         onToggle: @escaping (String) -> Void,
         onDelete: @escaping (String) -> Void,
         onMove: @escaping (IndexSet, Int) -> Void,
-        onAddTask: @escaping (String) -> Void
+        onAddTask: @escaping (String) -> Void,
+        onFocusTask: ((String, String) -> Void)? = nil
     ) {
         self.todos = todos
         self.onToggle = onToggle
         self.onDelete = onDelete
         self.onMove = onMove
         self.onAddTask = onAddTask
+        self.onFocusTask = onFocusTask
     }
 
     private var doneCount: Int {
@@ -101,7 +104,10 @@ public struct MissionTodoListView: View {
                             onMoveDown: {
                                 guard index < todos.count - 1 else { return }
                                 onMove(IndexSet(integer: index), index + 2)
-                            }
+                            },
+                            onFocusTask: onFocusTask != nil ? {
+                                onFocusTask?(task.id, task.text)
+                            } : nil
                         )
 
                         Divider().overlay(theme.divider)
@@ -162,6 +168,7 @@ private struct SwipeableTaskRow: View {
     let onDelete: () -> Void
     let onMoveUp: () -> Void
     let onMoveDown: () -> Void
+    let onFocusTask: (() -> Void)?
 
     @Environment(\.theme) private var theme
     @State private var dragOffset: CGFloat = 0
@@ -290,6 +297,27 @@ private struct SwipeableTaskRow: View {
                         .background(
                             Capsule().fill(theme.accentDim)
                         )
+                } else if !task.done, let onFocus = onFocusTask {
+                    // Focus on Task in Pomodoro Shortcut
+                    Button {
+                        HapticsManager.shared.impact(.light)
+                        onFocus()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "timer")
+                                .font(.system(size: 10, weight: .bold))
+                            Text("FOCUS")
+                                .font(.system(size: 9, weight: .bold))
+                                .tracking(1)
+                        }
+                        .foregroundStyle(theme.accent)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule().fill(theme.accentDim)
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.vertical, 12)

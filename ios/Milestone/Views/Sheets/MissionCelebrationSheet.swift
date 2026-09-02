@@ -12,6 +12,8 @@ public struct MissionCelebrationSheet: View {
     @State private var sealAnimation: Bool = false
     @State private var contentAnimation: Bool = false
     @State private var matrixWaveAnimation: Bool = false
+    @State private var shareableImage: UIImage?
+    @State private var showShareSheet: Bool = false
 
     public init(
         mission: Mission,
@@ -183,9 +185,33 @@ public struct MissionCelebrationSheet: View {
                             .offset(y: contentAnimation ? 0 : 20)
                         }
 
-                        // ── 8. Ceremony Actions ──
-                        VStack(spacing: 14) {
-                            // Primary: View in Archive
+                        // ── 7. Action Buttons ──
+                        VStack(spacing: 12) {
+                            // Viral Proof of Victory Card Export
+                            Button {
+                                generateVictoryCard()
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: "square.and.arrow.up")
+                                        .font(.system(size: 14, weight: .bold))
+                                    Text("EXPORT VICTORY CARD")
+                                        .font(.system(size: 13, weight: .bold))
+                                        .tracking(2.0)
+                                }
+                                .foregroundStyle(theme.accent)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 52)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(theme.surfaceLight.opacity(0.8))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(theme.accent.opacity(0.4), lineWidth: 1)
+                                )
+                            }
+
+                            // Primary: Archive Mission
                             Button {
                                 HapticsManager.shared.impact(.medium)
                                 dismiss()
@@ -244,7 +270,35 @@ public struct MissionCelebrationSheet: View {
                 matrixWaveAnimation = true
             }
         }
+        .sheet(isPresented: $showShareSheet) {
+            if let image = shareableImage {
+                ActivityView(activityItems: [image])
+            }
+        }
     }
+
+    @MainActor
+    private func generateVictoryCard() {
+        HapticsManager.shared.impact(.medium)
+        let card = VictoryCardView(mission: mission, quote: quote, theme: theme)
+        let renderer = ImageRenderer(content: card)
+        renderer.scale = 3.0
+        if let uiImage = renderer.uiImage {
+            self.shareableImage = uiImage
+            self.showShareSheet = true
+        }
+    }
+}
+
+// ── Native Share Sheet Wrapper ──
+private struct ActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // ── Stat Badge Card Component ──

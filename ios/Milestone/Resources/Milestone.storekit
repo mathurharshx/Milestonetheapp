@@ -1,0 +1,120 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : ""
+      }
+    ]
+  },
+  "identifier" : "3E1763F7",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "49.99",
+      "familyShareable" : true,
+      "internalID" : "6478901234",
+      "localizations" : [
+        {
+          "description" : "Unlimited lifetime access to all Sovereign features.",
+          "displayName" : "Milestone Sovereign Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.mathurharsh.milestonetheapp.pro.lifetime",
+      "referenceName" : "Milestone Sovereign Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21489012",
+      "localizations" : [
+        {
+          "description" : "Sovereign Focus Subscription",
+          "displayName" : "Milestone Sovereign",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "Milestone Sovereign",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "3.99",
+          "familyShareable" : true,
+          "groupNumber" : 2,
+          "internalID" : "6478901235",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monthly access to Milestone Sovereign features.",
+              "displayName" : "Monthly Sovereign",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.mathurharsh.milestonetheapp.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly Sovereign",
+          "subscriptionGroupID" : "21489012",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "29.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "6478901236",
+          "introductoryOffer" : {
+            "internalID" : "7478901236",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Annual access with 7-day free trial.",
+              "displayName" : "Annual Sovereign",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.mathurharsh.milestonetheapp.pro.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Annual Sovereign",
+          "subscriptionGroupID" : "21489012",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

@@ -6,6 +6,8 @@ struct MilestoneApp: App {
     @State private var pomodoroStore = PomodoroStore()
     @State private var userStore = UserStore()
     @State private var themeStore = ThemeStore()
+    @State private var subscriptionStore = SubscriptionStore.shared
+    @State private var soundscapeManager = SoundscapeManager.shared
 
     var body: some Scene {
         WindowGroup {
@@ -14,6 +16,8 @@ struct MilestoneApp: App {
                 .environment(pomodoroStore)
                 .environment(userStore)
                 .environment(themeStore)
+                .environment(subscriptionStore)
+                .environment(soundscapeManager)
         }
     }
 }
