@@ -162,7 +162,7 @@ public struct PaywallSheet: View {
                                     title: "Dual Pillars",
                                     badge: "BALANCED",
                                     badgeColor: Color(red: 0.32, green: 0.72, blue: 0.53),
-                                    summary: "Run 1 Work Mountain and 1 Personal Mountain simultaneously.",
+                                    summary: "Run 1 Work Mission and 1 Personal Mission simultaneously.",
                                     detail: "The only exception to the single-goal rule. Dual Pillars allows ambitious creators to balance one professional mission and one personal habit side-by-side without context switching or burnout."
                                 )
                             }
@@ -231,14 +231,14 @@ public struct PaywallSheet: View {
                                     .foregroundStyle(theme.textTertiary)
                             }
                         }
-                        .padding(.vertical, 2)
+                        .padding(.vertical, 4)
 
                         // ── 4. Highlighted Lifetime Pass Look Below ──
                         Button {
                             HapticsManager.shared.selection()
                             withAnimation(.spring(response: 0.32, dampingFraction: 0.8)) {
                                 if selectedPeriod == .lifetime {
-                                    selectedPeriod = .monthly
+                                    selectedPeriod = .annual
                                 } else {
                                     selectedPeriod = .lifetime
                                 }
@@ -286,16 +286,18 @@ public struct PaywallSheet: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .padding(.bottom, 12)
                     }
-                    .padding(.horizontal, 18)
+                    .padding(.horizontal, 20)
                 }
-
-                // ── 5. Pinned Bottom CTA (Consistent simple bold typography, no icons) ──
-                VStack(spacing: 8) {
+            }
+            .safeAreaInset(edge: .bottom) {
+                // ── 5. App Store Review Compliant Grounded Bottom Bar ──
+                VStack(spacing: 10) {
                     Button {
                         handlePurchase()
                     } label: {
-                        HStack(spacing: 8) {
+                        HStack {
                             if isPurchasing {
                                 ProgressView()
                                     .tint(theme.background)
@@ -303,9 +305,9 @@ public struct PaywallSheet: View {
                                 Text(ctaTitle)
                                     .font(.system(size: 13, weight: .bold))
                                     .tracking(2)
+                                    .foregroundStyle(theme.background)
                             }
                         }
-                        .foregroundStyle(theme.background)
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .background(
@@ -316,7 +318,7 @@ public struct PaywallSheet: View {
                     .buttonStyle(.plain)
                     .disabled(isPurchasing)
 
-                    // Legal & Restore Links
+                    // App Store Compliant Legal & Restore Links
                     HStack(spacing: 14) {
                         Button("Restore Purchases") {
                             Task {
@@ -335,16 +337,16 @@ public struct PaywallSheet: View {
 
                         Link("Privacy Policy", destination: URL(string: "https://milestone.app/privacy")!)
                     }
-                    .font(.system(size: 10, weight: .regular))
-                    .foregroundStyle(theme.textTertiary.opacity(0.8))
-                    .padding(.top, 2)
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(theme.textTertiary)
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 10)
-                .padding(.bottom, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 10)
                 .background(
                     theme.background
-                        .shadow(color: Color.black.opacity(0.35), radius: 10, y: -4)
+                        .shadow(color: Color.black.opacity(0.5), radius: 12, y: -4)
+                        .ignoresSafeArea(.all, edges: .bottom)
                 )
             }
         }

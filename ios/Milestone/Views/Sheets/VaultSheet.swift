@@ -108,7 +108,7 @@ public struct VaultSheet: View {
                                     .foregroundStyle(theme.textTertiary)
 
                                 HStack {
-                                    TextField("What is your next mountain?", text: $newVaultTitle)
+                                    TextField("What is your next mission?", text: $newVaultTitle)
                                         .font(.system(size: 15, weight: .medium))
                                         .foregroundStyle(theme.textPrimary)
 

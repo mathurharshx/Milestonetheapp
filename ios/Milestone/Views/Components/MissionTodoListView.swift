@@ -13,6 +13,8 @@ public struct MissionTodoListView: View {
     @FocusState private var isInputFocused: Bool
     @Environment(\.theme) private var theme
 
+    @State private var hasAppeared: Bool = false
+
     public init(
         todos: [TodoTask],
         onToggle: @escaping (String) -> Void,
@@ -86,31 +88,48 @@ public struct MissionTodoListView: View {
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(todos.enumerated()), id: \.element.id) { index, task in
-                        SwipeableTaskRow(
-                            task: task,
-                            index: index,
-                            totalCount: todos.count,
-                            isReordering: isReordering,
-                            onToggle: {
-                                onToggle(task.id)
-                            },
-                            onDelete: {
-                                onDelete(task.id)
-                            },
-                            onMoveUp: {
-                                guard index > 0 else { return }
-                                onMove(IndexSet(integer: index), index - 1)
-                            },
-                            onMoveDown: {
-                                guard index < todos.count - 1 else { return }
-                                onMove(IndexSet(integer: index), index + 2)
-                            },
-                            onFocusTask: onFocusTask != nil ? {
-                                onFocusTask?(task.id, task.text)
-                            } : nil
-                        )
+                        VStack(spacing: 0) {
+                            SwipeableTaskRow(
+                                task: task,
+                                index: index,
+                                totalCount: todos.count,
+                                isReordering: isReordering,
+                                onToggle: {
+                                    onToggle(task.id)
+                                },
+                                onDelete: {
+                                    onDelete(task.id)
+                                },
+                                onMoveUp: {
+                                    guard index > 0 else { return }
+                                    onMove(IndexSet(integer: index), index - 1)
+                                },
+                                onMoveDown: {
+                                    guard index < todos.count - 1 else { return }
+                                    onMove(IndexSet(integer: index), index + 2)
+                                },
+                                onFocusTask: onFocusTask != nil ? {
+                                    onFocusTask?(task.id, task.text)
+                                } : nil
+                            )
 
-                        Divider().overlay(theme.divider)
+                            Divider().overlay(theme.divider)
+                        }
+                        // ── Staggered Scrolling Animation ──
+                        .scrollTransition(.animated.threshold(.visible(0.15))) { content, phase in
+                            content
+                                .opacity(phase.isIdentity ? 1.0 : 0.7)
+                                .scaleEffect(phase.isIdentity ? 1.0 : 0.96)
+                                .offset(y: phase.isIdentity ? 0 : (phase.value < 0 ? -8 : 8))
+                        }
+                        // ── Cascading Entrance Animation When Mission Begins ──
+                        .offset(y: hasAppeared ? 0 : 22)
+                        .opacity(hasAppeared ? 1 : 0)
+                        .animation(
+                            .spring(response: 0.45, dampingFraction: 0.76)
+                            .delay(min(Double(index) * 0.05, 0.45)),
+                            value: hasAppeared
+                        )
                     }
                 }
             }
@@ -147,6 +166,13 @@ public struct MissionTodoListView: View {
                 .overlay(isInputFocused ? theme.accent : theme.border)
         }
         .padding(.top, 24)
+        .onAppear {
+            if !hasAppeared {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.78)) {
+                    hasAppeared = true
+                }
+            }
+        }
     }
 
     private func submitNewTask() {
