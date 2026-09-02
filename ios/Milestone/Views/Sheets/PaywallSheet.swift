@@ -8,8 +8,8 @@ public struct PaywallSheet: View {
     @Namespace private var tabNamespace
 
     public enum BillingPeriod: String, CaseIterable, Identifiable {
-        case annual
         case monthly
+        case annual
         case lifetime
 
         public var id: String { rawValue }
@@ -101,21 +101,21 @@ public struct PaywallSheet: View {
                             .padding(.horizontal, 4)
                             .padding(.top, 2)
 
-                        // ── 1. Underline Tab Switcher (ANNUAL & MONTHLY) ──
+                        // ── 1. Underline Tab Switcher: MONTHLY (1st) & ANNUAL (2nd) ──
                         VStack(spacing: 0) {
                             HStack(spacing: 0) {
-                                // Annual Tab
-                                tabButton(
-                                    period: .annual,
-                                    title: "ANNUAL",
-                                    badge: "SAVE 37%"
-                                )
-
-                                // Monthly Tab
+                                // Monthly Tab (First)
                                 tabButton(
                                     period: .monthly,
                                     title: "MONTHLY",
                                     badge: nil
+                                )
+
+                                // Annual Tab (Second)
+                                tabButton(
+                                    period: .annual,
+                                    title: "ANNUAL",
+                                    badge: "SAVE 37%"
                                 )
                             }
 
@@ -181,74 +181,23 @@ public struct PaywallSheet: View {
                         }
                         .padding(.horizontal, 2)
 
-                        // ── 3. Prominent Lifetime VIP Card (Highlighted prominently!) ──
-                        Button {
-                            HapticsManager.shared.impact(.medium)
-                            withAnimation(.spring(response: 0.32, dampingFraction: 0.8)) {
-                                selectedPeriod = .lifetime
-                            }
-                        } label: {
-                            HStack(spacing: 12) {
-                                ZStack {
-                                    Circle()
-                                        .fill(selectedPeriod == .lifetime ? theme.accent : theme.accentDim)
-                                        .frame(width: 38, height: 38)
-
-                                    Image(systemName: "crown.fill")
-                                        .font(.system(size: 17, weight: .bold))
-                                        .foregroundStyle(selectedPeriod == .lifetime ? theme.background : theme.accent)
-                                }
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    HStack(spacing: 6) {
-                                        Text("LIFETIME PASS")
-                                            .font(.system(size: 12, weight: .black))
-                                            .tracking(1.5)
-                                            .foregroundStyle(theme.textPrimary)
-
-                                        Text("👑 ONE-TIME")
-                                            .font(.system(size: 8, weight: .heavy))
-                                            .tracking(0.5)
-                                            .foregroundStyle(selectedPeriod == .lifetime ? theme.background : theme.accent)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Capsule().fill(selectedPeriod == .lifetime ? theme.accent : theme.accentDim))
-                                    }
-
-                                    Text("Pay $49.99 once • Forever yours • Zero subscriptions")
-                                        .font(.system(size: 11, weight: .medium))
-                                        .foregroundStyle(selectedPeriod == .lifetime ? theme.textPrimary : theme.textSecondary)
-                                }
-
-                                Spacer()
-
-                                ZStack {
-                                    Circle()
-                                        .stroke(selectedPeriod == .lifetime ? theme.accent : theme.border, lineWidth: 2)
-                                        .frame(width: 22, height: 22)
-
-                                    if selectedPeriod == .lifetime {
-                                        Circle()
-                                            .fill(theme.accent)
-                                            .frame(width: 12, height: 12)
-                                    }
-                                }
-                            }
-                            .padding(12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(selectedPeriod == .lifetime ? theme.surfaceLight : theme.surface.opacity(0.6))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(selectedPeriod == .lifetime ? theme.accent : theme.accent.opacity(0.3), lineWidth: selectedPeriod == .lifetime ? 1.5 : 1)
-                            )
-                        }
-                        .buttonStyle(.plain)
-
-                        // ── 4. Dynamic Pricing Display ──
+                        // ── 3. Dynamic Pricing Display ──
                         VStack(spacing: 4) {
-                            if selectedPeriod == .annual {
+                            if selectedPeriod == .monthly {
+                                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                    Text(monthlyProduct?.displayPrice ?? "$3.99")
+                                        .font(.system(size: 26, weight: .heavy))
+                                        .foregroundStyle(theme.textPrimary)
+
+                                    Text("/ month")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundStyle(theme.textSecondary)
+                                }
+
+                                Text("Billed monthly. Cancel anytime in App Store settings.")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundStyle(theme.textTertiary)
+                            } else if selectedPeriod == .annual {
                                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                                     Text(annualProduct?.displayPrice ?? "$29.99")
                                         .font(.system(size: 26, weight: .heavy))
@@ -264,20 +213,6 @@ public struct PaywallSheet: View {
                                 }
 
                                 Text("Includes 7 days free. Cancel anytime in App Store before trial ends.")
-                                    .font(.system(size: 11, weight: .regular))
-                                    .foregroundStyle(theme.textTertiary)
-                            } else if selectedPeriod == .monthly {
-                                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                    Text(monthlyProduct?.displayPrice ?? "$3.99")
-                                        .font(.system(size: 26, weight: .heavy))
-                                        .foregroundStyle(theme.textPrimary)
-
-                                    Text("/ month")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundStyle(theme.textSecondary)
-                                }
-
-                                Text("Billed monthly. Cancel anytime in App Store settings.")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(theme.textTertiary)
                             } else {
@@ -297,11 +232,65 @@ public struct PaywallSheet: View {
                             }
                         }
                         .padding(.vertical, 2)
+
+                        // ── 4. Highlighted Lifetime Pass Look Below ──
+                        Button {
+                            HapticsManager.shared.selection()
+                            withAnimation(.spring(response: 0.32, dampingFraction: 0.8)) {
+                                if selectedPeriod == .lifetime {
+                                    selectedPeriod = .monthly
+                                } else {
+                                    selectedPeriod = .lifetime
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "crown.fill")
+                                    .font(.system(size: 13, weight: .bold))
+                                    .foregroundStyle(theme.accent)
+
+                                Text("Lifetime Pass:")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(theme.textPrimary)
+
+                                Text("Pay $49.99 once for forever access")
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundStyle(theme.textSecondary)
+
+                                Spacer()
+
+                                if selectedPeriod == .lifetime {
+                                    Text("SELECTED")
+                                        .font(.system(size: 9, weight: .black))
+                                        .tracking(1)
+                                        .foregroundStyle(theme.background)
+                                        .padding(.horizontal, 7)
+                                        .padding(.vertical, 3)
+                                        .background(Capsule().fill(theme.accent))
+                                } else {
+                                    Text("SELECT")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .tracking(0.5)
+                                        .foregroundStyle(theme.accent)
+                                }
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(selectedPeriod == .lifetime ? theme.accent.opacity(0.12) : theme.surfaceLight.opacity(0.5))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(selectedPeriod == .lifetime ? theme.accent : theme.border.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
                     .padding(.horizontal, 18)
                 }
 
-                // ── 5. Pinned Bottom CTA ──
+                // ── 5. Pinned Bottom CTA (Consistent simple bold typography, no icons) ──
                 VStack(spacing: 8) {
                     Button {
                         handlePurchase()
@@ -311,9 +300,6 @@ public struct PaywallSheet: View {
                                 ProgressView()
                                     .tint(theme.background)
                             } else {
-                                Image(systemName: selectedPeriod == .annual ? "sparkles" : (selectedPeriod == .lifetime ? "crown.fill" : "arrow.right"))
-                                    .font(.system(size: 13, weight: .bold))
-
                                 Text(ctaTitle)
                                     .font(.system(size: 13, weight: .bold))
                                     .tracking(2)
@@ -505,8 +491,8 @@ public struct PaywallSheet: View {
 
     private var ctaTitle: String {
         switch selectedPeriod {
-        case .annual: return "START 7-DAY FREE TRIAL"
         case .monthly: return "UPGRADE TO PREMIUM"
+        case .annual: return "START 7-DAY FREE TRIAL"
         case .lifetime: return "GET LIFETIME ACCESS — $49.99"
         }
     }
@@ -520,8 +506,8 @@ public struct PaywallSheet: View {
 
             let targetTierID: String
             switch selectedPeriod {
-            case .annual: targetTierID = SubscriptionTier.annual.rawValue
             case .monthly: targetTierID = SubscriptionTier.monthly.rawValue
+            case .annual: targetTierID = SubscriptionTier.annual.rawValue
             case .lifetime: targetTierID = SubscriptionTier.lifetime.rawValue
             }
 
