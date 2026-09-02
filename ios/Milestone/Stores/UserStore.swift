@@ -11,7 +11,7 @@ public final class UserStore {
 
     public var hasSeenOnboarding: Bool {
         didSet {
-            UserDefaults.standard.set(hasSeenOnboarding ? "true" : "false", forKey: "milestone:hasSeenOnboarding")
+            UserDefaults.standard.set(hasSeenOnboarding, forKey: "milestone:hasSeenOnboarding")
         }
     }
 
@@ -99,8 +99,7 @@ public final class UserStore {
 
     public init() {
         self.userName = UserDefaults.standard.string(forKey: "milestone:userName") ?? ""
-        let seenString = UserDefaults.standard.string(forKey: "milestone:hasSeenOnboarding")
-        self.hasSeenOnboarding = seenString != "false"
+        self.hasSeenOnboarding = UserDefaults.standard.bool(forKey: "milestone:hasSeenOnboarding")
         
         let savedHaptics = UserDefaults.standard.object(forKey: "milestone:hapticsEnabled") as? Bool ?? true
         self.hapticsEnabled = savedHaptics
