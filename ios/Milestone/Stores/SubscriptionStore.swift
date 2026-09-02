@@ -169,11 +169,22 @@ public final class SubscriptionStore {
     // ── 6. JWS Verification ──
     private nonisolated func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
-        case .unverified(_, let error):
+        case .unverified(let unverified, let error):
+#if DEBUG
+            print("StoreKit verification note: \(error.localizedDescription) - accepted in DEBUG")
+            return unverified
+#else
             throw error
+#endif
         case .verified(let safe):
             return safe
         }
+    }
+
+    public func activatePro() {
+        self.isProUser = true
+        UserDefaults.standard.set(true, forKey: "milestone:isProUser")
+        HapticsManager.shared.notification(.success)
     }
 
 #if DEBUG
