@@ -28,13 +28,16 @@ public final class UserStore {
         }
     }
 
-    // ── Active Navigation Tab ──
+    // ── Active Navigation Tab & Paywall ──
     public var selectedTab: TabItem = .mission
+    public var showPaywallSheet: Bool = false
 
     public func handleDeepLink(url: URL) {
         let str = url.absoluteString.lowercased()
         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-            if str.contains("pomodoro") {
+            if str.contains("premium") || str.contains("paywall") {
+                showPaywallSheet = true
+            } else if str.contains("pomodoro") {
                 selectedTab = .pomodoro
             } else if str.contains("mission") {
                 selectedTab = .mission

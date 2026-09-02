@@ -19,13 +19,13 @@
       "internalID" : "6478901234",
       "localizations" : [
         {
-          "description" : "Unlimited lifetime access to all Sovereign features.",
-          "displayName" : "Milestone Sovereign Lifetime",
+          "description" : "Unlimited lifetime access to all Premium features.",
+          "displayName" : "Milestone Premium Lifetime",
           "locale" : "en_US"
         }
       ],
       "productID" : "com.mathurharsh.milestonetheapp.pro.lifetime",
-      "referenceName" : "Milestone Sovereign Lifetime",
+      "referenceName" : "Milestone Premium Lifetime",
       "type" : "NonConsumable"
     }
   ],
@@ -42,12 +42,12 @@
       "id" : "21489012",
       "localizations" : [
         {
-          "description" : "Sovereign Focus Subscription",
-          "displayName" : "Milestone Sovereign",
+          "description" : "Premium Focus Subscription",
+          "displayName" : "Milestone Premium",
           "locale" : "en_US"
         }
       ],
-      "name" : "Milestone Sovereign",
+      "name" : "Milestone Premium",
       "subscriptions" : [
         {
           "adHocOffers" : [
@@ -63,14 +63,14 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Monthly access to Milestone Sovereign features.",
-              "displayName" : "Monthly Sovereign",
+              "description" : "Monthly access to Milestone Premium features.",
+              "displayName" : "Monthly Premium",
               "locale" : "en_US"
             }
           ],
           "productID" : "com.mathurharsh.milestonetheapp.pro.monthly",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Monthly Sovereign",
+          "referenceName" : "Monthly Premium",
           "subscriptionGroupID" : "21489012",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -97,13 +97,13 @@
           "localizations" : [
             {
               "description" : "Annual access with 7-day free trial.",
-              "displayName" : "Annual Sovereign",
+              "displayName" : "Annual Premium",
               "locale" : "en_US"
             }
           ],
           "productID" : "com.mathurharsh.milestonetheapp.pro.annual",
           "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "Annual Sovereign",
+          "referenceName" : "Annual Premium",
           "subscriptionGroupID" : "21489012",
           "type" : "RecurringSubscription",
           "winbackOffers" : [

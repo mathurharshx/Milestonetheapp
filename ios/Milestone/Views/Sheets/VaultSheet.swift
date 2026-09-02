@@ -80,7 +80,7 @@ public struct VaultSheet: View {
                         } label: {
                             HStack(spacing: 8) {
                                 Image(systemName: "crown.fill")
-                                Text("UNLOCK WITH SOVEREIGN")
+                                Text("UNLOCK WITH PREMIUM")
                             }
                             .font(.system(size: 12, weight: .bold))
                             .tracking(2)

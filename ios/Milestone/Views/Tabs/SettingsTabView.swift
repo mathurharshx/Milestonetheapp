@@ -61,7 +61,7 @@ public struct SettingsTabView: View {
 
                             VStack(alignment: .leading, spacing: 3) {
                                 HStack(spacing: 6) {
-                                    Text(subscriptionStore.isProUser ? "MILESTONE SOVEREIGN" : "UPGRADE TO SOVEREIGN")
+                                    Text(subscriptionStore.isProUser ? "MILESTONE PREMIUM" : "UPGRADE TO PREMIUM")
                                         .font(.system(size: 13, weight: .bold))
                                         .tracking(1.5)
                                         .foregroundStyle(theme.textPrimary)

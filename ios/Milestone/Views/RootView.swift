@@ -61,5 +61,8 @@ public struct RootView: View {
             pomodoroStore.syncFromWidget()
             userStore.handleDeepLink(url: url)
         }
+        .sheet(isPresented: Bindable(userStore).showPaywallSheet) {
+            PaywallSheet()
+        }
     }
 }

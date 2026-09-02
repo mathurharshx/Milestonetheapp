@@ -17,6 +17,12 @@ public struct CreateMissionSheet: View {
     @State private var isDatePickerExpanded: Bool = false
     @State private var isTimePickerExpanded: Bool = false
     @State private var todos: [TodoTask] = []
+    private enum Field: Hashable {
+        case title
+        case taskInput
+    }
+
+    @FocusState private var focusedField: Field?
     @State private var todoInput: String = ""
     @State private var showAlert: Bool = false
     @State private var alertTitle: String = ""
@@ -42,10 +48,11 @@ public struct CreateMissionSheet: View {
 
     public var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // ── Scrollable Form Area ──
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 26) {
+            ScrollViewReader { proxy in
+                VStack(spacing: 0) {
+                    // ── Scrollable Form Area ──
+                    ScrollView(showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 26) {
                         // Header
                         VStack(alignment: .leading, spacing: 6) {
                             Text("MILESTONE")
@@ -110,6 +117,11 @@ public struct CreateMissionSheet: View {
                             TextField("Define your mission", text: $title)
                                 .font(.system(size: 18, weight: .medium))
                                 .foregroundStyle(theme.textPrimary)
+                                .focused($focusedField, equals: .title)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = nil
+                                }
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 14)
                                 .background(
@@ -380,14 +392,15 @@ public struct CreateMissionSheet: View {
                                     TextField("Add a task…", text: $todoInput)
                                         .font(.system(size: 15))
                                         .foregroundStyle(theme.textPrimary)
+                                        .focused($focusedField, equals: .taskInput)
                                         .submitLabel(.done)
                                         .onSubmit {
-                                            addTodo()
+                                            addTodo(proxy: proxy)
                                         }
 
                                     if !todoInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                         Button {
-                                            addTodo()
+                                            addTodo(proxy: proxy)
                                         } label: {
                                             Image(systemName: "plus")
                                                 .font(.system(size: 14, weight: .bold))
@@ -395,6 +408,7 @@ public struct CreateMissionSheet: View {
                                         }
                                     }
                                 }
+                                .id("taskInputRow")
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 12)
                                 .background(
@@ -403,7 +417,7 @@ public struct CreateMissionSheet: View {
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(theme.border.opacity(0.5), lineWidth: 1)
+                                        .stroke(focusedField == .taskInput ? theme.accent : theme.border.opacity(0.5), lineWidth: focusedField == .taskInput ? 1.5 : 1)
                                 )
                             }
                         }
@@ -412,29 +426,60 @@ public struct CreateMissionSheet: View {
                     .padding(.bottom, 24)
                 }
                 .scrollIndicators(.hidden)
+                .scrollDismissesKeyboard(.interactively)
 
-                // ── Pinned Bottom Action (BEGIN MISSION) ──
-                VStack(spacing: 0) {
-                    Button {
-                        handleSubmit()
-                    } label: {
-                        Text("BEGIN MISSION")
-                            .font(.system(size: 13, weight: .bold))
-                            .tracking(3)
-                            .foregroundStyle(isReady ? theme.background : theme.textTertiary)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 54)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(isReady ? theme.accent : theme.surfaceLight)
-                            )
+                // ── Bottom Action (BEGIN MISSION) - hides gracefully when keyboard is up ──
+                if focusedField == nil {
+                    VStack(spacing: 0) {
+                        Button {
+                            handleSubmit()
+                        } label: {
+                            Text("BEGIN MISSION")
+                                .font(.system(size: 13, weight: .bold))
+                                .tracking(3)
+                                .foregroundStyle(isReady ? theme.background : theme.textTertiary)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 54)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(isReady ? theme.accent : theme.surfaceLight)
+                                )
+                        }
+                        .disabled(!isReady)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 12)
+                        .padding(.bottom, 16)
                     }
-                    .disabled(!isReady)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 12)
-                    .padding(.bottom, 16)
+                    .background(theme.background)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
-                .background(theme.background)
+            }
+            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: focusedField)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    if focusedField == .taskInput {
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(theme.accent)
+                                .frame(width: 5, height: 5)
+                            Text("\(todos.count) \(todos.count == 1 ? "task" : "tasks") added")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(theme.textSecondary)
+                        }
+                    }
+
+                    Spacer()
+
+                    Button {
+                        HapticsManager.shared.impact(.light)
+                        focusedField = nil
+                    } label: {
+                        Text("Done")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(theme.accent)
+                    }
+                }
+            }
             }
             .background(theme.background.ignoresSafeArea())
             .alert(alertTitle, isPresented: $showAlert) {
@@ -445,12 +490,20 @@ public struct CreateMissionSheet: View {
         }
     }
 
-    private func addTodo() {
+    private func addTodo(proxy: ScrollViewProxy? = nil) {
         let text = todoInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         HapticsManager.shared.impact(.light)
-        todos.append(TodoTask(text: text))
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            todos.append(TodoTask(text: text))
+        }
         todoInput = ""
+        focusedField = .taskInput
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            withAnimation(.easeOut(duration: 0.2)) {
+                proxy?.scrollTo("taskInputRow", anchor: .bottom)
+            }
+        }
     }
 
     private func handleSubmit() {
