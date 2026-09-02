@@ -43,7 +43,39 @@ public final class SoundscapeManager {
     private var sourceNode: AVAudioSourceNode?
     private var mainMixer: AVAudioMixerNode?
 
-    public init() {}
+    public init() {
+        setupInterruptionObserver()
+    }
+
+    private func setupInterruptionObserver() {
+        NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor in
+                guard let self = self,
+                      let userInfo = notification.userInfo,
+                      let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+                      let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+                    return
+                }
+
+                switch type {
+                case .began:
+                    self.pause()
+                case .ended:
+                    guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
+                    let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+                    if options.contains(.shouldResume) && self.currentSoundscape != .off {
+                        self.startProceduralAudio(type: self.currentSoundscape)
+                    }
+                @unknown default:
+                    break
+                }
+            }
+        }
+    }
 
     public func setSoundscape(_ type: SoundscapeType) {
         if type == .off {

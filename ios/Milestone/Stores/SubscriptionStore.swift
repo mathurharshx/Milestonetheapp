@@ -45,7 +45,7 @@ public final class SubscriptionStore {
     public var errorMessage: String?
     public var purchasedSubscription: Product?
 
-    nonisolated(unsafe) private var updatesTask: Task<Void, Never>?
+    private var updatesTask: Task<Void, Never>?
 
     public init() {
         // Load offline cached entitlement
@@ -58,10 +58,6 @@ public final class SubscriptionStore {
             await requestProducts()
             await updateCustomerProductStatus()
         }
-    }
-
-    deinit {
-        updatesTask?.cancel()
     }
 
     // ── 1. Fetch StoreKit 2 Products ──

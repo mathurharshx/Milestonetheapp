@@ -331,11 +331,11 @@ public struct PaywallSheet: View {
 
                         Text("•")
 
-                        Link("Terms of Use", destination: URL(string: "https://milestone.app/terms")!)
+                        Link("Terms of Use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
 
                         Text("•")
 
-                        Link("Privacy Policy", destination: URL(string: "https://milestone.app/privacy")!)
+                        Link("Privacy Policy", destination: URL(string: "https://github.com/mathurharshx/Milestonetheapp/blob/main/PRIVACY.md")!)
                     }
                     .font(.system(size: 11, weight: .regular))
                     .foregroundStyle(theme.textTertiary)

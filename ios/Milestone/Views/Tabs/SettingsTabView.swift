@@ -20,6 +20,12 @@ public struct SettingsTabView: View {
     private let shortBreakOptions = [3, 5, 10]
     private let longBreakOptions = [15, 20, 30]
 
+    private var appVersionString: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "4"
+        return "Version \(version) (\(build))"
+    }
+
     public init() {}
 
     public var body: some View {
@@ -511,15 +517,53 @@ public struct SettingsTabView: View {
                         Divider().overlay(theme.divider)
                     }
 
-                    // ── ABOUT SECTION ──
-                    SectionHeader(title: "ABOUT")
+                    // ── ABOUT & LEGAL SECTION ──
+                    SectionHeader(title: "ABOUT & LEGAL")
                         .padding(.top, 24)
 
                     SettingsRow(
                         label: "Milestone",
-                        sublabel: "Version 1.0.0 (1)",
+                        sublabel: appVersionString,
                         showChevron: false
                     )
+
+                    Divider().overlay(theme.divider)
+
+                    Button {
+                        HapticsManager.shared.impact(.light)
+                        Task {
+                            await subscriptionStore.restorePurchases()
+                        }
+                    } label: {
+                        SettingsRow(
+                            label: "Restore Purchases",
+                            sublabel: "Restore an existing Milestone subscription",
+                            showChevron: true
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Divider().overlay(theme.divider)
+
+                    Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                        SettingsRow(
+                            label: "Terms of Use (EULA)",
+                            sublabel: "Apple standard End User License Agreement",
+                            showChevron: true
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Divider().overlay(theme.divider)
+
+                    Link(destination: URL(string: "https://github.com/mathurharshx/Milestonetheapp/blob/main/PRIVACY.md")!) {
+                        SettingsRow(
+                            label: "Privacy Policy",
+                            sublabel: "100% on-device • Zero data tracking",
+                            showChevron: true
+                        )
+                    }
+                    .buttonStyle(.plain)
 
                     Divider().overlay(theme.divider)
                 }

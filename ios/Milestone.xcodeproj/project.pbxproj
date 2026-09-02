@@ -61,6 +61,8 @@
 		WG0007 /* PomodoroLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF009 /* PomodoroLiveActivity.swift */; };
 		WG0008 /* MilestoneDotMatrixWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF010 /* MilestoneDotMatrixWidget.swift */; };
 		WG0009 /* MilestoneMomentumWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WGF011 /* MilestoneMomentumWidget.swift */; };
+		MS0086 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = MSF086 /* PrivacyInfo.xcprivacy */; };
+		WG0087 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = WGF087 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -147,6 +149,8 @@
 		WGF009 /* PomodoroLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroLiveActivity.swift; sourceTree = "<group>"; };
 		WGF010 /* MilestoneDotMatrixWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneDotMatrixWidget.swift; sourceTree = "<group>"; };
 		WGF011 /* MilestoneMomentumWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneMomentumWidget.swift; sourceTree = "<group>"; };
+		MSF086 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		WGF087 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -188,6 +192,7 @@
 				MSF028 /* Images.xcassets */,
 				MSF029 /* Info.plist */,
 				MSF030 /* Milestone.entitlements */,
+				MSF086 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Milestone;
 			sourceTree = "<group>";
@@ -321,6 +326,7 @@
 				WGF009 /* PomodoroLiveActivity.swift */,
 				WGF006 /* Info.plist */,
 				WGF007 /* MilestoneWidgetExtension.entitlements */,
+				WGF087 /* PrivacyInfo.xcprivacy */,
 			);
 			path = MilestoneWidgetExtension;
 			sourceTree = "<group>";
@@ -421,6 +427,7 @@
 				MS0036 /* pomodoro_start.caf in Resources */,
 				MS0037 /* focus_complete.caf in Resources */,
 				MS0038 /* break_complete.caf in Resources */,
+				MS0086 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -428,6 +435,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				WG0087 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
