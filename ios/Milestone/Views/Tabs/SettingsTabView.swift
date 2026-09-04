@@ -509,6 +509,21 @@ public struct SettingsTabView: View {
                     }
                     .buttonStyle(.plain)
 
+                    #if DEBUG
+                    Divider().overlay(theme.divider)
+
+                    Button {
+                        subscriptionStore.toggleDebugPro()
+                    } label: {
+                        SettingsRow(
+                            label: "Toggle Pro (Debug)",
+                            sublabel: "Status: \(subscriptionStore.isProUser ? "PRO ACTIVE" : "FREE USER")",
+                            showChevron: false
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    #endif
+
                     Divider().overlay(theme.divider)
 
                     Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {

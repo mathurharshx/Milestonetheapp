@@ -225,7 +225,12 @@ public struct MissionTabView: View {
 
                 Button {
                     HapticsManager.shared.impact(.light)
-                    showVaultSheet = true
+                    if !subscriptionStore.isProUser {
+                        paywallFeature = .vault
+                        showPaywallSheet = true
+                    } else {
+                        showVaultSheet = true
+                    }
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "archivebox")
@@ -234,7 +239,11 @@ public struct MissionTabView: View {
                             .font(.system(size: 10, weight: .black))
                             .tracking(1.5)
 
-                        if !missionStore.vaultMissions.isEmpty {
+                        if !subscriptionStore.isProUser {
+                            Image(systemName: "crown.fill")
+                                .font(.system(size: 7, weight: .bold))
+                                .foregroundStyle(Color(red: 0.88, green: 0.76, blue: 0.44))
+                        } else if !missionStore.vaultMissions.isEmpty {
                             Text("\(missionStore.vaultMissions.count)")
                                 .font(.system(size: 9, weight: .black))
                                 .foregroundStyle(theme.background)
@@ -271,7 +280,7 @@ public struct MissionTabView: View {
                 let isSelected = missionStore.activePillar == category
                 Button {
                     HapticsManager.shared.impact(.light)
-                    if category == .personal && !subscriptionStore.isProUser && !subscriptionStore.isTestFlightOrSandbox {
+                    if category == .personal && !subscriptionStore.isProUser {
                         paywallFeature = .dualMissions
                         showPaywallSheet = true
                     } else {
@@ -289,7 +298,7 @@ public struct MissionTabView: View {
                             .tracking(1.2)
                             .lineLimit(1)
 
-                        if category == .personal && !subscriptionStore.isProUser && !subscriptionStore.isTestFlightOrSandbox {
+                        if category == .personal && !subscriptionStore.isProUser {
                             Image(systemName: "crown.fill")
                                 .font(.system(size: 8, weight: .bold))
                                 .foregroundStyle(Color(red: 0.88, green: 0.76, blue: 0.44))
@@ -352,11 +361,22 @@ public struct MissionTabView: View {
 
             Button {
                 HapticsManager.shared.impact(.medium)
-                showCreateMissionSheet = true
+                if !subscriptionStore.isProUser {
+                    paywallFeature = .dualMissions
+                    showPaywallSheet = true
+                } else {
+                    showCreateMissionSheet = true
+                }
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 13, weight: .bold))
+                    if !subscriptionStore.isProUser {
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(Color(red: 0.88, green: 0.76, blue: 0.44))
+                    } else {
+                        Image(systemName: "plus")
+                            .font(.system(size: 13, weight: .bold))
+                    }
                     Text("PLANT PERSONAL MISSION")
                         .font(.system(size: 12, weight: .black))
                         .tracking(2)

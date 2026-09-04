@@ -2,9 +2,11 @@ import SwiftUI
 
 public struct CreateMissionSheet: View {
     @Environment(MissionStore.self) private var missionStore
+    @Environment(SubscriptionStore.self) private var subscriptionStore
     @Environment(\.theme) private var theme
     @Environment(\.dismiss) private var dismiss
 
+    @State private var showPaywallSheet: Bool = false
     @State private var title: String = ""
     @State private var targetDate: Date = {
         var comps = Calendar.current.dateComponents([.year, .month, .day], from: Date().addingTimeInterval(86400))
@@ -526,6 +528,9 @@ public struct CreateMissionSheet: View {
             } message: {
                 Text(alertMessage)
             }
+            .sheet(isPresented: $showPaywallSheet) {
+                PaywallSheet(initialFeature: .dualMissions)
+            }
         }
     }
 
@@ -573,6 +578,12 @@ public struct CreateMissionSheet: View {
             return
         }
 
+        let effectiveCategory = category ?? missionStore.activePillar
+        if effectiveCategory == .personal && !subscriptionStore.isProUser {
+            showPaywallSheet = true
+            return
+        }
+
         HapticsManager.shared.impact(.medium)
         AudioManager.shared.play(.missionStart)
         missionStore.createMission(
@@ -580,7 +591,7 @@ public struct CreateMissionSheet: View {
             targetDate: targetDate,
             note: nil,
             todos: todos,
-            category: category ?? missionStore.activePillar
+            category: effectiveCategory
         )
         dismiss()
     }

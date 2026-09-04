@@ -315,7 +315,7 @@ public struct PomodoroTabView: View {
             triggerPhaseFlash()
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallSheet()
+            PaywallSheet(initialFeature: .soundscapes)
         }
     }
 
