@@ -54,50 +54,56 @@ public struct CreateMissionSheet: View {
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 26) {
                         // Header
-                        VStack(alignment: .leading, spacing: 6) {
+                        VStack(alignment: .center, spacing: 6) {
                             Text("MILESTONE")
                                 .font(.system(size: 11, weight: .heavy))
                                 .tracking(4)
                                 .foregroundStyle(theme.accent)
-                                .padding(.leading, 2)
+                                .padding(.leading, 4)
 
                             Text("New Mission")
                                 .font(.system(size: 34, weight: .medium))
                                 .tracking(-0.8)
                                 .foregroundStyle(theme.textPrimary)
+                                .multilineTextAlignment(.center)
 
-                            HStack {
+                            ZStack {
                                 Text("One goal at a time.")
                                     .font(.system(size: 15, weight: .regular))
                                     .foregroundStyle(theme.textTertiary)
-
-                                Spacer()
+                                    .multilineTextAlignment(.center)
 
 #if DEBUG
-                                Button {
-                                    HapticsManager.shared.impact(.light)
-                                    title = "Launch Milestone v1.0"
-                                    todos = [
-                                        TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
-                                        TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false),
-                                        TodoTask(id: "3", text: "Publish Launch Announcement", done: false)
-                                    ]
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "wand.and.stars")
-                                        Text("DEMO FILL")
+                                HStack {
+                                    Spacer()
+
+                                    Button {
+                                        HapticsManager.shared.impact(.light)
+                                        title = "Launch Milestone v1.0"
+                                        todos = [
+                                            TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
+                                            TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false),
+                                            TodoTask(id: "3", text: "Publish Launch Announcement", done: false)
+                                        ]
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "wand.and.stars")
+                                            Text("DEMO FILL")
+                                        }
+                                        .font(.system(size: 10, weight: .bold))
+                                        .tracking(1)
+                                        .foregroundStyle(theme.accent)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 5)
+                                        .background(Capsule().fill(theme.accentDim))
                                     }
-                                    .font(.system(size: 10, weight: .bold))
-                                    .tracking(1)
-                                    .foregroundStyle(theme.accent)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(Capsule().fill(theme.accentDim))
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
 #endif
                             }
+                            .frame(maxWidth: .infinity)
                         }
+                        .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 20)
 
                         // 1. TITLE (REQUIRED)
