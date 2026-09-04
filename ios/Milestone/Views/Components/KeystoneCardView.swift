@@ -31,6 +31,9 @@ public struct KeystoneCardView<Content: View>: View {
     // Emerald Green for Accomplishment
     private let successEmerald = Color(red: 0.32, green: 0.72, blue: 0.53)
 
+    // Warm Celestial Amber for Task Removal / Decluttering
+    private let removalAmber = Color(red: 0.90, green: 0.62, blue: 0.32)
+
     public init(
         event: KeystoneEvent = .none,
         isCompleting: Bool = false,
@@ -191,16 +194,18 @@ public struct KeystoneCardView<Content: View>: View {
             }
 
         case .taskDeleted:
-            // Subtle cool-slate desaturation breath
-            withAnimation(.easeOut(duration: 0.2)) {
-                pulseColor = theme.textTertiary
-                pulseOpacity = 0.15
-                rimGlowColor = theme.textSecondary
-                rimGlowOpacity = 0.35
+            // Warm subtle amber release wave (curation / decluttering)
+            withAnimation(.easeOut(duration: 0.22)) {
+                pulseColor = removalAmber
+                pulseOpacity = 0.14
+                rimGlowColor = removalAmber
+                rimGlowOpacity = 0.45
+                scaleBreath = 0.996
             }
-            withAnimation(.easeOut(duration: 0.7).delay(0.15)) {
+            withAnimation(.easeOut(duration: 0.75).delay(0.18)) {
                 pulseOpacity = 0.0
                 rimGlowOpacity = 0.0
+                scaleBreath = 1.0
             }
 
         case .none:
