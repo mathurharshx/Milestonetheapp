@@ -194,13 +194,13 @@ public final class SubscriptionStore {
         }
     }
 
+#if DEBUG
     public func activatePro() {
         self.isProUser = true
         UserDefaults.standard.set(true, forKey: "milestone:isProUser")
         HapticsManager.shared.notification(.success)
     }
 
-#if DEBUG
     // Debug toggle for testing Pro experience in simulator
     public func toggleDebugPro() {
         self.isProUser.toggle()

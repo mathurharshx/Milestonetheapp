@@ -10,6 +10,8 @@ public struct MissionTodoListView: View {
 
     @State private var newTaskText: String = ""
     @State private var isReordering: Bool = false
+    @AppStorage("milestone:isSpotlightActive") private var isSpotlight: Bool = false
+    @State private var isConqueredExpanded: Bool = false
     @FocusState private var isInputFocused: Bool
     @Environment(\.theme) private var theme
 
@@ -31,14 +33,22 @@ public struct MissionTodoListView: View {
         self.onFocusTask = onFocusTask
     }
 
+    private var activeTasks: [TodoTask] {
+        todos.filter { !$0.done }
+    }
+
+    private var conqueredTasks: [TodoTask] {
+        todos.filter(\.done)
+    }
+
     private var doneCount: Int {
-        todos.filter(\.done).count
+        conqueredTasks.count
     }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // ── Section Header & Priority Controls ──
-            HStack {
+            // ── Section Header & Mode Controls ──
+            HStack(spacing: 8) {
                 Text("TASKS")
                     .font(.system(size: 11, weight: .semibold))
                     .tracking(2)
@@ -46,7 +56,40 @@ public struct MissionTodoListView: View {
 
                 Spacer()
 
-                if todos.count > 1 {
+                // Spotlight Mode Toggle
+                if !todos.isEmpty {
+                    Button {
+                        HapticsManager.shared.impact(.light)
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            isSpotlight.toggle()
+                            if isSpotlight {
+                                isReordering = false
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: isSpotlight ? "scope" : "scope")
+                                .font(.system(size: 10, weight: .bold))
+                            Text("SPOTLIGHT")
+                                .font(.system(size: 10, weight: .bold))
+                                .tracking(1.5)
+                        }
+                        .foregroundStyle(isSpotlight ? theme.accent : theme.textTertiary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(isSpotlight ? theme.accentDim : Color.clear)
+                                .overlay(
+                                    Capsule().stroke(isSpotlight ? theme.accent.opacity(0.4) : Color.clear, lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                // Reorder Mode Toggle (Normal mode with multiple active tasks)
+                if !isSpotlight && activeTasks.count > 1 {
                     Button {
                         HapticsManager.shared.selection()
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
@@ -69,7 +112,6 @@ public struct MissionTodoListView: View {
                         )
                     }
                     .buttonStyle(.plain)
-                    .padding(.trailing, 8)
                 }
 
                 Text("\(doneCount)/\(todos.count)")
@@ -79,59 +121,13 @@ public struct MissionTodoListView: View {
             }
             .padding(.bottom, 10)
 
-            // ── Task Items ──
-            if todos.isEmpty {
-                Text("No tasks added yet. Add your key milestone steps below.")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(theme.textTertiary)
-                    .padding(.vertical, 12)
+            // ── Main Content Area ──
+            if isSpotlight {
+                // ── SPOTLIGHT MODE (ADHD Hyperfocus: isolates the single next step) ──
+                spotlightView
             } else {
-                VStack(spacing: 0) {
-                    ForEach(Array(todos.enumerated()), id: \.element.id) { index, task in
-                        VStack(spacing: 0) {
-                            SwipeableTaskRow(
-                                task: task,
-                                index: index,
-                                totalCount: todos.count,
-                                isReordering: isReordering,
-                                onToggle: {
-                                    onToggle(task.id)
-                                },
-                                onDelete: {
-                                    onDelete(task.id)
-                                },
-                                onMoveUp: {
-                                    guard index > 0 else { return }
-                                    onMove(IndexSet(integer: index), index - 1)
-                                },
-                                onMoveDown: {
-                                    guard index < todos.count - 1 else { return }
-                                    onMove(IndexSet(integer: index), index + 2)
-                                },
-                                onFocusTask: onFocusTask != nil ? {
-                                    onFocusTask?(task.id, task.text)
-                                } : nil
-                            )
-
-                            Divider().overlay(theme.divider)
-                        }
-                        // ── Staggered Scrolling Animation ──
-                        .scrollTransition(.animated.threshold(.visible(0.15))) { content, phase in
-                            content
-                                .opacity(phase.isIdentity ? 1.0 : 0.7)
-                                .scaleEffect(phase.isIdentity ? 1.0 : 0.96)
-                                .offset(y: phase.isIdentity ? 0 : (phase.value < 0 ? -8 : 8))
-                        }
-                        // ── Cascading Entrance Animation When Mission Begins ──
-                        .offset(y: hasAppeared ? 0 : 22)
-                        .opacity(hasAppeared ? 1 : 0)
-                        .animation(
-                            .spring(response: 0.45, dampingFraction: 0.76)
-                            .delay(min(Double(index) * 0.05, 0.45)),
-                            value: hasAppeared
-                        )
-                    }
-                }
+                // ── NORMAL LIST MODE ──
+                normalListView
             }
 
             // ── Inline Add Task Row ──
@@ -164,6 +160,11 @@ public struct MissionTodoListView: View {
 
             Divider()
                 .overlay(isInputFocused ? theme.accent : theme.border)
+
+            // ── DOPAMINE LEDGER (Collapsible Conquered Stack) ──
+            if !conqueredTasks.isEmpty {
+                conqueredStackView
+            }
         }
         .padding(.top, 24)
         .onAppear {
@@ -173,6 +174,306 @@ public struct MissionTodoListView: View {
                 }
             }
         }
+    }
+
+    // ── Spotlight Mode View ──
+    @ViewBuilder
+    private var spotlightView: some View {
+        if let currentTask = activeTasks.first {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    HStack(spacing: 5) {
+                        Circle()
+                            .fill(theme.accent)
+                            .frame(width: 6, height: 6)
+                        Text("STEP 1 OF \(activeTasks.count)")
+                            .font(.system(size: 10, weight: .heavy))
+                            .tracking(1.8)
+                            .foregroundStyle(theme.accent)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(theme.accentDim))
+
+                    Spacer()
+
+                    // Skip / Defer Button (cycles task to end to unblock executive dysfunction)
+                    if activeTasks.count > 1 {
+                        Button {
+                            HapticsManager.shared.impact(.light)
+                            if let taskIndex = todos.firstIndex(where: { $0.id == currentTask.id }) {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                    onMove(IndexSet(integer: taskIndex), todos.count)
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text("DEFER")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .tracking(1)
+                                Image(systemName: "forward.end.fill")
+                                    .font(.system(size: 8, weight: .bold))
+                            }
+                            .foregroundStyle(theme.textTertiary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Capsule().fill(theme.surfaceLight))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                Text(currentTask.text)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(theme.textPrimary)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.vertical, 2)
+
+                HStack(spacing: 10) {
+                    if let onFocus = onFocusTask {
+                        Button {
+                            HapticsManager.shared.impact(.medium)
+                            onFocus(currentTask.id, currentTask.text)
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "timer")
+                                    .font(.system(size: 12, weight: .bold))
+                                Text("FOCUS")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .tracking(1.5)
+                            }
+                            .foregroundStyle(theme.accent)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(theme.accentDim)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(theme.accent.opacity(0.35), lineWidth: 1)
+                                    )
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    Button {
+                        HapticsManager.shared.notification(.success)
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            onToggle(currentTask.id)
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 12, weight: .heavy))
+                            Text("CONQUER")
+                                .font(.system(size: 11, weight: .heavy))
+                                .tracking(1.5)
+                        }
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(theme.accent)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(theme.surfaceLight.opacity(0.85))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(theme.accent.opacity(0.3), lineWidth: 1)
+                    )
+            )
+            .padding(.vertical, 8)
+            .transition(.asymmetric(
+                insertion: .scale(scale: 0.95).combined(with: .opacity),
+                removal: .scale(scale: 0.95).combined(with: .opacity)
+            ))
+        } else if todos.isEmpty {
+            Text("No tasks added yet. Add your key milestone steps below.")
+                .font(.system(size: 13, weight: .regular))
+                .foregroundStyle(theme.textTertiary)
+                .padding(.vertical, 12)
+        } else {
+            // All tasks conquered celebration card
+            VStack(spacing: 8) {
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(theme.accent)
+
+                Text("ALL TASKS CONQUERED")
+                    .font(.system(size: 12, weight: .heavy))
+                    .tracking(2)
+                    .foregroundStyle(theme.textPrimary)
+
+                Text("Every milestone action step has been completed.")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(theme.textTertiary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(theme.surfaceLight.opacity(0.5))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(theme.accent.opacity(0.25), lineWidth: 1)
+                    )
+            )
+            .padding(.vertical, 8)
+        }
+    }
+
+    // ── Normal List Mode View ──
+    @ViewBuilder
+    private var normalListView: some View {
+        if activeTasks.isEmpty && conqueredTasks.isEmpty {
+            Text("No tasks added yet. Add your key milestone steps below.")
+                .font(.system(size: 13, weight: .regular))
+                .foregroundStyle(theme.textTertiary)
+                .padding(.vertical, 12)
+        } else if activeTasks.isEmpty && !conqueredTasks.isEmpty {
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(theme.accent)
+                Text("All active tasks completed. Check Conquered below.")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(theme.textSecondary)
+            }
+            .padding(.vertical, 12)
+        } else {
+            VStack(spacing: 0) {
+                ForEach(Array(activeTasks.enumerated()), id: \.element.id) { index, task in
+                    VStack(spacing: 0) {
+                        SwipeableTaskRow(
+                            task: task,
+                            index: index,
+                            totalCount: activeTasks.count,
+                            isReordering: isReordering,
+                            onToggle: {
+                                onToggle(task.id)
+                            },
+                            onDelete: {
+                                onDelete(task.id)
+                            },
+                            onMoveUp: {
+                                moveActiveTask(from: index, direction: -1)
+                            },
+                            onMoveDown: {
+                                moveActiveTask(from: index, direction: 1)
+                            },
+                            onFocusTask: onFocusTask != nil ? {
+                                onFocusTask?(task.id, task.text)
+                            } : nil
+                        )
+
+                        Divider().overlay(theme.divider)
+                    }
+                    .scrollTransition(.animated.threshold(.visible(0.15))) { content, phase in
+                        content
+                            .opacity(phase.isIdentity ? 1.0 : 0.7)
+                            .scaleEffect(phase.isIdentity ? 1.0 : 0.96)
+                            .offset(y: phase.isIdentity ? 0 : (phase.value < 0 ? -8 : 8))
+                    }
+                    .offset(y: hasAppeared ? 0 : 22)
+                    .opacity(hasAppeared ? 1 : 0)
+                    .animation(
+                        .spring(response: 0.45, dampingFraction: 0.76)
+                        .delay(min(Double(index) * 0.05, 0.45)),
+                        value: hasAppeared
+                    )
+                }
+            }
+        }
+    }
+
+    // ── Conquered Stack View (Dopamine Ledger) ──
+    @ViewBuilder
+    private var conqueredStackView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                HapticsManager.shared.impact(.light)
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                    isConqueredExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: isConqueredExpanded ? "chevron.down" : "chevron.right")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(theme.textTertiary)
+
+                    Text("CONQUERED")
+                        .font(.system(size: 10, weight: .bold))
+                        .tracking(1.5)
+                        .foregroundStyle(theme.textTertiary)
+
+                    Text("(\(conqueredTasks.count))")
+                        .font(.system(size: 10, weight: .heavy))
+                        .foregroundStyle(theme.accent.opacity(0.85))
+
+                    Spacer()
+
+                    Text(isConqueredExpanded ? "HIDE" : "SHOW")
+                        .font(.system(size: 9, weight: .bold))
+                        .tracking(1)
+                        .foregroundStyle(theme.textMuted)
+                }
+                .padding(.vertical, 8)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if isConqueredExpanded {
+                VStack(spacing: 0) {
+                    ForEach(Array(conqueredTasks.enumerated()), id: \.element.id) { index, task in
+                        VStack(spacing: 0) {
+                            SwipeableTaskRow(
+                                task: task,
+                                index: index,
+                                totalCount: conqueredTasks.count,
+                                isReordering: false,
+                                onToggle: {
+                                    onToggle(task.id)
+                                },
+                                onDelete: {
+                                    onDelete(task.id)
+                                },
+                                onMoveUp: {},
+                                onMoveDown: {},
+                                onFocusTask: nil
+                            )
+
+                            Divider().overlay(theme.divider)
+                        }
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                }
+            }
+        }
+        .padding(.top, 6)
+    }
+
+    private func moveActiveTask(from activeIndex: Int, direction: Int) {
+        guard activeIndex >= 0 && activeIndex < activeTasks.count else { return }
+        let targetActiveIndex = activeIndex + direction
+        guard targetActiveIndex >= 0 && targetActiveIndex < activeTasks.count else { return }
+
+        let currentId = activeTasks[activeIndex].id
+        let targetId = activeTasks[targetActiveIndex].id
+
+        guard let fromIndex = todos.firstIndex(where: { $0.id == currentId }),
+              let toIndex = todos.firstIndex(where: { $0.id == targetId }) else { return }
+
+        let finalOffset = direction > 0 ? toIndex + 1 : toIndex
+        onMove(IndexSet(integer: fromIndex), finalOffset)
     }
 
     private func submitNewTask() {

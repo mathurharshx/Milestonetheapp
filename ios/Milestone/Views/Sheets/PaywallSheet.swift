@@ -521,25 +521,25 @@ public struct PaywallSheet: View {
                         dismiss()
                     }
                 } catch {
-                    if subscriptionStore.isTestFlightOrSandbox {
-                        print("TestFlight/Sandbox purchase notice: \(error.localizedDescription) - activating Pro for testing")
-                        subscriptionStore.activatePro()
-                        dismiss()
-                    } else {
-                        alertMessage = error.localizedDescription
-                        showAlert = true
-                    }
+#if DEBUG
+                    print("DEBUG purchase notice: \(error.localizedDescription) - activating Pro for simulator testing")
+                    subscriptionStore.activatePro()
+                    dismiss()
+#else
+                    alertMessage = error.localizedDescription
+                    showAlert = true
+#endif
                 }
             } else {
                 // If products are not yet propagated on Apple's sandbox CDN
-                if subscriptionStore.isTestFlightOrSandbox {
-                    print("TestFlight/Sandbox: Products still propagating on Apple CDN - activating Pro for internal testing")
-                    subscriptionStore.activatePro()
-                    dismiss()
-                } else {
-                    alertMessage = "Connecting to the App Store. Please ensure you have an active internet connection and try again."
-                    showAlert = true
-                }
+#if DEBUG
+                print("DEBUG: Products still propagating on Apple CDN - activating Pro for simulator testing")
+                subscriptionStore.activatePro()
+                dismiss()
+#else
+                alertMessage = "Connecting to the App Store. Please ensure you have an active internet connection and try again."
+                showAlert = true
+#endif
             }
         }
     }

@@ -123,7 +123,7 @@ public struct MissionTabView: View {
                                 }
                             )
                             .padding(.top, 8)
-                            .padding(.bottom, 16)
+                            .padding(.bottom, 24)
                         }
                         .scrollIndicators(.hidden)
                         .padding(.horizontal, 24)

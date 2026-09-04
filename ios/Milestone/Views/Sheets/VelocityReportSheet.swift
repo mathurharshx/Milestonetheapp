@@ -29,8 +29,8 @@ public struct VelocityReportSheet: View {
     }
 
     private var isLocked: Bool {
-        // Gate for free users (unless sandbox or pro)
-        !subscriptionStore.isProUser && !subscriptionStore.isTestFlightOrSandbox
+        // Gate for free users
+        !subscriptionStore.isProUser
     }
 
     public var body: some View {
