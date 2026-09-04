@@ -464,14 +464,31 @@ public struct CreateMissionSheet: View {
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     if focusedField == .taskInput {
-                        HStack(spacing: 6) {
+                        HStack(alignment: .center, spacing: 6) {
                             Circle()
-                                .fill(theme.accent)
-                                .frame(width: 5, height: 5)
-                            Text("\(todos.count) \(todos.count == 1 ? "task" : "tasks") added")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(theme.textSecondary)
+                                .fill(todos.isEmpty ? theme.textTertiary : theme.accent)
+                                .frame(width: 6, height: 6)
+
+                            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                                Text("\(todos.count)")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(todos.isEmpty ? theme.textTertiary : theme.accent)
+
+                                Text(todos.count == 1 ? "task added" : "tasks added")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(theme.textSecondary)
+                            }
                         }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule()
+                                .fill(theme.surfaceLight.opacity(0.8))
+                        )
+                        .overlay(
+                            Capsule()
+                                .stroke(theme.border.opacity(0.5), lineWidth: 0.5)
+                        )
                     }
 
                     Spacer()
@@ -480,10 +497,22 @@ public struct CreateMissionSheet: View {
                         HapticsManager.shared.impact(.light)
                         focusedField = nil
                     } label: {
-                        Text("Done")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(theme.accent)
+                        HStack(spacing: 5) {
+                            Text("Done")
+                                .font(.system(size: 12, weight: .bold))
+
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                        .foregroundStyle(theme.background)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule()
+                                .fill(theme.accent)
+                        )
                     }
+                    .buttonStyle(.plain)
                 }
             }
             }
