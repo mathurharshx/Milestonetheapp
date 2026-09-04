@@ -9,6 +9,8 @@ public struct MissionTabView: View {
     public var onNavigateToArchive: (() -> Void)?
 
     @State private var isCompletingAnimation: Bool = false
+    @State private var isAscendingToVault: Bool = false
+    @State private var vaultPulse: CGFloat = 1.0
     @State private var showCelebrationSheet: Bool = false
     @State private var showVaultSheet: Bool = false
     @State private var completedQuote: Quote?
@@ -61,13 +63,14 @@ public struct MissionTabView: View {
                                             .background(Capsule().fill(theme.accent))
                                     }
                                 }
-                                .foregroundStyle(theme.textSecondary)
+                                .foregroundStyle(isAscendingToVault ? theme.accent : theme.textSecondary)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
                                 .background(
                                     Capsule()
-                                        .fill(theme.surfaceLight.opacity(0.6))
+                                        .fill(isAscendingToVault ? theme.accent.opacity(0.18) : theme.surfaceLight.opacity(0.6))
                                 )
+                                .scaleEffect(vaultPulse)
                             }
                             .buttonStyle(.plain)
                         }
@@ -76,7 +79,11 @@ public struct MissionTabView: View {
                         .padding(.bottom, 10)
 
                         // ── Pinned Keystone Hero Card (Living Ambient Aurora + Title + Countdown + Dot Matrix) ──
-                        KeystoneCardView(event: keystoneEvent, isCompleting: isCompletingAnimation) {
+                        KeystoneCardView(
+                            event: keystoneEvent,
+                            isCompleting: isCompletingAnimation,
+                            isAscending: isAscendingToVault
+                        ) {
                             // Mission Title
                             Text(mission.title)
                                 .font(.system(size: 28, weight: .medium))
@@ -206,11 +213,13 @@ public struct MissionTabView: View {
                     onArchive: {
                         missionStore.archiveMission()
                         isCompletingAnimation = false
+                        isAscendingToVault = false
                         onNavigateToArchive?()
                     },
                     onNewMission: {
                         missionStore.archiveMission()
                         isCompletingAnimation = false
+                        isAscendingToVault = false
                     }
                 )
             }
@@ -225,17 +234,32 @@ public struct MissionTabView: View {
         activeMissionSnapshot = mission
         completedQuote = QuoteManager.randomQuote()
 
-        // 1. Success Haptic Pulse & Luxury Audio Chord
+        // 1. Victory Haptic & Luxury Audio Chord
         HapticsManager.shared.notification(.success)
         AudioManager.shared.play(.missionComplete)
 
-        // 2. Cascade Dot Grid Illumination Wave
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+        // 2. Stage 1: Keystone 3D Spatial Lift & Radiant Emerald Bloom
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.72)) {
             isCompletingAnimation = true
         }
 
-        // 3. Smooth slide-up of Apple Award Celebration Sheet
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+        // 3. Stage 2: Ascension Glide upward into Vault Pill + Vault Reception Pulse
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+            withAnimation(.easeInOut(duration: 0.40)) {
+                isAscendingToVault = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                withAnimation(.spring(response: 0.30, dampingFraction: 0.55)) {
+                    vaultPulse = 1.18
+                }
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.75).delay(0.20)) {
+                    vaultPulse = 1.0
+                }
+            }
+        }
+
+        // 4. Stage 3: Apple Award Wax-Seal Celebration Sheet presentation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
             showCelebrationSheet = true
         }
     }

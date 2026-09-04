@@ -10,12 +10,14 @@ public struct CountdownTimerView: View {
 
     public var body: some View {
         VStack(spacing: 4) {
-            // Days Hero Display
+            // Days Hero Display - Precision Kinetic Mechanical Number Drum
             Text("\(countdown.days)")
                 .font(.system(size: 72, weight: .ultraLight, design: .default))
                 .monospacedDigit()
                 .tracking(-2)
                 .foregroundStyle(theme.textPrimary)
+                .contentTransition(.numericText(countsDown: true))
+                .animation(.snappy(duration: 0.38, extraBounce: 0), value: countdown.days)
 
             Text("DAYS")
                 .font(.system(size: 11, weight: .semibold))
@@ -23,7 +25,7 @@ public struct CountdownTimerView: View {
                 .foregroundStyle(theme.textTertiary)
                 .padding(.bottom, 8)
 
-            // HMS Row
+            // HMS Row - Precision Kinetic Split-Flap Digit Drums
             HStack(spacing: 8) {
                 TimeUnitView(value: countdown.hours, label: "HR")
                 Text(":")
@@ -54,6 +56,8 @@ private struct TimeUnitView: View {
                 .monospacedDigit()
                 .tracking(1)
                 .foregroundStyle(theme.textTertiary)
+                .contentTransition(.numericText(countsDown: true))
+                .animation(.snappy(duration: 0.35, extraBounce: 0), value: value)
 
             Text(label)
                 .font(.system(size: 8, weight: .semibold))

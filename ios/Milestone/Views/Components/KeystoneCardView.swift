@@ -14,6 +14,7 @@ public struct KeystoneCardView<Content: View>: View {
     @ViewBuilder public let content: () -> Content
     public let event: KeystoneEvent
     public let isCompleting: Bool
+    public let isAscending: Bool
 
     @Environment(\.theme) private var theme
 
@@ -37,10 +38,12 @@ public struct KeystoneCardView<Content: View>: View {
     public init(
         event: KeystoneEvent = .none,
         isCompleting: Bool = false,
+        isAscending: Bool = false,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.event = event
         self.isCompleting = isCompleting
+        self.isAscending = isAscending
         self.content = content
     }
 
@@ -114,11 +117,21 @@ public struct KeystoneCardView<Content: View>: View {
                 )
                 .allowsHitTesting(false)
 
-            // ── Mission Victory Radiant Bloom ──
+            // ── Mission Victory Radiant Bloom & Elevation Flare ──
             if isCompleting {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(theme.accent.opacity(0.22))
-                    .blur(radius: 20)
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                successEmerald.opacity(0.32),
+                                successEmerald.opacity(0.10),
+                                Color.clear
+                            ],
+                            center: .center,
+                            startRadius: 10,
+                            endRadius: 260
+                        )
+                    )
                     .transition(.opacity)
             }
 
@@ -129,25 +142,34 @@ public struct KeystoneCardView<Content: View>: View {
             .padding(.vertical, 16)
             .padding(.horizontal, 16)
 
-            // ── Subtle Glass Rim Stroke (Catches Light on Events) ──
+            // ── Subtle Glass Rim Stroke (Catches Light on Events & Victory) ──
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .stroke(
-                    rimGlowOpacity > 0
-                        ? rimGlowColor.opacity(rimGlowOpacity)
-                        : theme.border.opacity(0.4),
-                    lineWidth: rimGlowOpacity > 0 ? 1.2 : 0.8
+                    isCompleting
+                        ? successEmerald.opacity(isAscending ? 0.95 : 0.75)
+                        : (rimGlowOpacity > 0
+                            ? rimGlowColor.opacity(rimGlowOpacity)
+                            : theme.border.opacity(0.4)),
+                    lineWidth: isCompleting ? (isAscending ? 2.2 : 1.8) : (rimGlowOpacity > 0 ? 1.2 : 0.8)
                 )
                 .allowsHitTesting(false)
         }
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .scaleEffect(scaleBreath)
+        .scaleEffect(isAscending ? 0.88 : (isCompleting ? 1.025 : scaleBreath))
+        .offset(y: isAscending ? -32 : (isCompleting ? -8 : 0))
+        .opacity(isAscending ? 0.65 : 1.0)
+        .rotation3DEffect(
+            .degrees(isCompleting ? (isAscending ? -6.0 : -3.5) : 0),
+            axis: (x: 1, y: 0, z: 0),
+            perspective: 0.8
+        )
         .shadow(
             color: isCompleting
-                ? theme.accent.opacity(0.4)
+                ? successEmerald.opacity(isAscending ? 0.65 : 0.45)
                 : (rimGlowOpacity > 0 ? rimGlowColor.opacity(0.2) : theme.accent.opacity(0.04)),
-            radius: isCompleting ? 24 : (rimGlowOpacity > 0 ? 16 : 10),
+            radius: isCompleting ? (isAscending ? 40 : 28) : (rimGlowOpacity > 0 ? 16 : 10),
             x: 0,
-            y: 4
+            y: isCompleting ? (isAscending ? -12 : -6) : 4
         )
         .onAppear {
             // Start the infinite living aurora drift

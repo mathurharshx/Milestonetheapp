@@ -76,9 +76,8 @@ public struct PomodoroRingView: View {
                     .monospacedDigit()
                     .tracking(2)
                     .foregroundStyle(theme.textPrimary)
-                    .transaction { transaction in
-                        transaction.animation = nil
-                    }
+                    .contentTransition(.numericText(countsDown: true))
+                    .animation(.snappy(duration: 0.35, extraBounce: 0), value: timeRemaining)
 
                 // Status Pill
                 Text(isRunning ? (isBreakPhase ? "RESTING" : "RUNNING") : (isStarted ? "PAUSED" : "READY"))
