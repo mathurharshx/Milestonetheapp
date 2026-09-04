@@ -130,57 +130,36 @@ public final class UserStore {
 
 @Observable
 public final class ThemeStore {
-    public var mode: AppThemeMode {
-        didSet {
-            UserDefaults.standard.set(mode.rawValue, forKey: "milestone:themeMode")
-            syncToWidget()
-        }
-    }
+    public var mode: AppThemeMode = .dark
 
     public init() {
-        let raw = UserDefaults.standard.string(forKey: "milestone:themeMode") ?? "dark"
-        self.mode = AppThemeMode(rawValue: raw) ?? .dark
+        self.mode = .dark
         syncToWidget()
     }
 
-    public func toggleTheme(systemScheme: ColorScheme?) {
-        let currentIsDark: Bool
-        if mode == .system {
-            currentIsDark = systemScheme == .dark
-        } else {
-            currentIsDark = mode == .dark
-        }
-        mode = currentIsDark ? .light : .dark
+    public func toggleTheme(systemScheme: ColorScheme? = nil) {
+        mode = .dark
     }
 
     public func setTheme(isDark: Bool) {
-        mode = isDark ? .dark : .light
+        mode = .dark
     }
 
-    public func isDarkMode(systemScheme: ColorScheme?) -> Bool {
-        switch mode {
-        case .system:
-            return systemScheme == .dark
-        case .dark:
-            return true
-        case .light:
-            return false
-        }
+    public func isDarkMode(systemScheme: ColorScheme? = nil) -> Bool {
+        return true
     }
 
-    public func tokens(systemScheme: ColorScheme?) -> ThemeTokens {
-        let isDark = isDarkMode(systemScheme: systemScheme)
-        return ThemeTokens(isDark: isDark)
+    public func tokens(systemScheme: ColorScheme? = nil) -> ThemeTokens {
+        return ThemeTokens(isDark: true)
     }
 
     public func syncToWidget(systemScheme: ColorScheme? = nil) {
-        let isDark = isDarkMode(systemScheme: systemScheme)
         if var data = SharedWidgetStore.load() {
-            data.isDarkMode = isDark
+            data.isDarkMode = true
             SharedWidgetStore.save(data)
         } else {
             var data = MilestoneWidgetData()
-            data.isDarkMode = isDark
+            data.isDarkMode = true
             SharedWidgetStore.save(data)
         }
     }

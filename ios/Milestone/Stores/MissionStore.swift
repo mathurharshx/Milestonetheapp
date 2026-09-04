@@ -63,7 +63,15 @@ public final class MissionStore {
            let mission = try? decoder.decode(Mission.self, from: activeData) {
             self.activeMission = mission
         } else {
-            self.activeMission = nil
+            let target = Calendar.current.date(byAdding: .day, value: 64, to: Date()) ?? Date()
+            self.activeMission = Mission(
+                title: "Launch Milestone v1.0",
+                todos: [
+                    TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
+                    TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false)
+                ],
+                targetDate: target
+            )
         }
 
         if let archiveData = UserDefaults.standard.data(forKey: archiveKey),

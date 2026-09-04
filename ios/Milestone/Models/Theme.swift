@@ -1,21 +1,17 @@
 import SwiftUI
 
 public enum AppThemeMode: String, CaseIterable, Codable {
+    case dark = "dark"
     case system = "system"
     case light = "light"
-    case dark = "dark"
 
     public var colorScheme: ColorScheme? {
-        switch self {
-        case .system: return nil
-        case .light: return .light
-        case .dark: return .dark
-        }
+        return .dark
     }
 }
 
 public struct AppColors {
-    // Exact hex colors matching RN theme
+    // Exact hex colors matching brutalist obsidian theme
     public static let lightBackground = Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0) // #F2F2F7
     public static let lightSurface = Color(red: 0xE5/255.0, green: 0xE5/255.0, blue: 0xEA/255.0)    // #E5E5EA
     public static let lightSurfaceLight = Color(red: 0xD1/255.0, green: 0xD1/255.0, blue: 0xD6/255.0) // #D1D1D6
@@ -29,26 +25,24 @@ public struct AppColors {
 }
 
 public struct ThemeTokens {
-    public let isDark: Bool
+    public let isDark: Bool = true
 
-    public init(isDark: Bool) {
-        self.isDark = isDark
-    }
+    public init(isDark: Bool = true) {}
 
     public var background: Color {
-        isDark ? AppColors.darkBackground : AppColors.lightBackground
+        AppColors.darkBackground
     }
 
     public var surface: Color {
-        isDark ? AppColors.darkSurface : AppColors.lightSurface
+        AppColors.darkSurface
     }
 
     public var surfaceLight: Color {
-        isDark ? AppColors.darkSurfaceLight : AppColors.lightSurfaceLight
+        AppColors.darkSurfaceLight
     }
 
     public var textPrimary: Color {
-        isDark ? AppColors.lightBackground : AppColors.lightCharcoal
+        AppColors.lightBackground
     }
 
     public var textSecondary: Color {

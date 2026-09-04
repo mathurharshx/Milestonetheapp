@@ -42,17 +42,14 @@ public struct RootView: View {
             }
         }
         .environment(\.theme, tokens)
-        .preferredColorScheme(themeStore.mode.colorScheme)
+        .preferredColorScheme(.dark)
         .onAppear {
-            themeStore.syncToWidget(systemScheme: colorScheme)
+            themeStore.syncToWidget()
             pomodoroStore.syncFromWidget()
-        }
-        .onChange(of: colorScheme) { _, newScheme in
-            themeStore.syncToWidget(systemScheme: newScheme)
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
-                themeStore.syncToWidget(systemScheme: colorScheme)
+                themeStore.syncToWidget()
                 pomodoroStore.syncFromWidget()
             }
         }

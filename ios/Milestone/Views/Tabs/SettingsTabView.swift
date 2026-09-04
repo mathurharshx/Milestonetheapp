@@ -12,7 +12,6 @@ public struct SettingsTabView: View {
 
     @State private var showProfileSheet: Bool = false
     @State private var showPaywallSheet: Bool = false
-    @State private var isDarkMode: Bool = false
     @State private var reminderDate: Date = Date()
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
 
@@ -121,39 +120,6 @@ public struct SettingsTabView: View {
                         )
                     }
                     .buttonStyle(.plain)
-
-                    Divider().overlay(theme.divider)
-
-                    // Appearance Toggle (Smooth Native Switch)
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Appearance")
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundStyle(theme.textPrimary)
-
-                            Text(isDarkMode ? "Dark" : "Light")
-                                .font(.system(size: 11, weight: .regular))
-                                .foregroundStyle(theme.textTertiary)
-                        }
-
-                        Spacer()
-
-                        Toggle("", isOn: Binding(
-                            get: { isDarkMode },
-                            set: { newValue in
-                                isDarkMode = newValue
-                                HapticsManager.shared.impact(.light)
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.26) {
-                                    withAnimation(.easeInOut(duration: 0.28)) {
-                                        themeStore.setTheme(isDark: newValue)
-                                    }
-                                }
-                            }
-                        ))
-                        .labelsHidden()
-                        .tint(Color(uiColor: .systemGreen))
-                    }
-                    .padding(.vertical, 14)
 
                     Divider().overlay(theme.divider)
 
@@ -580,7 +546,6 @@ public struct SettingsTabView: View {
             PaywallSheet()
         }
         .onAppear {
-            isDarkMode = themeStore.isDarkMode(systemScheme: colorScheme)
             var comps = DateComponents()
             comps.hour = userStore.morningReminderHour
             comps.minute = userStore.morningReminderMinute
@@ -588,11 +553,6 @@ public struct SettingsTabView: View {
 
             Task {
                 await checkNotificationStatus()
-            }
-        }
-        .onChange(of: colorScheme) { _, newScheme in
-            if themeStore.mode == .system {
-                isDarkMode = newScheme == .dark
             }
         }
     }

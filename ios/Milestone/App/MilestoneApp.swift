@@ -18,6 +18,7 @@ struct MilestoneApp: App {
                 .environment(themeStore)
                 .environment(subscriptionStore)
                 .environment(soundscapeManager)
+                .preferredColorScheme(.dark)
         }
     }
 }
