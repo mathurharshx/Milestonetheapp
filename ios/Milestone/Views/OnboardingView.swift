@@ -38,7 +38,7 @@ public struct OnboardingView: View {
                             .foregroundStyle(theme.textPrimary)
                             .padding(.bottom, 24)
 
-                        Text("Focus on what matters. Ignore the noise. Conquering your goals begins with a single commitment.")
+                        Text("Focus on what matters. Ignore the noise. Achieving your goals begins with a single commitment.")
                             .font(.system(size: 17, weight: .regular))
                             .lineSpacing(4)
                             .foregroundStyle(theme.textTertiary)

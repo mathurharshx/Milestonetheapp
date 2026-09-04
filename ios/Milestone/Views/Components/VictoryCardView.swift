@@ -124,7 +124,7 @@ public struct VictoryCardView: View {
                     .padding(.horizontal, 36)
                     .padding(.bottom, 12)
 
-                Text("CONQUERED • \(completedDateString)")
+                Text("COMPLETED • \(completedDateString)")
                     .font(.system(size: 10, weight: .semibold))
                     .tracking(2.5)
                     .foregroundStyle(theme.accent)
