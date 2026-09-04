@@ -192,7 +192,8 @@ public struct PomodoroTabView: View {
                     isStarted: pomodoroStore.isStarted,
                     phase: pomodoroStore.phase,
                     color: phaseColor,
-                    message: pomodoroStore.activeBreakPrompt
+                    message: pomodoroStore.activeBreakPrompt,
+                    isSoundscapePlaying: soundscapeManager.isPlaying
                 )
                 .padding(.bottom, 36)
 

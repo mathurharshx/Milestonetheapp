@@ -9,6 +9,8 @@ public struct PomodoroRingView: View {
     public let color: Color
     public let message: String
 
+    public let isSoundscapePlaying: Bool
+
     @Environment(\.theme) private var theme
     @State private var isBreathingPulse: Bool = false
 
@@ -23,7 +25,8 @@ public struct PomodoroRingView: View {
         isStarted: Bool,
         phase: PomodoroPhase,
         color: Color,
-        message: String
+        message: String,
+        isSoundscapePlaying: Bool = false
     ) {
         self.progress = progress
         self.timeRemaining = timeRemaining
@@ -32,6 +35,7 @@ public struct PomodoroRingView: View {
         self.phase = phase
         self.color = color
         self.message = message
+        self.isSoundscapePlaying = isSoundscapePlaying
     }
 
     private var timeFormatted: String {
@@ -46,15 +50,27 @@ public struct PomodoroRingView: View {
 
     public var body: some View {
         ZStack {
-            // Ambient Calming Breathing Aura for Breaks
-            if isBreakPhase && isRunning {
+            // ── 1. Biological Box-Breathing Focus & Recovery Aura (4.0s Rhythm) ──
+            if isRunning {
+                // Outer Diffused Focus Halo
                 Circle()
-                    .fill(color.opacity(isBreathingPulse ? 0.08 : 0.02))
-                    .frame(width: ringSize - 20, height: ringSize - 20)
-                    .blur(radius: 20)
-                    .scaleEffect(isBreathingPulse ? 1.08 : 0.95)
+                    .fill(color.opacity(isBreathingPulse ? (isSoundscapePlaying ? 0.10 : 0.07) : 0.02))
+                    .frame(width: ringSize - 16, height: ringSize - 16)
+                    .blur(radius: isSoundscapePlaying ? 32 : 26)
+                    .scaleEffect(isBreathingPulse ? (isSoundscapePlaying ? 1.07 : 1.04) : 0.95)
                     .animation(
-                        Animation.easeInOut(duration: 3.8).repeatForever(autoreverses: true),
+                        Animation.easeInOut(duration: 4.0).repeatForever(autoreverses: true),
+                        value: isBreathingPulse
+                    )
+
+                // Inner Harmonic Resonance Core
+                Circle()
+                    .fill(color.opacity(isBreathingPulse ? (isSoundscapePlaying ? 0.06 : 0.04) : 0.01))
+                    .frame(width: ringSize * 0.55, height: ringSize * 0.55)
+                    .blur(radius: 18)
+                    .scaleEffect(isBreathingPulse ? 1.03 : 0.97)
+                    .animation(
+                        Animation.easeInOut(duration: 4.0).repeatForever(autoreverses: true),
                         value: isBreathingPulse
                     )
             }
@@ -85,10 +101,10 @@ public struct PomodoroRingView: View {
                     context.fill(Path(ellipseIn: rect), with: .color(dotColor))
                 }
             }
-            .scaleEffect(isBreakPhase && isRunning && isBreathingPulse ? 1.02 : 1.0)
+            .scaleEffect(isRunning && isBreathingPulse ? (isBreakPhase ? 1.015 : 1.008) : 1.0)
             .animation(
-                isBreakPhase && isRunning
-                    ? Animation.easeInOut(duration: 3.8).repeatForever(autoreverses: true)
+                isRunning
+                    ? Animation.easeInOut(duration: 4.0).repeatForever(autoreverses: true)
                     : .default,
                 value: isBreathingPulse
             )
@@ -131,19 +147,12 @@ public struct PomodoroRingView: View {
         }
         .frame(width: ringSize, height: ringSize)
         .onAppear {
-            if isBreakPhase && isRunning {
+            if isRunning {
                 isBreathingPulse = true
             }
         }
         .onChange(of: isRunning) { _, running in
-            if isBreakPhase && running {
-                isBreathingPulse = true
-            } else {
-                isBreathingPulse = false
-            }
-        }
-        .onChange(of: phase) { _, newPhase in
-            if (newPhase == .shortBreak || newPhase == .longBreak) && isRunning {
+            if running {
                 isBreathingPulse = true
             } else {
                 isBreathingPulse = false

@@ -24,6 +24,7 @@
 		MS0015 /* PomodoroRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF015 /* PomodoroRingView.swift */; };
 		MS0016 /* GlassTabBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF016 /* GlassTabBarView.swift */; };
 		MS0080 /* VictoryCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF080 /* VictoryCardView.swift */; };
+		MS0087 /* KeystoneCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF087 /* KeystoneCardView.swift */; };
 		MS0081 /* SubscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF081 /* SubscriptionStore.swift */; };
 		MS0082 /* PaywallSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF082 /* PaywallSheet.swift */; };
 		MS0084 /* SoundscapeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF084 /* SoundscapeManager.swift */; };
@@ -107,6 +108,7 @@
 		MSF015 /* PomodoroRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroRingView.swift; sourceTree = "<group>"; };
 		MSF016 /* GlassTabBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassTabBarView.swift; sourceTree = "<group>"; };
 		MSF080 /* VictoryCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VictoryCardView.swift; sourceTree = "<group>"; };
+		MSF087 /* KeystoneCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeystoneCardView.swift; sourceTree = "<group>"; };
 		MSF081 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
 		MSF082 /* PaywallSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallSheet.swift; sourceTree = "<group>"; };
 		MSF084 /* SoundscapeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundscapeManager.swift; sourceTree = "<group>"; };
@@ -278,6 +280,7 @@
 				MSF015 /* PomodoroRingView.swift */,
 				MSF016 /* GlassTabBarView.swift */,
 				MSF080 /* VictoryCardView.swift */,
+				MSF087 /* KeystoneCardView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -464,6 +467,7 @@
 				MS0015 /* PomodoroRingView.swift in Sources */,
 				MS0016 /* GlassTabBarView.swift in Sources */,
 				MS0080 /* VictoryCardView.swift in Sources */,
+				MS0087 /* KeystoneCardView.swift in Sources */,
 				MS0081 /* SubscriptionStore.swift in Sources */,
 				MS0082 /* PaywallSheet.swift in Sources */,
 				MS0084 /* SoundscapeManager.swift in Sources */,

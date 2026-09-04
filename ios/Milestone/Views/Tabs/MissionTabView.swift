@@ -13,6 +13,7 @@ public struct MissionTabView: View {
     @State private var showVaultSheet: Bool = false
     @State private var completedQuote: Quote?
     @State private var activeMissionSnapshot: Mission?
+    @State private var keystoneEvent: KeystoneEvent = .none
 
     public init(onNavigateToArchive: (() -> Void)? = nil) {
         self.onNavigateToArchive = onNavigateToArchive
@@ -30,59 +31,61 @@ public struct MissionTabView: View {
                     )
 
                     VStack(spacing: 0) {
-                        // ── Pinned Hero Unit (Brand + Title + Countdown + Dot Matrix) ──
-                        VStack(spacing: 6) {
-                            // Top Brand
-                            HStack {
-                                Text("MILESTONE")
-                                    .font(.system(size: 11, weight: .heavy))
-                                    .tracking(4)
-                                    .foregroundStyle(theme.accent)
-                                    .padding(.leading, 4)
+                        // ── Top Brand & Vault Header ──
+                        HStack {
+                            Text("MILESTONE")
+                                .font(.system(size: 11, weight: .heavy))
+                                .tracking(4)
+                                .foregroundStyle(theme.accent)
+                                .padding(.leading, 4)
 
-                                Spacer()
+                            Spacer()
 
-                                Button {
-                                    HapticsManager.shared.impact(.light)
-                                    showVaultSheet = true
-                                } label: {
-                                    HStack(spacing: 5) {
-                                        Image(systemName: "archivebox")
-                                            .font(.system(size: 10, weight: .bold))
-                                        Text("VAULT")
-                                            .font(.system(size: 10, weight: .black))
-                                            .tracking(1.5)
+                            Button {
+                                HapticsManager.shared.impact(.light)
+                                showVaultSheet = true
+                            } label: {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "archivebox")
+                                        .font(.system(size: 10, weight: .bold))
+                                    Text("VAULT")
+                                        .font(.system(size: 10, weight: .black))
+                                        .tracking(1.5)
 
-                                        if !missionStore.vaultMissions.isEmpty {
-                                            Text("\(missionStore.vaultMissions.count)")
-                                                .font(.system(size: 9, weight: .black))
-                                                .foregroundStyle(theme.background)
-                                                .padding(.horizontal, 5)
-                                                .padding(.vertical, 1)
-                                                .background(Capsule().fill(theme.accent))
-                                        }
+                                    if !missionStore.vaultMissions.isEmpty {
+                                        Text("\(missionStore.vaultMissions.count)")
+                                            .font(.system(size: 9, weight: .black))
+                                            .foregroundStyle(theme.background)
+                                            .padding(.horizontal, 5)
+                                            .padding(.vertical, 1)
+                                            .background(Capsule().fill(theme.accent))
                                     }
-                                    .foregroundStyle(theme.textSecondary)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(
-                                        Capsule()
-                                            .fill(theme.surfaceLight.opacity(0.6))
-                                    )
                                 }
-                                .buttonStyle(.plain)
+                                .foregroundStyle(theme.textSecondary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(
+                                    Capsule()
+                                        .fill(theme.surfaceLight.opacity(0.6))
+                                )
                             }
-                            .padding(.top, 16)
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
+                        .padding(.bottom, 10)
 
+                        // ── Pinned Keystone Hero Card (Living Ambient Aurora + Title + Countdown + Dot Matrix) ──
+                        KeystoneCardView(event: keystoneEvent, isCompleting: isCompletingAnimation) {
                             // Mission Title
                             Text(mission.title)
-                                .font(.system(size: 30, weight: .medium))
+                                .font(.system(size: 28, weight: .medium))
                                 .tracking(-0.6)
                                 .foregroundStyle(theme.textPrimary)
                                 .multilineTextAlignment(.center)
                                 .lineLimit(2)
-                                .padding(.horizontal, 16)
-                                .padding(.top, 2)
+                                .padding(.horizontal, 12)
+                                .padding(.top, 4)
 
                             // Countdown Timer
                             CountdownTimerView(countdown: countdown)
@@ -96,26 +99,47 @@ public struct MissionTabView: View {
                                 isUnder24h: countdown.isUnder24h,
                                 isCompleting: isCompletingAnimation
                             )
-                            .padding(.bottom, 8)
+                            .padding(.bottom, 6)
                         }
-                        .padding(.horizontal, 24)
-                        .background(theme.background)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 10)
 
                         // ── Scrollable Tasks (Only Tasks Scroll) ──
                         ScrollView(showsIndicators: false) {
                             MissionTodoListView(
                                 todos: mission.todos,
                                 onToggle: { id in
+                                    let willBeDone = !(mission.todos.first(where: { $0.id == id })?.done ?? true)
                                     missionStore.toggleTodo(id: id)
+                                    if willBeDone {
+                                        keystoneEvent = .taskCompleted
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                                            if keystoneEvent == .taskCompleted {
+                                                keystoneEvent = .none
+                                            }
+                                        }
+                                    }
                                 },
                                 onDelete: { id in
                                     missionStore.deleteTodo(id: id)
+                                    keystoneEvent = .taskDeleted
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                                        if keystoneEvent == .taskDeleted {
+                                            keystoneEvent = .none
+                                        }
+                                    }
                                 },
                                 onMove: { indices, newOffset in
                                     missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
                                 },
                                 onAddTask: { text in
                                     missionStore.addTodo(text: text)
+                                    keystoneEvent = .taskAdded
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                        if keystoneEvent == .taskAdded {
+                                            keystoneEvent = .none
+                                        }
+                                    }
                                 },
                                 onFocusTask: { id, text in
                                     HapticsManager.shared.impact(.medium)
@@ -125,7 +149,7 @@ public struct MissionTabView: View {
                                     }
                                 }
                             )
-                            .padding(.top, 10)
+                            .padding(.top, 8)
                             .padding(.bottom, 16)
                         }
                         .scrollIndicators(.hidden)
