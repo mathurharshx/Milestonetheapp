@@ -293,23 +293,38 @@ private struct SwipeableTaskRow: View {
                                 .foregroundStyle(theme.accent)
                         }
                     }
+                    .frame(width: 38, height: 38)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
 
-                // Task Title
-                Text(task.text)
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundStyle(task.done ? theme.textTertiary : theme.textPrimary)
-                    .strikethrough(task.done, color: theme.textTertiary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        HapticsManager.shared.selection()
-                        withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
-                            onToggle()
-                        }
+                // Task Title with Progressive Strikethrough Sweep Animation
+                ZStack(alignment: .leading) {
+                    Text(task.text)
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundStyle(task.done ? theme.textTertiary : theme.textPrimary)
+                        .opacity(task.done ? 0.45 : 1.0)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .animation(.easeInOut(duration: 0.28), value: task.done)
+
+                    GeometryReader { textGeo in
+                        Rectangle()
+                            .fill(theme.textTertiary)
+                            .frame(height: 1.2)
+                            .scaleEffect(x: task.done ? 1.0 : 0.0, y: 1.0, anchor: .leading)
+                            .animation(.spring(response: 0.32, dampingFraction: 0.72), value: task.done)
+                            .position(x: textGeo.size.width / 2, y: textGeo.size.height / 2)
                     }
+                    .allowsHitTesting(false)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    HapticsManager.shared.selection()
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.72)) {
+                        onToggle()
+                    }
+                }
 
                 Spacer()
 

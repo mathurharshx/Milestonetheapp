@@ -29,6 +29,8 @@
 		MS0082 /* PaywallSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF082 /* PaywallSheet.swift */; };
 		MS0084 /* SoundscapeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF084 /* SoundscapeManager.swift */; };
 		MS0085 /* VaultSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF085 /* VaultSheet.swift */; };
+		MS0088 /* VelocityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF088 /* VelocityCalculator.swift */; };
+		MS0089 /* VelocityReportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF089 /* VelocityReportSheet.swift */; };
 		MS0017 /* CreateMissionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF017 /* CreateMissionSheet.swift */; };
 		MS0018 /* ProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF018 /* ProfileSheet.swift */; };
 		MS0019 /* QuoteModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF019 /* QuoteModalView.swift */; };
@@ -113,6 +115,8 @@
 		MSF082 /* PaywallSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallSheet.swift; sourceTree = "<group>"; };
 		MSF084 /* SoundscapeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundscapeManager.swift; sourceTree = "<group>"; };
 		MSF085 /* VaultSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSheet.swift; sourceTree = "<group>"; };
+		MSF088 /* VelocityCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VelocityCalculator.swift; sourceTree = "<group>"; };
+		MSF089 /* VelocityReportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VelocityReportSheet.swift; sourceTree = "<group>"; };
 		MSF017 /* CreateMissionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMissionSheet.swift; sourceTree = "<group>"; };
 		MSF018 /* ProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSheet.swift; sourceTree = "<group>"; };
 		MSF019 /* QuoteModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuoteModalView.swift; sourceTree = "<group>"; };
@@ -240,6 +244,7 @@
 				MSF035 /* NotificationManager.swift */,
 				MSF036 /* AudioManager.swift */,
 				MSF084 /* SoundscapeManager.swift */,
+				MSF088 /* VelocityCalculator.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -293,6 +298,7 @@
 				MSF034 /* MissionCelebrationSheet.swift */,
 				MSF082 /* PaywallSheet.swift */,
 				MSF085 /* VaultSheet.swift */,
+				MSF089 /* VelocityReportSheet.swift */,
 			);
 			path = Sheets;
 			sourceTree = "<group>";
@@ -472,6 +478,8 @@
 				MS0082 /* PaywallSheet.swift in Sources */,
 				MS0084 /* SoundscapeManager.swift in Sources */,
 				MS0085 /* VaultSheet.swift in Sources */,
+				MS0088 /* VelocityCalculator.swift in Sources */,
+				MS0089 /* VelocityReportSheet.swift in Sources */,
 				MS0017 /* CreateMissionSheet.swift in Sources */,
 				MS0018 /* ProfileSheet.swift in Sources */,
 				MS0019 /* QuoteModalView.swift in Sources */,

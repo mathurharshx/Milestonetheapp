@@ -10,6 +10,32 @@ public final class MissionStore {
             refreshMorningNotification()
         }
     }
+    public var activePersonalMission: Mission? {
+        didSet {
+            saveActivePersonalMission()
+        }
+    }
+    public var activePillar: MissionCategory = .work {
+        didSet {
+            UserDefaults.standard.set(activePillar.rawValue, forKey: activePillarKey)
+        }
+    }
+
+    public var currentPillarMission: Mission? {
+        get {
+            switch activePillar {
+            case .work: return activeMission
+            case .personal: return activePersonalMission
+            }
+        }
+        set {
+            switch activePillar {
+            case .work: activeMission = newValue
+            case .personal: activePersonalMission = newValue
+            }
+        }
+    }
+
     public var archivedMissions: [Mission] = [] {
         didSet {
             saveArchivedMissions()
@@ -23,6 +49,8 @@ public final class MissionStore {
     public var isLoading: Bool = true
 
     private let activeKey = "milestone:activeMission"
+    private let activePersonalKey = "milestone:activePersonalMission"
+    private let activePillarKey = "milestone:activePillar"
     private let archiveKey = "milestone:archivedMissions"
     private let vaultKey = "milestone:vaultMissions"
 
@@ -59,6 +87,9 @@ public final class MissionStore {
         isLoading = true
         defer { isLoading = false }
 
+        let pillarRaw = UserDefaults.standard.string(forKey: activePillarKey) ?? "work"
+        self.activePillar = MissionCategory(rawValue: pillarRaw) ?? .work
+
         if let activeData = UserDefaults.standard.data(forKey: activeKey),
            let mission = try? decoder.decode(Mission.self, from: activeData) {
             self.activeMission = mission
@@ -70,8 +101,16 @@ public final class MissionStore {
                     TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
                     TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false)
                 ],
-                targetDate: target
+                targetDate: target,
+                category: .work
             )
+        }
+
+        if let personalData = UserDefaults.standard.data(forKey: activePersonalKey),
+           let mission = try? decoder.decode(Mission.self, from: personalData) {
+            self.activePersonalMission = mission
+        } else {
+            self.activePersonalMission = nil
         }
 
         if let archiveData = UserDefaults.standard.data(forKey: archiveKey),
@@ -92,7 +131,19 @@ public final class MissionStore {
         refreshMissionNotifications()
     }
 
-    public func createMission(title: String, targetDate: Date, note: String? = nil, todos: [TodoTask] = []) {
+    public func switchPillar(to category: MissionCategory) {
+        self.activePillar = category
+        syncToWidget()
+    }
+
+    public func createMission(
+        title: String,
+        targetDate: Date,
+        note: String? = nil,
+        todos: [TodoTask] = [],
+        category: MissionCategory? = nil
+    ) {
+        let cat = category ?? activePillar
         let newMission = Mission(
             id: "\(Int(Date().timeIntervalSince1970 * 1000))",
             title: title.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -100,50 +151,55 @@ public final class MissionStore {
             todos: todos,
             targetDate: targetDate,
             createdAt: Date(),
-            isActive: true
+            isActive: true,
+            category: cat
         )
-        self.activeMission = newMission
+        if cat == .personal {
+            self.activePersonalMission = newMission
+        } else {
+            self.activeMission = newMission
+        }
     }
 
     public func completeMission() {
-        guard var mission = activeMission else { return }
+        guard var mission = currentPillarMission else { return }
         mission.completedAt = Date()
         mission.isActive = false
-        self.activeMission = mission
+        self.currentPillarMission = mission
     }
 
     public func archiveMission() {
-        guard let mission = activeMission else { return }
+        guard let mission = currentPillarMission else { return }
         var completed = mission
         completed.completedAt = mission.completedAt ?? Date()
         completed.isActive = false
 
         self.archivedMissions.insert(completed, at: 0)
-        self.activeMission = nil
+        self.currentPillarMission = nil
     }
 
     public func toggleTodo(id: String) {
-        guard var mission = activeMission else { return }
+        guard var mission = currentPillarMission else { return }
         if let index = mission.todos.firstIndex(where: { $0.id == id }) {
             mission.todos[index].done.toggle()
-            self.activeMission = mission
+            self.currentPillarMission = mission
         }
     }
 
     public func deleteTodo(id: String) {
-        guard var mission = activeMission else { return }
+        guard var mission = currentPillarMission else { return }
         mission.todos.removeAll(where: { $0.id == id })
-        self.activeMission = mission
+        self.currentPillarMission = mission
     }
 
     public func moveTodo(fromOffsets source: IndexSet, toOffset destination: Int) {
-        guard var mission = activeMission else { return }
+        guard var mission = currentPillarMission else { return }
         mission.todos.move(fromOffsets: source, toOffset: destination)
-        self.activeMission = mission
+        self.currentPillarMission = mission
     }
 
     public func addTodo(text: String) {
-        guard var mission = activeMission else { return }
+        guard var mission = currentPillarMission else { return }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         let newTodo = TodoTask(
@@ -152,7 +208,7 @@ public final class MissionStore {
             done: false
         )
         mission.todos.append(newTodo)
-        self.activeMission = mission
+        self.currentPillarMission = mission
     }
 
     public func deleteArchived(ids: Set<String>) {
@@ -166,6 +222,16 @@ public final class MissionStore {
             }
         } else {
             UserDefaults.standard.removeObject(forKey: activeKey)
+        }
+    }
+
+    private func saveActivePersonalMission() {
+        if let mission = activePersonalMission {
+            if let encoded = try? encoder.encode(mission) {
+                UserDefaults.standard.set(encoded, forKey: activePersonalKey)
+            }
+        } else {
+            UserDefaults.standard.removeObject(forKey: activePersonalKey)
         }
     }
 

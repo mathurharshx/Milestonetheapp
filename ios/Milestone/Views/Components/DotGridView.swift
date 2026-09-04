@@ -5,7 +5,9 @@ public struct DotGridView: View {
     public let daysElapsed: Int
     public let totalHours: Int
     public let hoursElapsed: Int
+    public let hoursRemaining: Int
     public let isUnder24h: Bool
+    public let isUnder48h: Bool
     public let isCompleting: Bool
 
     @Environment(\.theme) private var theme
@@ -15,14 +17,18 @@ public struct DotGridView: View {
         daysElapsed: Int,
         totalHours: Int,
         hoursElapsed: Int,
-        isUnder24h: Bool,
+        hoursRemaining: Int = 0,
+        isUnder24h: Bool = false,
+        isUnder48h: Bool = false,
         isCompleting: Bool = false
     ) {
         self.totalDays = totalDays
         self.daysElapsed = daysElapsed
         self.totalHours = totalHours
         self.hoursElapsed = hoursElapsed
+        self.hoursRemaining = hoursRemaining
         self.isUnder24h = isUnder24h
+        self.isUnder48h = isUnder48h
         self.isCompleting = isCompleting
     }
 
@@ -33,8 +39,48 @@ public struct DotGridView: View {
     }
 
     private var dotItems: [DotItem] {
-        let totalUnits = isUnder24h ? totalHours : totalDays
-        let unitsElapsed = isUnder24h ? hoursElapsed : daysElapsed
+        // 1. Hourly Sprint Mode for Short Deadlines (< 48 hours or <= 2 days)
+        if isUnder24h || totalDays <= 1 {
+            let totalUnits = 24
+            let remaining = max(0, min(24, hoursRemaining > 0 ? hoursRemaining : 24 - hoursElapsed))
+            let elapsed = 24 - remaining
+
+            var items: [DotItem] = []
+            var leadAssigned = false
+
+            for i in 0..<totalUnits {
+                let isPassed = i < elapsed
+                var isLead = false
+                if !isPassed && !leadAssigned {
+                    isLead = true
+                    leadAssigned = true
+                }
+                items.append(DotItem(id: i, elapsed: isPassed, isLead: isLead))
+            }
+            return items
+        } else if isUnder48h || totalDays <= 2 {
+            let totalUnits = 48
+            let remaining = max(0, min(48, hoursRemaining > 0 ? hoursRemaining : 48 - hoursElapsed))
+            let elapsed = 48 - remaining
+
+            var items: [DotItem] = []
+            var leadAssigned = false
+
+            for i in 0..<totalUnits {
+                let isPassed = i < elapsed
+                var isLead = false
+                if !isPassed && !leadAssigned {
+                    isLead = true
+                    leadAssigned = true
+                }
+                items.append(DotItem(id: i, elapsed: isPassed, isLead: isLead))
+            }
+            return items
+        }
+
+        // 2. Standard Daily Horizon Grid
+        let totalUnits = totalDays
+        let unitsElapsed = daysElapsed
 
         guard totalUnits > 0 && totalUnits <= 1095 else { return [] }
 
@@ -70,17 +116,17 @@ public struct DotGridView: View {
     }
 
     private var dotSize: CGFloat {
-        let totalUnits = isUnder24h ? totalHours : totalDays
-        if totalUnits <= 24 { return 8 }
-        if totalUnits <= 90 { return 6 }
-        if totalUnits <= 365 { return 4 }
+        if isUnder24h || totalDays <= 1 { return 7 }
+        if isUnder48h || totalDays <= 2 { return 6 }
+        if totalDays <= 90 { return 5.5 }
+        if totalDays <= 365 { return 4 }
         return 3
     }
 
     private var dotGap: CGFloat {
-        let totalUnits = isUnder24h ? totalHours : totalDays
-        if totalUnits <= 24 { return 6 }
-        if totalUnits <= 90 { return 4 }
+        if isUnder24h || totalDays <= 1 { return 5 }
+        if isUnder48h || totalDays <= 2 { return 4.5 }
+        if totalDays <= 90 { return 4 }
         return 3
     }
 
@@ -91,8 +137,6 @@ public struct DotGridView: View {
         if totalUnits > 0 && totalUnits <= 1095 {
             FlowLayout(spacing: dotGap) {
                 ForEach(items) { item in
-                    let isFilled = isCompleting || !item.elapsed
-
                     Circle()
                         .fill(isCompleting ? theme.accent : (item.elapsed ? theme.dotElapsed : theme.dotFilled))
                         .frame(width: dotSize, height: dotSize)

@@ -25,12 +25,14 @@ public struct PaywallSheet: View {
     }
 
     @State private var selectedPeriod: BillingPeriod = .annual
-    @State private var expandedFeature: PremiumFeature? = nil
+    @State private var expandedFeature: PremiumFeature?
     @State private var isPurchasing: Bool = false
     @State private var alertMessage: String?
     @State private var showAlert: Bool = false
 
-    public init() {}
+    public init(initialFeature: PremiumFeature? = nil) {
+        _expandedFeature = State(initialValue: initialFeature)
+    }
 
     private var annualProduct: Product? {
         subscriptionStore.products.first(where: { $0.id.contains("annual") })
@@ -489,7 +491,7 @@ public struct PaywallSheet: View {
                 }
             }
             .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: isExpanded ? nil : 116, alignment: .topLeading)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(isExpanded ? theme.surfaceLight.opacity(0.8) : theme.surface.opacity(0.6))

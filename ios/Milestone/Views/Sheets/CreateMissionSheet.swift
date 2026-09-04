@@ -28,7 +28,11 @@ public struct CreateMissionSheet: View {
     @State private var alertTitle: String = ""
     @State private var alertMessage: String = ""
 
-    public init() {}
+    public var category: MissionCategory? = nil
+
+    public init(category: MissionCategory? = nil) {
+        self.category = category
+    }
 
     private var isReady: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -575,7 +579,8 @@ public struct CreateMissionSheet: View {
             title: trimmedTitle,
             targetDate: targetDate,
             note: nil,
-            todos: todos
+            todos: todos,
+            category: category ?? missionStore.activePillar
         )
         dismiss()
     }

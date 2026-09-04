@@ -174,6 +174,11 @@ public final class PomodoroStore {
     }
 
     public func advanceToNextPhase() {
+        if phase == .focus {
+            let focusMins = max(1, totalTime / 60)
+            VelocityCalculator.recordCompletedFocusMinutes(focusMins)
+        }
+
         let (nextPhase, nextSession) = getNextPhase(current: phase, session: currentSession)
         self.phase = nextPhase
         self.currentSession = nextSession

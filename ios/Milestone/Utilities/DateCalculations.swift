@@ -10,14 +10,17 @@ public struct CountdownData: Equatable {
     public let daysRemaining: Int
     public let totalHours: Int
     public let hoursElapsed: Int
+    public let hoursRemaining: Int
     public let isUnder24h: Bool
+    public let isUnder48h: Bool
     public let progressPercent: Int
     public let isExpired: Bool
 
     public static let empty = CountdownData(
         days: 0, hours: 0, minutes: 0, seconds: 0,
         totalDays: 1, daysElapsed: 0, daysRemaining: 0,
-        totalHours: 0, hoursElapsed: 0, isUnder24h: false,
+        totalHours: 0, hoursElapsed: 0, hoursRemaining: 0,
+        isUnder24h: false, isUnder48h: false,
         progressPercent: 0, isExpired: false
     )
 }
@@ -61,13 +64,16 @@ public enum DateCalculations {
         let elapsedMs = now.timeIntervalSince(createdAt)
         let totalHours = max(1, Int(ceil(totalMs / 3600)))
         let hoursElapsed = max(0, min(totalHours, Int(floor(elapsedMs / 3600))))
-        let isUnder24h = totalMs < (24 * 3600)
+        let isUnder24h = diff > 0 && diff <= (24 * 3600)
+        let isUnder48h = diff > 0 && diff <= (48 * 3600)
+        let hoursRemaining = max(0, Int(ceil(diff / 3600)))
 
         if diff <= 0 {
             return CountdownData(
                 days: 0, hours: 0, minutes: 0, seconds: 0,
                 totalDays: totalDays, daysElapsed: daysElapsed, daysRemaining: 0,
-                totalHours: totalHours, hoursElapsed: totalHours, isUnder24h: isUnder24h,
+                totalHours: totalHours, hoursElapsed: totalHours, hoursRemaining: 0,
+                isUnder24h: false, isUnder48h: false,
                 progressPercent: 100, isExpired: true
             )
         }
@@ -88,7 +94,9 @@ public enum DateCalculations {
             daysRemaining: daysRemaining,
             totalHours: totalHours,
             hoursElapsed: hoursElapsed,
+            hoursRemaining: hoursRemaining,
             isUnder24h: isUnder24h,
+            isUnder48h: isUnder48h,
             progressPercent: progressPercent,
             isExpired: false
         )
