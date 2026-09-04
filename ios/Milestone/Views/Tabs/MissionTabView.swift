@@ -14,7 +14,6 @@ public struct MissionTabView: View {
     @State private var vaultPulse: CGFloat = 1.0
     @State private var showCelebrationSheet: Bool = false
     @State private var showVaultSheet: Bool = false
-    @State private var showVelocitySheet: Bool = false
     @State private var showPaywallSheet: Bool = false
     @State private var paywallFeature: PaywallSheet.PremiumFeature? = nil
     @State private var showCreateMissionSheet: Bool = false
@@ -73,53 +72,6 @@ public struct MissionTabView: View {
                                 isUnder48h: countdown.isUnder48h,
                                 isCompleting: isCompletingAnimation
                             )
-                            .padding(.bottom, 2)
-
-                            // ── Live Velocity & Pacing Chip ──
-                            let report = VelocityCalculator.calculateReport(
-                                mission: mission,
-                                archivedMissions: missionStore.archivedMissions
-                            )
-
-                            Button {
-                                HapticsManager.shared.impact(.light)
-                                showVelocitySheet = true
-                            } label: {
-                                HStack(spacing: 5) {
-                                    Image(systemName: report.status.badgeSymbol)
-                                        .font(.system(size: 9, weight: .bold))
-                                        .foregroundStyle(report.status.tintColor)
-
-                                    Text(report.formattedVelocity)
-                                        .font(.system(size: 11, weight: .black, design: .monospaced))
-                                        .foregroundStyle(theme.textPrimary)
-
-                                    Text("•")
-                                        .font(.system(size: 8, weight: .bold))
-                                        .foregroundStyle(theme.textTertiary)
-
-                                    Text(report.status.title)
-                                        .font(.system(size: 9, weight: .heavy))
-                                        .tracking(1)
-                                        .foregroundStyle(report.status.tintColor)
-
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 8, weight: .bold))
-                                        .foregroundStyle(theme.textTertiary.opacity(0.7))
-                                }
-                                .padding(.horizontal, 11)
-                                .padding(.vertical, 5)
-                                .contentShape(Capsule())
-                                .background(
-                                    Capsule()
-                                        .fill(theme.surface.opacity(0.75))
-                                )
-                                .overlay(
-                                    Capsule()
-                                        .stroke(report.status.tintColor.opacity(0.35), lineWidth: 1)
-                                )
-                            }
-                            .buttonStyle(.plain)
                             .padding(.bottom, 6)
                         }
                         .padding(.horizontal, 20)
@@ -227,9 +179,6 @@ public struct MissionTabView: View {
                 }
             }
         }
-        .sheet(isPresented: $showVelocitySheet) {
-            VelocityReportSheet()
-        }
         .sheet(isPresented: $showPaywallSheet) {
             PaywallSheet(initialFeature: paywallFeature)
         }
@@ -323,7 +272,7 @@ public struct MissionTabView: View {
                 Button {
                     HapticsManager.shared.impact(.light)
                     if category == .personal && !subscriptionStore.isProUser && !subscriptionStore.isTestFlightOrSandbox {
-                        paywallFeature = .dualPillars
+                        paywallFeature = .dualMissions
                         showPaywallSheet = true
                     } else {
                         withAnimation(.spring(response: 0.32, dampingFraction: 0.8)) {
@@ -380,19 +329,10 @@ public struct MissionTabView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            ZStack {
-                Circle()
-                    .fill(Color(red: 0.32, green: 0.72, blue: 0.53).opacity(0.14))
-                    .frame(width: 120, height: 120)
-                    .blur(radius: 20)
-
-                Image(systemName: "leaf.fill")
-                    .font(.system(size: 46, weight: .bold))
-                    .foregroundStyle(Color(red: 0.32, green: 0.72, blue: 0.53))
-            }
+            AliveLeafPulseView()
 
             VStack(spacing: 8) {
-                Text("PERSONAL PILLAR")
+                Text("PERSONAL MISSION")
                     .font(.system(size: 11, weight: .black))
                     .tracking(3)
                     .foregroundStyle(Color(red: 0.32, green: 0.72, blue: 0.53))
@@ -402,7 +342,7 @@ public struct MissionTabView: View {
                     .tracking(-0.5)
                     .foregroundStyle(theme.textPrimary)
 
-                Text("While your Work Mission drives career milestones, your Personal Pillar guards health, study, or creative craft.")
+                Text("While your Work Mission drives career milestones, your Personal Mission guards health, study, or creative craft.")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundStyle(theme.textSecondary)
                     .multilineTextAlignment(.center)
@@ -471,6 +411,73 @@ public struct MissionTabView: View {
         // 4. Stage 3: Apple Award Wax-Seal Celebration Sheet presentation
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
             showCelebrationSheet = true
+        }
+    }
+}
+
+/// Living, breathing botanical aura animation for the Personal Mission leaf icon
+private struct AliveLeafPulseView: View {
+    @State private var isBreathing: Bool = false
+    @State private var innerPulse: Bool = false
+    @State private var waveRipple: Bool = false
+
+    private let emerald = Color(red: 0.32, green: 0.72, blue: 0.53)
+
+    var body: some View {
+        ZStack {
+            // Ripple wave (expanding living botanical aura)
+            Circle()
+                .stroke(emerald.opacity(waveRipple ? 0.0 : 0.40), lineWidth: 1.5)
+                .frame(width: 100, height: 100)
+                .scaleEffect(waveRipple ? 1.6 : 0.88)
+
+            // Outer radiant blooming halo
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            emerald.opacity(isBreathing ? 0.32 : 0.12),
+                            emerald.opacity(isBreathing ? 0.10 : 0.02),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 15,
+                        endRadius: isBreathing ? 75 : 45
+                    )
+                )
+                .frame(width: 150, height: 150)
+
+            // Inner vital core aura (more frequent organic cadence)
+            Circle()
+                .fill(emerald.opacity(innerPulse ? 0.28 : 0.10))
+                .frame(width: 85, height: 85)
+                .blur(radius: 14)
+                .scaleEffect(innerPulse ? 1.18 : 0.90)
+
+            // Organic Living Leaf icon with micro-sway and breathing scale
+            Image(systemName: "leaf.fill")
+                .font(.system(size: 46, weight: .bold))
+                .foregroundStyle(emerald)
+                .scaleEffect(isBreathing ? 1.07 : 0.95)
+                .rotationEffect(.degrees(isBreathing ? 2.5 : -2.0))
+                .shadow(
+                    color: emerald.opacity(isBreathing ? 0.70 : 0.30),
+                    radius: isBreathing ? 16 : 6,
+                    x: 0,
+                    y: 0
+                )
+        }
+        .frame(width: 160, height: 160)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                isBreathing = true
+            }
+            withAnimation(.easeInOut(duration: 0.95).repeatForever(autoreverses: true)) {
+                innerPulse = true
+            }
+            withAnimation(.easeOut(duration: 1.8).repeatForever(autoreverses: false)) {
+                waveRipple = true
+            }
         }
     }
 }

@@ -18,8 +18,7 @@ public struct PaywallSheet: View {
     public enum PremiumFeature: String, Identifiable {
         case soundscapes
         case vault
-        case dualPillars
-        case velocity
+        case dualMissions
 
         public var id: String { rawValue }
     }
@@ -164,30 +163,18 @@ public struct PaywallSheet: View {
                                     detail: "Had a brilliant new project idea while working? Don't break your momentum. Deposit it into The Vault in 1 tap. Keep your dopamine locked on your current single mission until completed, then promote any queued mission with one tap."
                                 )
 
-                                // Dual Pillars
+                                // Dual Missions
                                 bentoCard(
-                                    feature: .dualPillars,
+                                    feature: .dualMissions,
                                     icon: "circle.grid.2x1.fill",
                                     iconColor: Color(red: 0.32, green: 0.72, blue: 0.53),
-                                    title: "Dual Pillars",
+                                    title: "Dual Missions",
                                     badge: "BALANCED",
                                     badgeColor: Color(red: 0.32, green: 0.72, blue: 0.53),
                                     summary: "Run 1 Work Mission and 1 Personal Mission simultaneously.",
-                                    detail: "The only exception to the single-goal rule. Dual Pillars allows ambitious creators to balance one professional mission and one personal habit side-by-side without context switching or burnout."
+                                    detail: "The only exception to the single-goal rule. Dual Missions allows ambitious creators to balance one professional mission and one personal mission side-by-side without context switching or burnout."
                                 )
                             }
-
-                            // Bento 4: Deep Velocity & Pacing Reports (Wide Bottom)
-                            bentoCard(
-                                feature: .velocity,
-                                icon: "chart.line.uptrend.xyaxis",
-                                iconColor: theme.accent,
-                                title: "Deep Velocity & Pacing Reports",
-                                badge: "DEEP STATS",
-                                badgeColor: theme.textTertiary,
-                                summary: "Detect timeline drift early and track consecutive sprint completion streaks.",
-                                detail: "Real-time mathematical forecasting based on your actual sprint velocity. Automatically calculates timeline drift alerts before deadlines slip and generates exportable sprint reports."
-                            )
                         }
                         .padding(.horizontal, 2)
 
