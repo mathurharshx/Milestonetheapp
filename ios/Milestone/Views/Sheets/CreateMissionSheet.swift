@@ -60,23 +60,17 @@ public struct CreateMissionSheet: View {
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 26) {
                         // Header
-                        VStack(alignment: .center, spacing: 6) {
-                            Text("MILESTONE")
-                                .font(.system(size: 11, weight: .heavy))
-                                .tracking(4)
-                                .foregroundStyle(theme.accent)
-                                .padding(.leading, 4)
-
-                            Text("New Mission")
-                                .font(.system(size: 34, weight: .medium))
-                                .tracking(-0.8)
+                        VStack(alignment: .center, spacing: 8) {
+                            Text(category == .personal ? "New Personal Mission" : "New Mission")
+                                .font(.system(size: 32, weight: .semibold))
+                                .tracking(-0.6)
                                 .foregroundStyle(theme.textPrimary)
                                 .multilineTextAlignment(.center)
 
                             ZStack {
-                                Text("One goal at a time.")
+                                Text(category == .personal ? "Guard your health, craft, and clarity." : "One goal at a time.")
                                     .font(.system(size: 15, weight: .regular))
-                                    .foregroundStyle(theme.textTertiary)
+                                    .foregroundStyle(theme.textSecondary)
                                     .multilineTextAlignment(.center)
 
 #if DEBUG

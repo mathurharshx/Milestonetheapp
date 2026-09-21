@@ -10,7 +10,8 @@ public struct MissionTodoListView: View {
 
     @State private var newTaskText: String = ""
     @State private var isReordering: Bool = false
-    @AppStorage("milestone:isSpotlightActive") private var isSpotlight: Bool = false
+    @State private var isSpotlight: Bool = false
+    @State private var spotlightTaskId: String? = nil
     @State private var isCompletedExpanded: Bool = false
     @FocusState private var isInputFocused: Bool
     @Environment(\.theme) private var theme
@@ -45,18 +46,33 @@ public struct MissionTodoListView: View {
         completedTasks.count
     }
 
+    private var currentSpotlightTask: TodoTask? {
+        if let spotlightTaskId, let task = activeTasks.first(where: { $0.id == spotlightTaskId }) {
+            return task
+        }
+        return activeTasks.first
+    }
+
+    private var currentSpotlightIndex: Int {
+        guard let current = currentSpotlightTask,
+              let idx = activeTasks.firstIndex(where: { $0.id == current.id }) else {
+            return 0
+        }
+        return idx
+    }
+
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // ── Section Header & Mode Controls ──
             HStack(spacing: 8) {
-                Text("TASKS")
+                Text(isSpotlight ? "SPOTLIGHT" : "TASKS")
                     .font(.system(size: 11, weight: .semibold))
                     .tracking(2)
-                    .foregroundStyle(theme.textSecondary)
+                    .foregroundStyle(isSpotlight ? theme.accent : theme.textSecondary)
 
                 Spacer()
 
-                // Spotlight Mode Toggle
+                // Mode Toggle Button (Spotlight / All Tasks)
                 if !todos.isEmpty {
                     Button {
                         HapticsManager.shared.impact(.light)
@@ -64,22 +80,25 @@ public struct MissionTodoListView: View {
                             isSpotlight.toggle()
                             if isSpotlight {
                                 isReordering = false
+                                if spotlightTaskId == nil {
+                                    spotlightTaskId = activeTasks.first?.id
+                                }
                             }
                         }
                     } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "scope")
+                        HStack(spacing: 5) {
+                            Image(systemName: isSpotlight ? "list.bullet" : "scope")
                                 .font(.system(size: 10, weight: .bold))
-                            Text("SPOTLIGHT")
+                            Text(isSpotlight ? "ALL TASKS" : "SPOTLIGHT")
                                 .font(.system(size: 10, weight: .bold))
-                                .tracking(1.5)
+                                .tracking(1.2)
                         }
-                        .foregroundStyle(isSpotlight ? theme.accent : theme.textTertiary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .foregroundStyle(isSpotlight ? theme.textPrimary : theme.textTertiary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
                         .background(
                             Capsule()
-                                .fill(isSpotlight ? theme.accentDim : Color.clear)
+                                .fill(isSpotlight ? theme.surfaceLight : Color.clear)
                                 .overlay(
                                     Capsule().stroke(isSpotlight ? theme.accent.opacity(0.4) : Color.clear, lineWidth: 1)
                                 )
@@ -114,10 +133,24 @@ public struct MissionTodoListView: View {
                     .buttonStyle(.plain)
                 }
 
-                Text("\(doneCount)/\(todos.count)")
-                    .font(.system(size: 11, weight: .semibold))
-                    .tracking(1)
-                    .foregroundStyle(theme.textTertiary)
+                // Counter Button: Tappable to toggle back to all tasks if in spotlight
+                Button {
+                    if isSpotlight {
+                        HapticsManager.shared.impact(.light)
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                            isSpotlight = false
+                        }
+                    }
+                } label: {
+                    Text("\(doneCount)/\(todos.count)")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(1)
+                        .foregroundStyle(isSpotlight ? theme.accent : theme.textTertiary)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 4)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
             .padding(.bottom, 10)
 
@@ -179,26 +212,28 @@ public struct MissionTodoListView: View {
     // ── Ultra-Minimal Single-Line Spotlight Row ──
     @ViewBuilder
     private var spotlightView: some View {
-        if let currentTask = activeTasks.first {
-            VStack(spacing: 0) {
+        if let currentTask = currentSpotlightTask {
+            VStack(spacing: 12) {
+                // Active Spotlight Card
                 HStack(spacing: 12) {
                     // Left focus indicator + quick check
                     Button {
                         HapticsManager.shared.notification(.success)
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                             onToggle(currentTask.id)
+                            advanceSpotlightAfterToggle(completedId: currentTask.id)
                         }
                     } label: {
                         ZStack {
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(theme.accent, lineWidth: 1.5)
-                                .frame(width: 20, height: 20)
+                                .frame(width: 22, height: 22)
 
                             Circle()
                                 .fill(theme.accent)
                                 .frame(width: 6, height: 6)
                         }
-                        .frame(width: 32, height: 32)
+                        .frame(width: 36, height: 36)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -212,30 +247,41 @@ public struct MissionTodoListView: View {
 
                     Spacer(minLength: 8)
 
-                    // Step counter (e.g. 1/3)
+                    // Step counter & Cycle Controls
                     if activeTasks.count > 1 {
-                        Text("1/\(activeTasks.count)")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(theme.textTertiary)
-                    }
-
-                    // Defer / Skip Button (subtle icon)
-                    if activeTasks.count > 1 {
-                        Button {
-                            HapticsManager.shared.impact(.light)
-                            if let taskIndex = todos.firstIndex(where: { $0.id == currentTask.id }) {
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                    onMove(IndexSet(integer: taskIndex), todos.count)
+                        HStack(spacing: 4) {
+                            Button {
+                                HapticsManager.shared.impact(.light)
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                    cycleSpotlightTask(direction: -1)
                                 }
+                            } label: {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(theme.textTertiary)
+                                    .frame(width: 24, height: 24)
                             }
-                        } label: {
-                            Image(systemName: "forward.end")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(theme.textTertiary)
-                                .frame(width: 28, height: 28)
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Previous task")
+
+                            Text("\(currentSpotlightIndex + 1)/\(activeTasks.count)")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(theme.textSecondary)
+
+                            Button {
+                                HapticsManager.shared.impact(.light)
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                    cycleSpotlightTask(direction: 1)
+                                }
+                            } label: {
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(theme.textTertiary)
+                                    .frame(width: 24, height: 24)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Next task")
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Defer task")
                     }
 
                     // Focus Button (Timer shortcut)
@@ -245,7 +291,7 @@ public struct MissionTodoListView: View {
                             onFocus(currentTask.id, currentTask.text)
                         } label: {
                             Image(systemName: "timer")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.system(size: 13, weight: .semibold))
                                 .foregroundStyle(theme.accent)
                                 .frame(width: 28, height: 28)
                         }
@@ -258,6 +304,7 @@ public struct MissionTodoListView: View {
                         HapticsManager.shared.notification(.success)
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                             onToggle(currentTask.id)
+                            advanceSpotlightAfterToggle(completedId: currentTask.id)
                         }
                     } label: {
                         Text("DONE")
@@ -274,8 +321,59 @@ public struct MissionTodoListView: View {
                     .buttonStyle(.plain)
                 }
                 .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(theme.surface)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(theme.accent.opacity(0.3), lineWidth: 1)
+                        )
+                )
+
+                // ── Prominent "VIEW ALL TASKS" Button to solve user difficulty ──
+                Button {
+                    HapticsManager.shared.impact(.light)
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                        isSpotlight = false
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "list.bullet")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(theme.accent)
+
+                        Text("VIEW ALL TASKS (\(todos.count))")
+                            .font(.system(size: 12, weight: .bold))
+                            .tracking(1.2)
+                            .foregroundStyle(theme.textPrimary)
+
+                        Spacer()
+
+                        Text("\(doneCount) done • \(activeTasks.count) remaining")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(theme.textTertiary)
+
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(theme.textTertiary)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 11)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(theme.surfaceLight.opacity(0.6))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(theme.border, lineWidth: 1)
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+                .contentShape(Rectangle())
 
                 Divider().overlay(theme.divider)
+                    .padding(.top, 4)
             }
             .transition(.opacity)
         } else if todos.isEmpty {
@@ -337,7 +435,10 @@ public struct MissionTodoListView: View {
                             },
                             onFocusTask: onFocusTask != nil ? {
                                 onFocusTask?(task.id, task.text)
-                            } : nil
+                            } : nil,
+                            onSpotlight: {
+                                spotlightTask(id: task.id)
+                            }
                         )
 
                         Divider().overlay(theme.divider)
@@ -413,7 +514,8 @@ public struct MissionTodoListView: View {
                                 },
                                 onMoveUp: {},
                                 onMoveDown: {},
-                                onFocusTask: nil
+                                onFocusTask: nil,
+                                onSpotlight: nil
                             )
 
                             Divider().overlay(theme.divider)
@@ -424,6 +526,31 @@ public struct MissionTodoListView: View {
             }
         }
         .padding(.top, 6)
+    }
+
+    private func spotlightTask(id: String) {
+        HapticsManager.shared.impact(.medium)
+        spotlightTaskId = id
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+            isSpotlight = true
+            isReordering = false
+        }
+    }
+
+    private func cycleSpotlightTask(direction: Int) {
+        guard !activeTasks.isEmpty else { return }
+        let newIndex = (currentSpotlightIndex + direction + activeTasks.count) % activeTasks.count
+        spotlightTaskId = activeTasks[newIndex].id
+    }
+
+    private func advanceSpotlightAfterToggle(completedId: String) {
+        let remaining = activeTasks.filter { $0.id != completedId }
+        if let next = remaining.first {
+            spotlightTaskId = next.id
+        } else {
+            isSpotlight = false
+            spotlightTaskId = nil
+        }
     }
 
     private func moveActiveTask(from activeIndex: Int, direction: Int) {
@@ -461,6 +588,7 @@ private struct SwipeableTaskRow: View {
     let onMoveUp: () -> Void
     let onMoveDown: () -> Void
     let onFocusTask: (() -> Void)?
+    let onSpotlight: (() -> Void)?
 
     @Environment(\.theme) private var theme
     @State private var dragOffset: CGFloat = 0
@@ -630,6 +758,32 @@ private struct SwipeableTaskRow: View {
             .padding(.vertical, 12)
             .background(theme.background)
             .offset(x: dragOffset)
+            .contextMenu {
+                if !task.done, let onSpotlight = onSpotlight {
+                    Button {
+                        HapticsManager.shared.impact(.medium)
+                        onSpotlight()
+                    } label: {
+                        Label("Spotlight This Task", systemImage: "scope")
+                    }
+                }
+
+                if !task.done, let onFocus = onFocusTask {
+                    Button {
+                        HapticsManager.shared.impact(.light)
+                        onFocus()
+                    } label: {
+                        Label("Focus with Timer", systemImage: "timer")
+                    }
+                }
+
+                Button(role: .destructive) {
+                    HapticsManager.shared.impact(.heavy)
+                    onDelete()
+                } label: {
+                    Label("Delete Task", systemImage: "trash")
+                }
+            }
             .gesture(
                 DragGesture(minimumDistance: 15, coordinateSpace: .local)
                     .onChanged { gesture in

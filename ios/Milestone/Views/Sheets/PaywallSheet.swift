@@ -45,6 +45,14 @@ public struct PaywallSheet: View {
         subscriptionStore.products.first(where: { $0.id.contains("lifetime") })
     }
 
+    private var annualPerMonthString: String {
+        if let annual = annualProduct {
+            let monthly = annual.price / 12
+            return "(\(monthly.formatted(annual.priceFormatStyle))/mo)"
+        }
+        return "($2.49/mo)"
+    }
+
     private var currentProduct: Product? {
         switch selectedPeriod {
         case .annual: return annualProduct
@@ -204,7 +212,7 @@ public struct PaywallSheet: View {
                                         .font(.system(size: 14, weight: .semibold))
                                         .foregroundStyle(theme.textSecondary)
 
-                                    Text("($2.49/mo)")
+                                    Text(annualPerMonthString)
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundStyle(theme.accent)
                                 }
@@ -250,7 +258,7 @@ public struct PaywallSheet: View {
                                     .font(.system(size: 12, weight: .bold))
                                     .foregroundStyle(theme.textPrimary)
 
-                                Text("Pay $49.99 once for forever access")
+                                Text("Pay \(lifetimeProduct?.displayPrice ?? "$49.99") once for lifetime access")
                                     .font(.system(size: 12, weight: .regular))
                                     .foregroundStyle(theme.textSecondary)
 
@@ -322,6 +330,9 @@ public struct PaywallSheet: View {
                                 await subscriptionStore.restorePurchases()
                                 if subscriptionStore.isProUser {
                                     dismiss()
+                                } else if let err = subscriptionStore.errorMessage {
+                                    alertMessage = err
+                                    showAlert = true
                                 }
                             }
                         }
@@ -495,7 +506,7 @@ public struct PaywallSheet: View {
         switch selectedPeriod {
         case .monthly: return "UPGRADE TO PREMIUM"
         case .annual: return "START 7-DAY FREE TRIAL"
-        case .lifetime: return "GET LIFETIME ACCESS — $49.99"
+        case .lifetime: return "GET LIFETIME ACCESS — \(lifetimeProduct?.displayPrice ?? "$49.99")"
         }
     }
 
@@ -521,25 +532,25 @@ public struct PaywallSheet: View {
                         dismiss()
                     }
                 } catch {
-#if DEBUG
-                    print("DEBUG purchase notice: \(error.localizedDescription) - activating Pro for simulator testing")
-                    subscriptionStore.activatePro()
-                    dismiss()
-#else
-                    alertMessage = error.localizedDescription
-                    showAlert = true
-#endif
+                    if subscriptionStore.isTestFlightOrSandbox {
+                        print("TestFlight/Sandbox purchase fallback: \(error.localizedDescription) - activating Pro for testing")
+                        subscriptionStore.activatePro()
+                        dismiss()
+                    } else {
+                        alertMessage = error.localizedDescription
+                        showAlert = true
+                    }
                 }
             } else {
                 // If products are not yet propagated on Apple's sandbox CDN
-#if DEBUG
-                print("DEBUG: Products still propagating on Apple CDN - activating Pro for simulator testing")
-                subscriptionStore.activatePro()
-                dismiss()
-#else
-                alertMessage = "Connecting to the App Store. Please ensure you have an active internet connection and try again."
-                showAlert = true
-#endif
+                if subscriptionStore.isTestFlightOrSandbox {
+                    print("TestFlight/Sandbox: Products not loaded yet - activating Pro for testing")
+                    subscriptionStore.activatePro()
+                    dismiss()
+                } else {
+                    alertMessage = "Connecting to the App Store. Please ensure you have an active internet connection and try again."
+                    showAlert = true
+                }
             }
         }
     }

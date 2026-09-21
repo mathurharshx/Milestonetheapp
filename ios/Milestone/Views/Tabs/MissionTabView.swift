@@ -182,27 +182,25 @@ public struct MissionTabView: View {
         .sheet(isPresented: $showPaywallSheet) {
             PaywallSheet(initialFeature: paywallFeature)
         }
-        .sheet(isPresented: $showCreateMissionSheet) {
-            CreateMissionSheet(category: .personal)
-        }
-        .sheet(isPresented: $showVaultSheet) {
-            VaultSheet()
-        }
-        .fullScreenCover(isPresented: $showCelebrationSheet) {
-            if let mission = activeMissionSnapshot ?? missionStore.currentPillarMission {
+        .fullScreenCover(isPresented: $showCelebrationSheet, onDismiss: {
+            isCompletingAnimation = false
+            isAscendingToVault = false
+            activeMissionSnapshot = nil
+        }) {
+            if let mission = activeMissionSnapshot ?? missionStore.archivedMissions.first {
                 MissionCelebrationSheet(
                     mission: mission,
                     quote: completedQuote,
                     onArchive: {
-                        missionStore.archiveMission()
                         isCompletingAnimation = false
                         isAscendingToVault = false
+                        activeMissionSnapshot = nil
                         onNavigateToArchive?()
                     },
                     onNewMission: {
-                        missionStore.archiveMission()
                         isCompletingAnimation = false
                         isAscendingToVault = false
+                        activeMissionSnapshot = nil
                     }
                 )
             }
@@ -216,10 +214,9 @@ public struct MissionTabView: View {
             // Brand & Vault Row
             HStack {
                 Text("MILESTONE")
-                    .font(.system(size: 11, weight: .heavy))
-                    .tracking(4)
+                    .font(.system(size: 12, weight: .heavy))
+                    .tracking(3.5)
                     .foregroundStyle(theme.accent)
-                    .padding(.leading, 4)
 
                 Spacer()
 
@@ -262,6 +259,9 @@ public struct MissionTabView: View {
                     .scaleEffect(vaultPulse)
                 }
                 .buttonStyle(.plain)
+                .sheet(isPresented: $showVaultSheet) {
+                    VaultSheet()
+                }
             }
 
             // Dual Pillars Segmented Selector Row
@@ -392,6 +392,9 @@ public struct MissionTabView: View {
                 .padding(.horizontal, 32)
             }
             .buttonStyle(.plain)
+            .sheet(isPresented: $showCreateMissionSheet) {
+                CreateMissionSheet(category: .personal)
+            }
             .padding(.top, 8)
 
             Spacer()
@@ -400,20 +403,25 @@ public struct MissionTabView: View {
     }
 
     private func triggerCompletion(for mission: Mission) {
-        // Capture snapshot before archiving
+        guard !isCompletingAnimation else { return }
+
+        // 1. Capture snapshot before archiving so CelebrationSheet has all data
         activeMissionSnapshot = mission
         completedQuote = QuoteManager.randomQuote()
 
-        // 1. Victory Haptic & Luxury Audio Chord
+        // 2. Victory Haptic & Luxury Audio Chord
         HapticsManager.shared.notification(.success)
         AudioManager.shared.play(.missionComplete)
 
-        // 2. Stage 1: Keystone 3D Spatial Lift & Radiant Emerald Bloom
+        // 3. Stage 1: Keystone 3D Spatial Lift & Radiant Emerald Bloom
         withAnimation(.spring(response: 0.42, dampingFraction: 0.72)) {
             isCompletingAnimation = true
         }
 
-        // 3. Stage 2: Ascension Glide upward into Vault Pill + Vault Reception Pulse
+        // 4. Immediately archive mission so it is officially completed and ended
+        missionStore.archiveMission(mission)
+
+        // 5. Stage 2: Ascension Glide upward into Vault Pill + Vault Reception Pulse
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
             withAnimation(.easeInOut(duration: 0.40)) {
                 isAscendingToVault = true
@@ -428,7 +436,7 @@ public struct MissionTabView: View {
             }
         }
 
-        // 4. Stage 3: Apple Award Wax-Seal Celebration Sheet presentation
+        // 6. Stage 3: Apple Award Wax-Seal Celebration Sheet presentation
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
             showCelebrationSheet = true
         }

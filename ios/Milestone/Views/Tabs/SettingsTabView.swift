@@ -12,6 +12,8 @@ public struct SettingsTabView: View {
 
     @State private var showProfileSheet: Bool = false
     @State private var showPaywallSheet: Bool = false
+    @State private var showRestoreAlert: Bool = false
+    @State private var restoreAlertMessage: String = ""
     @State private var reminderDate: Date = Date()
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
 
@@ -499,30 +501,61 @@ public struct SettingsTabView: View {
                         HapticsManager.shared.impact(.light)
                         Task {
                             await subscriptionStore.restorePurchases()
+                            if subscriptionStore.isProUser {
+                                restoreAlertMessage = "Your Milestone Premium subscription has been successfully restored."
+                            } else {
+                                restoreAlertMessage = subscriptionStore.errorMessage ?? "No active subscription found to restore."
+                            }
+                            showRestoreAlert = true
                         }
                     } label: {
                         SettingsRow(
                             label: "Restore Purchases",
-                            sublabel: "Restore an existing Milestone subscription",
+                            sublabel: subscriptionStore.isProUser ? "Milestone Premium is active" : "Restore an existing Milestone subscription",
                             showChevron: true
                         )
                     }
                     .buttonStyle(.plain)
 
-                    #if DEBUG
-                    Divider().overlay(theme.divider)
+                    if subscriptionStore.isTestFlightOrSandbox {
+                        Divider().overlay(theme.divider)
 
-                    Button {
-                        subscriptionStore.toggleDebugPro()
-                    } label: {
-                        SettingsRow(
-                            label: "Toggle Pro (Debug)",
-                            sublabel: "Status: \(subscriptionStore.isProUser ? "PRO ACTIVE" : "FREE USER")",
-                            showChevron: false
-                        )
+                        Button {
+                            subscriptionStore.toggleDebugPro()
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    HStack(spacing: 6) {
+                                        Circle()
+                                            .fill(subscriptionStore.isProUser ? Color(uiColor: .systemGreen) : theme.accent)
+                                            .frame(width: 7, height: 7)
+
+                                        Text("Sandbox / TestFlight Pro Toggle")
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundStyle(theme.textPrimary)
+                                    }
+
+                                    Text("Tap to test Milestone Premium (\(subscriptionStore.isProUser ? "PRO UNLOCKED" : "FREE TIER"))")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(theme.textTertiary)
+                                }
+
+                                Spacer()
+
+                                Text(subscriptionStore.isProUser ? "PRO ACTIVE" : "TOGGLE")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .tracking(1)
+                                    .foregroundStyle(subscriptionStore.isProUser ? Color(uiColor: .systemGreen) : theme.accent)
+                                    .padding(.horizontal, 9)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        Capsule().fill(subscriptionStore.isProUser ? Color(uiColor: .systemGreen).opacity(0.15) : theme.accentDim)
+                                    )
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
-                    #endif
 
                     Divider().overlay(theme.divider)
 
@@ -559,6 +592,11 @@ public struct SettingsTabView: View {
         }
         .sheet(isPresented: $showPaywallSheet) {
             PaywallSheet()
+        }
+        .alert("Restore Purchases", isPresented: $showRestoreAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(restoreAlertMessage)
         }
         .onAppear {
             var comps = DateComponents()

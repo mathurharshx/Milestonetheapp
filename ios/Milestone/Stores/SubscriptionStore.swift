@@ -53,7 +53,16 @@ public final class SubscriptionStore {
         #if DEBUG
         return true
         #else
-        return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+        if let receiptURL = Bundle.main.appStoreReceiptURL {
+            if receiptURL.lastPathComponent == "sandboxReceipt" || receiptURL.path.contains("sandboxReceipt") {
+                return true
+            }
+        }
+        // TestFlight builds contain an embedded provisioning profile, whereas App Store production builds strip it
+        if Bundle.main.path(forResource: "embedded", ofType: "mobileprovision") != nil {
+            return true
+        }
+        return false
         #endif
     }
 
@@ -151,7 +160,11 @@ public final class SubscriptionStore {
             do {
                 let transaction = try checkVerified(result)
 
-                if transaction.revocationDate == nil {
+                // Verify transaction is not revoked and has not expired
+                let isNotRevoked = transaction.revocationDate == nil
+                let isNotExpired = transaction.expirationDate == nil || transaction.expirationDate! > Date()
+
+                if isNotRevoked && isNotExpired {
                     hasActiveEntitlement = true
                     break
                 }
@@ -194,18 +207,19 @@ public final class SubscriptionStore {
         }
     }
 
-#if DEBUG
+    // ── TestFlight Sandbox & Debug Testing Helpers ──
     public func activatePro() {
+        guard isTestFlightOrSandbox else { return }
         self.isProUser = true
         UserDefaults.standard.set(true, forKey: "milestone:isProUser")
         HapticsManager.shared.notification(.success)
     }
 
-    // Debug toggle for testing Pro experience in simulator
+    // Toggle for testing Pro experience in Simulator and TestFlight Sandbox builds
     public func toggleDebugPro() {
+        guard isTestFlightOrSandbox else { return }
         self.isProUser.toggle()
         UserDefaults.standard.set(isProUser, forKey: "milestone:isProUser")
         HapticsManager.shared.notification(.success)
     }
-#endif
 }

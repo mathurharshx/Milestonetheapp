@@ -53,6 +53,7 @@ public final class MissionStore {
     private let activePillarKey = "milestone:activePillar"
     private let archiveKey = "milestone:archivedMissions"
     private let vaultKey = "milestone:vaultMissions"
+    private let hasInitializedFirstMissionKey = "milestone:hasInitializedFirstMission"
 
     private var encoder: JSONEncoder {
         let enc = JSONEncoder()
@@ -90,29 +91,6 @@ public final class MissionStore {
         let pillarRaw = UserDefaults.standard.string(forKey: activePillarKey) ?? "work"
         self.activePillar = MissionCategory(rawValue: pillarRaw) ?? .work
 
-        if let activeData = UserDefaults.standard.data(forKey: activeKey),
-           let mission = try? decoder.decode(Mission.self, from: activeData) {
-            self.activeMission = mission
-        } else {
-            let target = Calendar.current.date(byAdding: .day, value: 64, to: Date()) ?? Date()
-            self.activeMission = Mission(
-                title: "Launch Milestone v1.0",
-                todos: [
-                    TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
-                    TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false)
-                ],
-                targetDate: target,
-                category: .work
-            )
-        }
-
-        if let personalData = UserDefaults.standard.data(forKey: activePersonalKey),
-           let mission = try? decoder.decode(Mission.self, from: personalData) {
-            self.activePersonalMission = mission
-        } else {
-            self.activePersonalMission = nil
-        }
-
         if let archiveData = UserDefaults.standard.data(forKey: archiveKey),
            let missions = try? decoder.decode([Mission].self, from: archiveData) {
             self.archivedMissions = missions
@@ -125,6 +103,32 @@ public final class MissionStore {
             self.vaultMissions = missions
         } else {
             self.vaultMissions = []
+        }
+
+        if let activeData = UserDefaults.standard.data(forKey: activeKey),
+           let mission = try? decoder.decode(Mission.self, from: activeData) {
+            self.activeMission = mission
+        } else if !UserDefaults.standard.bool(forKey: hasInitializedFirstMissionKey) && archivedMissions.isEmpty && vaultMissions.isEmpty {
+            UserDefaults.standard.set(true, forKey: hasInitializedFirstMissionKey)
+            let target = Calendar.current.date(byAdding: .day, value: 64, to: Date()) ?? Date()
+            self.activeMission = Mission(
+                title: "Launch Milestone v1.0",
+                todos: [
+                    TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
+                    TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false)
+                ],
+                targetDate: target,
+                category: .work
+            )
+        } else {
+            self.activeMission = nil
+        }
+
+        if let personalData = UserDefaults.standard.data(forKey: activePersonalKey),
+           let mission = try? decoder.decode(Mission.self, from: personalData) {
+            self.activePersonalMission = mission
+        } else {
+            self.activePersonalMission = nil
         }
 
         syncToWidget()
@@ -168,14 +172,29 @@ public final class MissionStore {
         self.currentPillarMission = mission
     }
 
-    public func archiveMission() {
-        guard let mission = currentPillarMission else { return }
+    public func archiveMission(_ missionToArchive: Mission? = nil) {
+        guard let mission = missionToArchive ?? currentPillarMission else { return }
+        UserDefaults.standard.set(true, forKey: hasInitializedFirstMissionKey)
         var completed = mission
         completed.completedAt = mission.completedAt ?? Date()
         completed.isActive = false
 
+        self.archivedMissions.removeAll(where: { $0.id == completed.id })
         self.archivedMissions.insert(completed, at: 0)
+
+        if completed.id == activeMission?.id || activePillar == .work || mission.category == .work {
+            self.activeMission = nil
+            UserDefaults.standard.removeObject(forKey: activeKey)
+        }
+        if completed.id == activePersonalMission?.id || activePillar == .personal || mission.category == .personal {
+            self.activePersonalMission = nil
+            UserDefaults.standard.removeObject(forKey: activePersonalKey)
+        }
         self.currentPillarMission = nil
+
+        UserDefaults.standard.synchronize()
+        syncToWidget()
+        refreshMissionNotifications()
     }
 
     public func toggleTodo(id: String) {
@@ -223,6 +242,7 @@ public final class MissionStore {
         } else {
             UserDefaults.standard.removeObject(forKey: activeKey)
         }
+        UserDefaults.standard.synchronize()
     }
 
     private func saveActivePersonalMission() {
@@ -233,12 +253,14 @@ public final class MissionStore {
         } else {
             UserDefaults.standard.removeObject(forKey: activePersonalKey)
         }
+        UserDefaults.standard.synchronize()
     }
 
     private func saveArchivedMissions() {
         if let encoded = try? encoder.encode(archivedMissions) {
             UserDefaults.standard.set(encoded, forKey: archiveKey)
         }
+        UserDefaults.standard.synchronize()
     }
 
     public func refreshMorningNotification() {
@@ -302,7 +324,8 @@ public final class MissionStore {
     }
 
     // ── MISSION VAULT ──
-    public func addToVault(title: String, targetDate: Date, note: String? = nil, todos: [TodoTask] = []) {
+    public func addToVault(title: String, targetDate: Date, note: String? = nil, todos: [TodoTask] = [], category: MissionCategory? = nil) {
+        let cat = category ?? activePillar
         let mission = Mission(
             id: "\(Int(Date().timeIntervalSince1970 * 1000))",
             title: title.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -310,7 +333,8 @@ public final class MissionStore {
             todos: todos,
             targetDate: targetDate,
             createdAt: Date(),
-            isActive: false
+            isActive: false,
+            category: cat
         )
         self.vaultMissions.insert(mission, at: 0)
     }
@@ -319,16 +343,84 @@ public final class MissionStore {
         self.vaultMissions.removeAll(where: { $0.id == id })
     }
 
+    public func updateVaultMissionTargetDate(id: String, targetDate: Date) {
+        if let index = vaultMissions.firstIndex(where: { $0.id == id }) {
+            vaultMissions[index].targetDate = targetDate
+        }
+    }
+
+    public func activeMission(for category: MissionCategory) -> Mission? {
+        switch category {
+        case .work: return activeMission
+        case .personal: return activePersonalMission
+        }
+    }
+
     public func promoteToActiveMission(vaultMissionId: String) {
         guard let index = vaultMissions.firstIndex(where: { $0.id == vaultMissionId }) else { return }
         var mission = vaultMissions.remove(at: index)
         mission.isActive = true
-        self.activeMission = mission
+        if mission.category == .personal {
+            self.activePersonalMission = mission
+            self.activePillar = .personal
+        } else {
+            self.activeMission = mission
+            self.activePillar = .work
+        }
+        syncToWidget()
+        refreshMissionNotifications()
+    }
+
+    public func swapVaultMissionWithActive(vaultMissionId: String) {
+        guard let index = vaultMissions.firstIndex(where: { $0.id == vaultMissionId }) else { return }
+        var newMission = vaultMissions.remove(at: index)
+        newMission.isActive = true
+
+        if newMission.category == .personal {
+            if var current = activePersonalMission {
+                current.isActive = false
+                vaultMissions.insert(current, at: 0)
+            }
+            self.activePersonalMission = newMission
+            self.activePillar = .personal
+        } else {
+            if var current = activeMission {
+                current.isActive = false
+                vaultMissions.insert(current, at: 0)
+            }
+            self.activeMission = newMission
+            self.activePillar = .work
+        }
+        syncToWidget()
+        refreshMissionNotifications()
+    }
+
+    public func completeCurrentAndActivateVault(vaultMissionId: String) {
+        guard let index = vaultMissions.firstIndex(where: { $0.id == vaultMissionId }) else { return }
+        var newMission = vaultMissions.remove(at: index)
+        newMission.isActive = true
+
+        if newMission.category == .personal {
+            if let current = activePersonalMission {
+                archiveMission(current)
+            }
+            self.activePersonalMission = newMission
+            self.activePillar = .personal
+        } else {
+            if let current = activeMission {
+                archiveMission(current)
+            }
+            self.activeMission = newMission
+            self.activePillar = .work
+        }
+        syncToWidget()
+        refreshMissionNotifications()
     }
 
     private func saveVaultMissions() {
         if let data = try? encoder.encode(vaultMissions) {
             UserDefaults.standard.set(data, forKey: vaultKey)
         }
+        UserDefaults.standard.synchronize()
     }
 }

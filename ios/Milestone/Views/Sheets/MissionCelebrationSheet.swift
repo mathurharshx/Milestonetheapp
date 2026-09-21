@@ -61,8 +61,8 @@ public struct MissionCelebrationSheet: View {
                     Spacer()
                     Button {
                         HapticsManager.shared.impact(.light)
-                        dismiss()
                         onArchive()
+                        dismiss()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24, weight: .semibold))
@@ -112,6 +112,10 @@ public struct MissionCelebrationSheet: View {
                                 .tracking(4)
                                 .foregroundStyle(theme.accent)
                                 .opacity(contentAnimation ? 1.0 : 0.0)
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            HapticsManager.shared.notification(.success)
                         }
                         .padding(.top, 10)
 
@@ -214,8 +218,8 @@ public struct MissionCelebrationSheet: View {
                             // Primary: Archive Mission
                             Button {
                                 HapticsManager.shared.impact(.medium)
-                                dismiss()
                                 onArchive()
+                                dismiss()
                             } label: {
                                 HStack(spacing: 10) {
                                     Image(systemName: "archivebox.fill")
@@ -236,8 +240,8 @@ public struct MissionCelebrationSheet: View {
                             // Secondary: Start New Mission
                             Button {
                                 HapticsManager.shared.impact(.light)
-                                dismiss()
                                 onNewMission()
+                                dismiss()
                             } label: {
                                 Text("START NEW MISSION")
                                     .font(.system(size: 12, weight: .semibold))

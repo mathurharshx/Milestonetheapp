@@ -10,6 +10,9 @@ public struct VaultSheet: View {
     @State private var showPaywall: Bool = false
     @State private var newVaultTitle: String = ""
     @State private var newVaultTargetDate: Date = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
+    @State private var showSwapConfirmation: Bool = false
+    @State private var missionToActivate: Mission? = nil
+    @State private var currentActiveMissionToSwap: Mission? = nil
 
     public init() {}
 
@@ -100,37 +103,77 @@ public struct VaultSheet: View {
                     // Active Vault List
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 16) {
-                            // Quick Add Box
+                            // Quick Add Box with Target Completion Date
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("DEPOSIT UPCOMING MISSION")
                                     .font(.system(size: 10, weight: .black))
                                     .tracking(2)
                                     .foregroundStyle(theme.textTertiary)
 
-                                HStack {
+                                VStack(spacing: 12) {
+                                    // Title Input
                                     TextField("What is your next mission?", text: $newVaultTitle)
                                         .font(.system(size: 15, weight: .medium))
                                         .foregroundStyle(theme.textPrimary)
 
-                                    if !newVaultTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                        Button {
-                                            depositMission()
-                                        } label: {
-                                            Text("DEPOSIT")
-                                                .font(.system(size: 11, weight: .bold))
-                                                .tracking(1)
-                                                .foregroundStyle(theme.background)
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 8)
-                                                .background(Capsule().fill(theme.accent))
+                                    Divider().overlay(theme.divider)
+
+                                    // Target Completion Date Row
+                                    HStack {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "calendar.badge.clock")
+                                                .font(.system(size: 12, weight: .medium))
+                                                .foregroundStyle(theme.accent)
+
+                                            Text("COMPLETE BY")
+                                                .font(.system(size: 10, weight: .bold))
+                                                .tracking(1.5)
+                                                .foregroundStyle(theme.textSecondary)
                                         }
-                                        .buttonStyle(.plain)
+
+                                        Spacer()
+
+                                        DatePicker(
+                                            "",
+                                            selection: $newVaultTargetDate,
+                                            in: Date()...,
+                                            displayedComponents: [.date]
+                                        )
+                                        .labelsHidden()
+                                        .datePickerStyle(.compact)
+                                        .tint(theme.accent)
                                     }
+
+                                    // Deposit Action Button
+                                    Button {
+                                        depositMission()
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "archivebox.fill")
+                                                .font(.system(size: 11, weight: .bold))
+                                            Text("DEPOSIT TO VAULT")
+                                                .font(.system(size: 11, weight: .heavy))
+                                                .tracking(1.5)
+                                        }
+                                        .foregroundStyle(newVaultTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? theme.textTertiary : theme.background)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 40)
+                                        .background(
+                                            Capsule()
+                                                .fill(newVaultTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? theme.surfaceLight.opacity(0.4) : theme.accent)
+                                        )
+                                    }
+                                    .disabled(newVaultTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                    .buttonStyle(.plain)
                                 }
-                                .padding(12)
+                                .padding(14)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 14)
+                                    RoundedRectangle(cornerRadius: 16)
                                         .fill(theme.surfaceLight.opacity(0.5))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(theme.border.opacity(0.35), lineWidth: 1)
                                 )
                             }
                             .padding(.bottom, 8)
@@ -152,15 +195,23 @@ public struct VaultSheet: View {
                                 }
                             } else {
                                 ForEach(missionStore.vaultMissions) { mission in
-                                    VaultCard(mission: mission, theme: theme) {
-                                        // Activate Now
-                                        HapticsManager.shared.notification(.success)
-                                        missionStore.promoteToActiveMission(vaultMissionId: mission.id)
-                                        dismiss()
-                                    } onDelete: {
-                                        HapticsManager.shared.impact(.light)
-                                        missionStore.deleteFromVault(id: mission.id)
-                                    }
+                                    let hasActive = missionStore.activeMission(for: mission.category) != nil
+                                    VaultCard(
+                                        mission: mission,
+                                        theme: theme,
+                                        hasActiveMission: hasActive,
+                                        onUpdateTargetDate: { updatedDate in
+                                            HapticsManager.shared.impact(.light)
+                                            missionStore.updateVaultMissionTargetDate(id: mission.id, targetDate: updatedDate)
+                                        },
+                                        onActivate: {
+                                            handleActivate(vaultMission: mission)
+                                        },
+                                        onDelete: {
+                                            HapticsManager.shared.impact(.light)
+                                            missionStore.deleteFromVault(id: mission.id)
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -173,6 +224,48 @@ public struct VaultSheet: View {
         .sheet(isPresented: $showPaywall) {
             PaywallSheet()
         }
+        .confirmationDialog(
+            "Switch Active Mission?",
+            isPresented: $showSwapConfirmation,
+            titleVisibility: .visible,
+            presenting: missionToActivate
+        ) { targetMission in
+            Button("Shelve to Vault & Activate") {
+                HapticsManager.shared.notification(.success)
+                missionStore.swapVaultMissionWithActive(vaultMissionId: targetMission.id)
+                dismiss()
+            }
+
+            Button("Mark Current Complete & Activate") {
+                HapticsManager.shared.notification(.success)
+                missionStore.completeCurrentAndActivateVault(vaultMissionId: targetMission.id)
+                dismiss()
+            }
+
+            Button("Cancel", role: .cancel) {
+                missionToActivate = nil
+                currentActiveMissionToSwap = nil
+            }
+        } message: { targetMission in
+            if let active = currentActiveMissionToSwap {
+                Text("You're currently working on \"\(active.title)\". Shelving will safely move it to the Vault with all progress saved, while \"\(targetMission.title)\" becomes active.")
+            } else {
+                Text("Activate \"\(targetMission.title)\" now?")
+            }
+        }
+    }
+
+    private func handleActivate(vaultMission: Mission) {
+        if let active = missionStore.activeMission(for: vaultMission.category) {
+            HapticsManager.shared.impact(.medium)
+            currentActiveMissionToSwap = active
+            missionToActivate = vaultMission
+            showSwapConfirmation = true
+        } else {
+            HapticsManager.shared.notification(.success)
+            missionStore.promoteToActiveMission(vaultMissionId: vaultMission.id)
+            dismiss()
+        }
     }
 
     private func depositMission() {
@@ -183,6 +276,7 @@ public struct VaultSheet: View {
             targetDate: newVaultTargetDate
         )
         newVaultTitle = ""
+        newVaultTargetDate = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
     }
 }
 
@@ -190,6 +284,8 @@ public struct VaultSheet: View {
 private struct VaultCard: View {
     let mission: Mission
     let theme: ThemeTokens
+    var hasActiveMission: Bool = false
+    var onUpdateTargetDate: ((Date) -> Void)? = nil
     let onActivate: () -> Void
     let onDelete: () -> Void
 
@@ -217,6 +313,47 @@ private struct VaultCard: View {
                 }
             }
 
+            // Target Completion Date Row
+            HStack(spacing: 6) {
+                Image(systemName: "flag.checkered")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(theme.accent)
+
+                Text("Target: \(mission.targetDate.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(theme.accent)
+
+                let daysLeft = Calendar.current.dateComponents(
+                    [.day],
+                    from: Calendar.current.startOfDay(for: Date()),
+                    to: Calendar.current.startOfDay(for: mission.targetDate)
+                ).day ?? 0
+
+                if daysLeft >= 0 {
+                    Text("(\(daysLeft == 0 ? "Today" : "\(daysLeft)d left"))")
+                        .font(.system(size: 10, weight: .regular))
+                        .foregroundStyle(theme.textTertiary)
+                }
+
+                Spacer()
+
+                // Compact DatePicker to edit target completion date
+                DatePicker(
+                    "",
+                    selection: Binding(
+                        get: { mission.targetDate },
+                        set: { onUpdateTargetDate?($0) }
+                    ),
+                    in: Date()...,
+                    displayedComponents: [.date]
+                )
+                .labelsHidden()
+                .datePickerStyle(.compact)
+                .tint(theme.accent)
+                .scaleEffect(0.85)
+            }
+            .padding(.vertical, 2)
+
             Divider().overlay(theme.divider)
 
             HStack {
@@ -230,8 +367,8 @@ private struct VaultCard: View {
                     onActivate()
                 } label: {
                     HStack(spacing: 4) {
-                        Text("ACTIVATE")
-                        Image(systemName: "arrow.up.right")
+                        Text(hasActiveMission ? "SWAP" : "ACTIVATE")
+                        Image(systemName: hasActiveMission ? "arrow.triangle.2.circlepath" : "arrow.up.right")
                     }
                     .font(.system(size: 10, weight: .bold))
                     .tracking(1)
