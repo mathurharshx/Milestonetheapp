@@ -31,11 +31,19 @@ public final class UserStore {
     // ── Active Navigation Tab & Paywall ──
     public var selectedTab: TabItem = .mission
     public var showPaywallSheet: Bool = false
+    public var paywallInitialFeature: PaywallSheet.PremiumFeature? = nil
 
     public func handleDeepLink(url: URL) {
         let str = url.absoluteString.lowercased()
         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-            if str.contains("premium") || str.contains("paywall") {
+            if str.contains("soundscape") {
+                paywallInitialFeature = .soundscapes
+                showPaywallSheet = true
+            } else if str.contains("vault") {
+                paywallInitialFeature = .vault
+                showPaywallSheet = true
+            } else if str.contains("premium") || str.contains("paywall") {
+                paywallInitialFeature = nil
                 showPaywallSheet = true
             } else if str.contains("pomodoro") {
                 selectedTab = .pomodoro

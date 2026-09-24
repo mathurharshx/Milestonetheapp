@@ -90,6 +90,10 @@ public struct PomodoroRingView: View {
                         Capsule()
                             .fill(color.opacity(0.14))
                     )
+                    .overlay(
+                        Capsule()
+                            .stroke(color.opacity(0.25), lineWidth: 1)
+                    )
 
                 // Micro-prompt Message
                 Text(message)

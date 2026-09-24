@@ -11,7 +11,7 @@ public enum AppThemeMode: String, CaseIterable, Codable {
 }
 
 public struct AppColors {
-    // Exact hex colors matching brutalist obsidian theme
+    // Exact hex colors matching original brutalist obsidian theme
     public static let lightBackground = Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0) // #F2F2F7
     public static let lightSurface = Color(red: 0xE5/255.0, green: 0xE5/255.0, blue: 0xEA/255.0)    // #E5E5EA
     public static let lightSurfaceLight = Color(red: 0xD1/255.0, green: 0xD1/255.0, blue: 0xD6/255.0) // #D1D1D6
@@ -20,6 +20,9 @@ public struct AppColors {
     public static let darkBackground = Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0)  // #222222
     public static let darkSurface = Color(red: 0x2A/255.0, green: 0x2A/255.0, blue: 0x2A/255.0)     // #2A2A2A
     public static let darkSurfaceLight = Color(red: 0x33/255.0, green: 0x33/255.0, blue: 0x33/255.0)// #333333
+
+    // Serene Botanical Sage Emerald for Personal Pillar & Break Phase
+    public static let personalEmerald = Color(red: 0x32/255.0, green: 0x72/255.0, blue: 0x53/255.0)
 
     public static let danger = Color(red: 0xC0/255.0, green: 0x39/255.0, blue: 0x2B/255.0)          // #C0392B
 }
@@ -96,7 +99,7 @@ public struct ThemeTokens {
 
 // SwiftUI Environment Key for ThemeTokens
 private struct ThemeTokensKey: EnvironmentKey {
-    static let defaultValue = ThemeTokens(isDark: false)
+    static let defaultValue = ThemeTokens(isDark: true)
 }
 
 extension EnvironmentValues {

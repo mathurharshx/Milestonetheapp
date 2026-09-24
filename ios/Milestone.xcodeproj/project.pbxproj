@@ -31,6 +31,7 @@
 		MS0085 /* VaultSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF085 /* VaultSheet.swift */; };
 		MS0088 /* VelocityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF088 /* VelocityCalculator.swift */; };
 		MS0089 /* VelocityReportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF089 /* VelocityReportSheet.swift */; };
+		MS0090 /* AliveDuneAtmosphereView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF090 /* AliveDuneAtmosphereView.swift */; };
 		MS0017 /* CreateMissionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF017 /* CreateMissionSheet.swift */; };
 		MS0018 /* ProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF018 /* ProfileSheet.swift */; };
 		MS0019 /* QuoteModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF019 /* QuoteModalView.swift */; };
@@ -117,6 +118,7 @@
 		MSF085 /* VaultSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSheet.swift; sourceTree = "<group>"; };
 		MSF088 /* VelocityCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VelocityCalculator.swift; sourceTree = "<group>"; };
 		MSF089 /* VelocityReportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VelocityReportSheet.swift; sourceTree = "<group>"; };
+		MSF090 /* AliveDuneAtmosphereView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AliveDuneAtmosphereView.swift; sourceTree = "<group>"; };
 		MSF017 /* CreateMissionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMissionSheet.swift; sourceTree = "<group>"; };
 		MSF018 /* ProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSheet.swift; sourceTree = "<group>"; };
 		MSF019 /* QuoteModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuoteModalView.swift; sourceTree = "<group>"; };
@@ -286,6 +288,7 @@
 				MSF016 /* GlassTabBarView.swift */,
 				MSF080 /* VictoryCardView.swift */,
 				MSF087 /* KeystoneCardView.swift */,
+				MSF090 /* AliveDuneAtmosphereView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -474,6 +477,7 @@
 				MS0016 /* GlassTabBarView.swift in Sources */,
 				MS0080 /* VictoryCardView.swift in Sources */,
 				MS0087 /* KeystoneCardView.swift in Sources */,
+				MS0090 /* AliveDuneAtmosphereView.swift in Sources */,
 				MS0081 /* SubscriptionStore.swift in Sources */,
 				MS0082 /* PaywallSheet.swift in Sources */,
 				MS0084 /* SoundscapeManager.swift in Sources */,
@@ -561,7 +565,7 @@
 				CODE_SIGN_ENTITLEMENTS = Milestone/Milestone.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = HV4NTX4D65;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -641,7 +645,7 @@
 				CODE_SIGN_ENTITLEMENTS = Milestone/Milestone.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = HV4NTX4D65;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_PREVIEWS = YES;
@@ -712,7 +716,7 @@
 				CODE_SIGN_ENTITLEMENTS = MilestoneWidgetExtension/MilestoneWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = HV4NTX4D65;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -790,7 +794,7 @@
 				CODE_SIGN_ENTITLEMENTS = MilestoneWidgetExtension/MilestoneWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = HV4NTX4D65;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_PREVIEWS = YES;

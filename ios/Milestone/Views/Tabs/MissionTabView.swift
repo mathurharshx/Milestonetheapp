@@ -20,6 +20,8 @@ public struct MissionTabView: View {
     @State private var completedQuote: Quote?
     @State private var activeMissionSnapshot: Mission?
     @State private var keystoneEvent: KeystoneEvent = .none
+    @State private var isConfirmingCompletion: Bool = false
+    @State private var resetTimer: Timer? = nil
 
     @Namespace private var pillarNamespace
 
@@ -31,32 +33,44 @@ public struct MissionTabView: View {
         ZStack {
             theme.background.ignoresSafeArea()
 
-            if let mission = missionStore.currentPillarMission {
-                TimelineView(.periodic(from: .now, by: 1.0)) { context in
-                    let countdown = DateCalculations.calculateFullCountdown(
-                        createdAt: mission.createdAt,
-                        targetDate: mission.targetDate
-                    )
+            // ── Atmospheric Alive Waves ──
+            AliveDuneAtmosphereView(
+                accentColor: missionStore.activePillar == .personal ? AppColors.personalEmerald : theme.accent,
+                secondaryColor: missionStore.activePillar == .personal ? Color(red: 0x1A/255.0, green: 0x2E/255.0, blue: 0x22/255.0) : theme.surfaceLight,
+                intensity: 0.75
+            )
+            .ignoresSafeArea()
 
-                    VStack(spacing: 0) {
-                        // ── Top Brand, Dual Pillars & Vault Header ──
-                        topHeaderBar
+            let displayedMission = missionStore.currentPillarMission ?? (isCompletingAnimation ? activeMissionSnapshot : nil)
 
-                        // ── Pinned Keystone Hero Card (Living Ambient Aurora + Title + Countdown + Dot Matrix + Velocity) ──
-                        KeystoneCardView(
-                            event: keystoneEvent,
-                            isCompleting: isCompletingAnimation,
-                            isAscending: isAscendingToVault
-                        ) {
-                            // Mission Title
-                            Text(mission.title)
-                                .font(.system(size: 28, weight: .medium))
-                                .tracking(-0.6)
-                                .foregroundStyle(theme.textPrimary)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(2)
-                                .padding(.horizontal, 12)
-                                .padding(.top, 4)
+            if let mission = displayedMission {
+                VStack(spacing: 0) {
+                    // ── Top Brand, Dual Pillars & Vault Header ──
+                    topHeaderBar
+
+                    // ── Pinned Keystone Hero Card ──
+                    KeystoneCardView(
+                        event: keystoneEvent,
+                        isCompleting: isCompletingAnimation,
+                        isAscending: isAscendingToVault,
+                        missionCategory: mission.category
+                    ) {
+                        // Mission Title
+                        Text(mission.title)
+                            .font(.system(size: 28, weight: .medium))
+                            .tracking(-0.6)
+                            .foregroundStyle(theme.textPrimary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .padding(.horizontal, 12)
+                            .padding(.top, 4)
+
+                        // ── High-Performance Isolated 1-Second Countdown & Dot Matrix ──
+                        TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+                            let countdown = DateCalculations.calculateFullCountdown(
+                                createdAt: mission.createdAt,
+                                targetDate: mission.targetDate
+                            )
 
                             // Countdown Timer
                             CountdownTimerView(countdown: countdown)
@@ -74,10 +88,11 @@ public struct MissionTabView: View {
                             )
                             .padding(.bottom, 6)
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 10)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 10)
 
-                        // ── Scrollable Tasks (Only Tasks Scroll) ──
+                        // ── Scrollable Tasks (Only Tasks Scroll, Dimmed during celebration) ──
                         ScrollView(showsIndicators: false) {
                             MissionTodoListView(
                                 todos: mission.todos,
@@ -127,46 +142,140 @@ public struct MissionTabView: View {
                         }
                         .scrollIndicators(.hidden)
                         .padding(.horizontal, 24)
+                        .opacity(isCompletingAnimation ? 0.35 : 1.0)
+                        .disabled(isCompletingAnimation)
+                        .animation(.easeInOut(duration: 0.3), value: isCompletingAnimation)
 
-                        // ── Pinned Bottom Action (Mark Complete) ──
+                        // ── Pinned Bottom Action (Morphing Anti-Misclick Split Button) ──
                         VStack(spacing: 0) {
-                            Button {
-                                triggerCompletion(for: mission)
-                            } label: {
-                                HStack(spacing: 10) {
-                                    Image(systemName: isCompletingAnimation ? "checkmark.circle.fill" : "checkmark.seal")
-                                        .font(.system(size: 16, weight: .bold))
-
-                                    Text(isCompletingAnimation ? "ACCOMPLISHED!" : "MARK COMPLETE")
+                            if isCompletingAnimation {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "checkmark.seal.fill")
                                         .font(.system(size: 13, weight: .bold))
-                                        .tracking(2.5)
+
+                                    Text("MISSION ACCOMPLISHED")
+                                        .font(.system(size: 11, weight: .black))
+                                        .tracking(2.0)
                                 }
-                                .foregroundStyle(isCompletingAnimation ? theme.background : (mission.category == .personal ? Color(red: 0.32, green: 0.72, blue: 0.53) : theme.accent))
+                                .foregroundStyle(mission.category == .personal ? AppColors.personalEmerald : theme.accent)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 52)
                                 .background(
                                     RoundedRectangle(cornerRadius: 14)
-                                        .fill(isCompletingAnimation ? (mission.category == .personal ? Color(red: 0.32, green: 0.72, blue: 0.53) : theme.accent) : Color.clear)
+                                        .fill((mission.category == .personal ? AppColors.personalEmerald : theme.accent).opacity(0.12))
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 14)
-                                        .stroke(mission.category == .personal ? Color(red: 0.32, green: 0.72, blue: 0.53) : theme.accent, lineWidth: 1.5)
+                                        .stroke((mission.category == .personal ? AppColors.personalEmerald : theme.accent).opacity(0.3), lineWidth: 1)
                                 )
-                                .shadow(
-                                    color: isCompletingAnimation ? (mission.category == .personal ? Color(red: 0.32, green: 0.72, blue: 0.53).opacity(0.4) : theme.accent.opacity(0.4)) : .clear,
-                                    radius: 12,
-                                    x: 0,
-                                    y: 4
-                                )
+                                .transition(.opacity)
+                            } else if isConfirmingCompletion {
+                                HStack(spacing: 10) {
+                                    // Cancel Pill (~35% width)
+                                    Button {
+                                        HapticsManager.shared.impact(.light)
+                                        resetTimer?.invalidate()
+                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                            isConfirmingCompletion = false
+                                        }
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "xmark")
+                                                .font(.system(size: 11, weight: .black))
+                                            Text("CANCEL")
+                                                .font(.system(size: 11, weight: .black))
+                                                .tracking(1.4)
+                                        }
+                                        .foregroundStyle(theme.textSecondary)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 52)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .fill(theme.surfaceLight.opacity(0.85))
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .stroke(theme.border.opacity(0.5), lineWidth: 1)
+                                        )
+                                    }
+                                    .frame(width: 115)
+
+                                    // Confirm Complete Pill (~65% width)
+                                    Button {
+                                        resetTimer?.invalidate()
+                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                            isConfirmingCompletion = false
+                                        }
+                                        triggerCompletion(for: mission)
+                                    } label: {
+                                        HStack(spacing: 8) {
+                                            Text("CONFIRM COMPLETE")
+                                                .font(.system(size: 12, weight: .heavy))
+                                                .tracking(1.6)
+
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 13, weight: .black))
+                                        }
+                                        .foregroundStyle(theme.background)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 52)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .fill(mission.category == .personal ? AppColors.personalEmerald : theme.accent)
+                                        )
+                                        .shadow(
+                                            color: (mission.category == .personal ? AppColors.personalEmerald : theme.accent).opacity(0.4),
+                                            radius: 10,
+                                            x: 0,
+                                            y: 4
+                                        )
+                                    }
+                                }
+                                .transition(.asymmetric(insertion: .scale(scale: 0.96).combined(with: .opacity), removal: .opacity))
+                            } else {
+                                Button {
+                                    HapticsManager.shared.impact(.medium)
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                        isConfirmingCompletion = true
+                                    }
+                                    resetTimer?.invalidate()
+                                    resetTimer = Timer.scheduledTimer(withTimeInterval: 6.0, repeats: false) { _ in
+                                        DispatchQueue.main.async {
+                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                                isConfirmingCompletion = false
+                                            }
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "checkmark.seal")
+                                            .font(.system(size: 16, weight: .bold))
+
+                                        Text("MARK COMPLETE")
+                                            .font(.system(size: 13, weight: .bold))
+                                            .tracking(2.5)
+                                    }
+                                    .foregroundStyle(mission.category == .personal ? AppColors.personalEmerald : theme.accent)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 52)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .fill(Color.clear)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .stroke(mission.category == .personal ? AppColors.personalEmerald : theme.accent, lineWidth: 1.5)
+                                    )
+                                }
+                                .transition(.opacity)
                             }
-                            .padding(.horizontal, 24)
-                            .padding(.top, 10)
-                            .padding(.bottom, 16)
                         }
-                        .background(theme.background)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 10)
+                        .padding(.bottom, 12)
+                        .background(Color.clear)
                     }
-                }
-            } else {
+                } else {
                 VStack(spacing: 0) {
                     topHeaderBar
 
@@ -174,7 +283,7 @@ public struct MissionTabView: View {
                         personalPillarEmptyState
                     } else {
                         // Work Mission direct creation view
-                        CreateMissionSheet(category: .work)
+                        CreateMissionSheet(category: .work, isEmbedded: true)
                     }
                 }
             }
@@ -187,20 +296,23 @@ public struct MissionTabView: View {
             isAscendingToVault = false
             activeMissionSnapshot = nil
         }) {
-            if let mission = activeMissionSnapshot ?? missionStore.archivedMissions.first {
+            if let mission = activeMissionSnapshot ?? missionStore.currentPillarMission {
                 MissionCelebrationSheet(
                     mission: mission,
                     quote: completedQuote,
                     onArchive: {
+                        missionStore.archiveMission(mission)
                         isCompletingAnimation = false
                         isAscendingToVault = false
                         activeMissionSnapshot = nil
                         onNavigateToArchive?()
                     },
                     onNewMission: {
+                        missionStore.archiveMission(mission)
                         isCompletingAnimation = false
                         isAscendingToVault = false
                         activeMissionSnapshot = nil
+                        showCreateMissionSheet = true
                     }
                 )
             }
@@ -312,7 +424,7 @@ public struct MissionTabView: View {
                         ZStack {
                             if isSelected {
                                 Capsule()
-                                    .fill(category == .personal ? Color(red: 0.32, green: 0.72, blue: 0.53) : theme.accent)
+                                    .fill(category == .personal ? AppColors.personalEmerald : theme.accent)
                                     .matchedGeometryEffect(id: "activePillarCapsule", in: pillarNamespace)
                             }
                         }
@@ -344,7 +456,7 @@ public struct MissionTabView: View {
                 Text("PERSONAL MISSION")
                     .font(.system(size: 11, weight: .black))
                     .tracking(3)
-                    .foregroundStyle(Color(red: 0.32, green: 0.72, blue: 0.53))
+                    .foregroundStyle(AppColors.personalEmerald)
 
                 Text("Balance your ambition.")
                     .font(.system(size: 26, weight: .medium))
@@ -386,9 +498,9 @@ public struct MissionTabView: View {
                 .frame(height: 52)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(Color(red: 0.32, green: 0.72, blue: 0.53))
+                        .fill(AppColors.personalEmerald)
                 )
-                .shadow(color: Color(red: 0.32, green: 0.72, blue: 0.53).opacity(0.35), radius: 12, x: 0, y: 4)
+                .shadow(color: AppColors.personalEmerald.opacity(0.35), radius: 12, x: 0, y: 4)
                 .padding(.horizontal, 32)
             }
             .buttonStyle(.plain)
@@ -413,22 +525,19 @@ public struct MissionTabView: View {
         HapticsManager.shared.notification(.success)
         AudioManager.shared.play(.missionComplete)
 
-        // 3. Stage 1: Keystone 3D Spatial Lift & Radiant Emerald Bloom
+        // 3. Stage 1: Keystone 3D Spatial Lift & Radiant Bloom
         withAnimation(.spring(response: 0.42, dampingFraction: 0.72)) {
             isCompletingAnimation = true
         }
 
-        // 4. Immediately archive mission so it is officially completed and ended
-        missionStore.archiveMission(mission)
-
-        // 5. Stage 2: Ascension Glide upward into Vault Pill + Vault Reception Pulse
+        // 4. Stage 2: Ascension Glide upward into Vault Pill + Vault Reception Pulse
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
             withAnimation(.easeInOut(duration: 0.40)) {
                 isAscendingToVault = true
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
                 withAnimation(.spring(response: 0.30, dampingFraction: 0.55)) {
-                    vaultPulse = 1.18
+                    vaultPulse = 1.25
                 }
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.75).delay(0.20)) {
                     vaultPulse = 1.0
@@ -436,7 +545,7 @@ public struct MissionTabView: View {
             }
         }
 
-        // 6. Stage 3: Apple Award Wax-Seal Celebration Sheet presentation
+        // 5. Stage 3: Apple Award Wax-Seal Celebration Sheet presentation
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
             showCelebrationSheet = true
         }
@@ -449,7 +558,7 @@ private struct AliveLeafPulseView: View {
     @State private var innerPulse: Bool = false
     @State private var waveRipple: Bool = false
 
-    private let emerald = Color(red: 0.32, green: 0.72, blue: 0.53)
+    private let emerald = AppColors.personalEmerald
 
     var body: some View {
         ZStack {

@@ -141,13 +141,13 @@ public struct DotGridView: View {
                         .fill(isCompleting ? theme.accent : (item.elapsed ? theme.dotElapsed : theme.dotFilled))
                         .frame(width: dotSize, height: dotSize)
                         .scaleEffect(isCompleting ? 1.2 : 1.0)
-                        .shadow(
-                            color: isCompleting ? theme.accent.opacity(0.8) : (item.isLead ? theme.accent.opacity(0.6) : .clear),
-                            radius: isCompleting ? 3 : (item.isLead ? 4 : 0),
-                            x: 0,
-                            y: 0
-                        )
-                        .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isCompleting)
+                        .overlay {
+                            if item.isLead {
+                                Circle()
+                                    .stroke(theme.accent.opacity(0.88), lineWidth: 1.1)
+                                    .frame(width: dotSize + 5, height: dotSize + 5)
+                            }
+                        }
                 }
             }
             .padding(.horizontal, 16)

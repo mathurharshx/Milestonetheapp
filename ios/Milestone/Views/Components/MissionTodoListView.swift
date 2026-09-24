@@ -12,6 +12,8 @@ public struct MissionTodoListView: View {
     @State private var isReordering: Bool = false
     @State private var isSpotlight: Bool = false
     @State private var spotlightTaskId: String? = nil
+    @State private var spotlightDragOffset: CGFloat = 0
+    @State private var spotlightSlideDirection: Int = 1
     @State private var isCompletedExpanded: Bool = false
     @FocusState private var isInputFocused: Bool
     @Environment(\.theme) private var theme
@@ -98,7 +100,7 @@ public struct MissionTodoListView: View {
                         .padding(.vertical, 5)
                         .background(
                             Capsule()
-                                .fill(isSpotlight ? theme.surfaceLight : Color.clear)
+                                .fill(isSpotlight ? theme.surfaceLight.opacity(0.45) : Color.clear)
                                 .overlay(
                                     Capsule().stroke(isSpotlight ? theme.accent.opacity(0.4) : Color.clear, lineWidth: 1)
                                 )
@@ -127,30 +129,21 @@ public struct MissionTodoListView: View {
                         .padding(.vertical, 4)
                         .background(
                             Capsule()
-                                .fill(isReordering ? theme.accentDim : Color.clear)
+                                .fill(isReordering ? theme.accentDim.opacity(0.45) : Color.clear)
                         )
                     }
                     .buttonStyle(.plain)
                 }
 
-                // Counter Button: Tappable to toggle back to all tasks if in spotlight
-                Button {
-                    if isSpotlight {
-                        HapticsManager.shared.impact(.light)
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                            isSpotlight = false
-                        }
-                    }
-                } label: {
+                // Counter only in Normal mode
+                if !isSpotlight {
                     Text("\(doneCount)/\(todos.count)")
                         .font(.system(size: 11, weight: .semibold))
                         .tracking(1)
-                        .foregroundStyle(isSpotlight ? theme.accent : theme.textTertiary)
+                        .foregroundStyle(theme.textTertiary)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 4)
-                        .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
             }
             .padding(.bottom, 10)
 
@@ -192,7 +185,7 @@ public struct MissionTodoListView: View {
             .padding(.vertical, 12)
 
             Divider()
-                .overlay(isInputFocused ? theme.accent : theme.border)
+                .overlay(isInputFocused ? theme.accent : theme.border.opacity(0.35))
 
             // ── Completed Tasks Drawer ──
             if !completedTasks.isEmpty {
@@ -209,17 +202,16 @@ public struct MissionTodoListView: View {
         }
     }
 
-    // ── Ultra-Minimal Single-Line Spotlight Row ──
+    // ── Translucent Spotlight Mode ──
     @ViewBuilder
     private var spotlightView: some View {
         if let currentTask = currentSpotlightTask {
-            VStack(spacing: 12) {
-                // Active Spotlight Card
+            VStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    // Left focus indicator + quick check
+                    // Checkbox
                     Button {
                         HapticsManager.shared.notification(.success)
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                             onToggle(currentTask.id)
                             advanceSpotlightAfterToggle(completedId: currentTask.id)
                         }
@@ -227,13 +219,13 @@ public struct MissionTodoListView: View {
                         ZStack {
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(theme.accent, lineWidth: 1.5)
-                                .frame(width: 22, height: 22)
+                                .frame(width: 20, height: 20)
 
                             Circle()
                                 .fill(theme.accent)
                                 .frame(width: 6, height: 6)
                         }
-                        .frame(width: 36, height: 36)
+                        .frame(width: 38, height: 38)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -244,136 +236,113 @@ public struct MissionTodoListView: View {
                         .foregroundStyle(theme.textPrimary)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
+                        .animation(.easeInOut(duration: 0.2), value: currentTask.id)
 
-                    Spacer(minLength: 8)
+                    Spacer()
 
-                    // Step counter & Cycle Controls
+                    // Focus Timer shortcut
+                    if let onFocus = onFocusTask {
+                        Button {
+                            HapticsManager.shared.impact(.light)
+                            onFocus(currentTask.id, currentTask.text)
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "timer")
+                                    .font(.system(size: 10, weight: .bold))
+                                Text("FOCUS")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .tracking(1)
+                            }
+                            .foregroundStyle(theme.accent)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule().fill(theme.accentDim)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    // Step Indicator with Chevrons
                     if activeTasks.count > 1 {
                         HStack(spacing: 4) {
                             Button {
                                 HapticsManager.shared.impact(.light)
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                                     cycleSpotlightTask(direction: -1)
                                 }
                             } label: {
                                 Image(systemName: "chevron.left")
-                                    .font(.system(size: 11, weight: .bold))
+                                    .font(.system(size: 10, weight: .bold))
                                     .foregroundStyle(theme.textTertiary)
-                                    .frame(width: 24, height: 24)
+                                    .frame(width: 20, height: 28)
+                                    .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("Previous task")
+                            .accessibilityLabel("Previous step")
 
                             Text("\(currentSpotlightIndex + 1)/\(activeTasks.count)")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(theme.textSecondary)
+                                .font(.system(size: 11, weight: .bold))
+                                .monospacedDigit()
+                                .foregroundStyle(theme.accent)
 
                             Button {
                                 HapticsManager.shared.impact(.light)
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                                     cycleSpotlightTask(direction: 1)
                                 }
                             } label: {
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .bold))
+                                    .font(.system(size: 10, weight: .bold))
                                     .foregroundStyle(theme.textTertiary)
-                                    .frame(width: 24, height: 24)
+                                    .frame(width: 20, height: 28)
+                                    .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("Next task")
+                            .accessibilityLabel("Next step")
                         }
                     }
-
-                    // Focus Button (Timer shortcut)
-                    if let onFocus = onFocusTask {
-                        Button {
-                            HapticsManager.shared.impact(.medium)
-                            onFocus(currentTask.id, currentTask.text)
-                        } label: {
-                            Image(systemName: "timer")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(theme.accent)
-                                .frame(width: 28, height: 28)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Focus on task")
-                    }
-
-                    // Minimal DONE Button
-                    Button {
-                        HapticsManager.shared.notification(.success)
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                            onToggle(currentTask.id)
-                            advanceSpotlightAfterToggle(completedId: currentTask.id)
-                        }
-                    } label: {
-                        Text("DONE")
-                            .font(.system(size: 11, weight: .heavy))
-                            .tracking(1)
-                            .foregroundStyle(.black)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(
-                                Capsule()
-                                    .fill(theme.accent)
-                            )
-                    }
-                    .buttonStyle(.plain)
                 }
-                .padding(.vertical, 10)
-                .padding(.horizontal, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(theme.surface)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(theme.accent.opacity(0.3), lineWidth: 1)
-                        )
+                .padding(.vertical, 12)
+                .offset(x: spotlightDragOffset)
+                // ── Tactile Slide / Swipe to cycle between tasks ──
+                .highPriorityGesture(
+                    DragGesture(minimumDistance: 12)
+                        .onChanged { gesture in
+                            guard activeTasks.count > 1 else { return }
+                            let dx = gesture.translation.width
+                            let dy = gesture.translation.height
+                            guard abs(dx) > abs(dy) * 0.7 else { return }
+                            withAnimation(.interactiveSpring(response: 0.18, dampingFraction: 0.8)) {
+                                spotlightDragOffset = dx * 0.45
+                            }
+                        }
+                        .onEnded { gesture in
+                            guard activeTasks.count > 1 else { return }
+                            let dx = gesture.translation.width
+                            if dx < -35 {
+                                // Swiped left -> next task
+                                HapticsManager.shared.impact(.light)
+                                withAnimation(.spring(response: 0.32, dampingFraction: 0.75)) {
+                                    cycleSpotlightTask(direction: 1)
+                                    spotlightDragOffset = 0
+                                }
+                            } else if dx > 35 {
+                                // Swiped right -> previous task
+                                HapticsManager.shared.impact(.light)
+                                withAnimation(.spring(response: 0.32, dampingFraction: 0.75)) {
+                                    cycleSpotlightTask(direction: -1)
+                                    spotlightDragOffset = 0
+                                }
+                            } else {
+                                withAnimation(.spring(response: 0.32, dampingFraction: 0.75)) {
+                                    spotlightDragOffset = 0
+                                }
+                            }
+                        }
                 )
 
-                // ── Prominent "VIEW ALL TASKS" Button to solve user difficulty ──
-                Button {
-                    HapticsManager.shared.impact(.light)
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                        isSpotlight = false
-                    }
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "list.bullet")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(theme.accent)
-
-                        Text("VIEW ALL TASKS (\(todos.count))")
-                            .font(.system(size: 12, weight: .bold))
-                            .tracking(1.2)
-                            .foregroundStyle(theme.textPrimary)
-
-                        Spacer()
-
-                        Text("\(doneCount) done • \(activeTasks.count) remaining")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(theme.textTertiary)
-
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(theme.textTertiary)
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 11)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(theme.surfaceLight.opacity(0.6))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(theme.border, lineWidth: 1)
-                            )
-                    )
-                }
-                .buttonStyle(.plain)
-                .contentShape(Rectangle())
-
-                Divider().overlay(theme.divider)
-                    .padding(.top, 4)
+                Divider().overlay(theme.divider.opacity(0.35))
             }
             .transition(.opacity)
         } else if todos.isEmpty {
@@ -415,40 +384,30 @@ public struct MissionTodoListView: View {
         } else {
             VStack(spacing: 0) {
                 ForEach(Array(activeTasks.enumerated()), id: \.element.id) { index, task in
-                    VStack(spacing: 0) {
-                        SwipeableTaskRow(
-                            task: task,
-                            index: index,
-                            totalCount: activeTasks.count,
-                            isReordering: isReordering,
-                            onToggle: {
-                                onToggle(task.id)
-                            },
-                            onDelete: {
-                                onDelete(task.id)
-                            },
-                            onMoveUp: {
-                                moveActiveTask(from: index, direction: -1)
-                            },
-                            onMoveDown: {
-                                moveActiveTask(from: index, direction: 1)
-                            },
-                            onFocusTask: onFocusTask != nil ? {
-                                onFocusTask?(task.id, task.text)
-                            } : nil,
-                            onSpotlight: {
-                                spotlightTask(id: task.id)
-                            }
-                        )
-
-                        Divider().overlay(theme.divider)
-                    }
-                    .scrollTransition(.animated.threshold(.visible(0.15))) { content, phase in
-                        content
-                            .opacity(phase.isIdentity ? 1.0 : 0.7)
-                            .scaleEffect(phase.isIdentity ? 1.0 : 0.96)
-                            .offset(y: phase.isIdentity ? 0 : (phase.value < 0 ? -8 : 8))
-                    }
+                    SwipeableTaskRow(
+                        task: task,
+                        index: index,
+                        totalCount: activeTasks.count,
+                        isReordering: isReordering,
+                        onToggle: {
+                            onToggle(task.id)
+                        },
+                        onDelete: {
+                            onDelete(task.id)
+                        },
+                        onMoveUp: {
+                            moveActiveTask(from: index, direction: -1)
+                        },
+                        onMoveDown: {
+                            moveActiveTask(from: index, direction: 1)
+                        },
+                        onFocusTask: onFocusTask != nil ? {
+                            onFocusTask?(task.id, task.text)
+                        } : nil,
+                        onSpotlight: {
+                            spotlightTask(id: task.id)
+                        }
+                    )
                     .offset(y: hasAppeared ? 0 : 22)
                     .opacity(hasAppeared ? 1 : 0)
                     .animation(
@@ -500,26 +459,22 @@ public struct MissionTodoListView: View {
             if isCompletedExpanded {
                 VStack(spacing: 0) {
                     ForEach(Array(completedTasks.enumerated()), id: \.element.id) { index, task in
-                        VStack(spacing: 0) {
-                            SwipeableTaskRow(
-                                task: task,
-                                index: index,
-                                totalCount: completedTasks.count,
-                                isReordering: false,
-                                onToggle: {
-                                    onToggle(task.id)
-                                },
-                                onDelete: {
-                                    onDelete(task.id)
-                                },
-                                onMoveUp: {},
-                                onMoveDown: {},
-                                onFocusTask: nil,
-                                onSpotlight: nil
-                            )
-
-                            Divider().overlay(theme.divider)
-                        }
+                        SwipeableTaskRow(
+                            task: task,
+                            index: index,
+                            totalCount: completedTasks.count,
+                            isReordering: false,
+                            onToggle: {
+                                onToggle(task.id)
+                            },
+                            onDelete: {
+                                onDelete(task.id)
+                            },
+                            onMoveUp: {},
+                            onMoveDown: {},
+                            onFocusTask: nil,
+                            onSpotlight: nil
+                        )
                         .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
@@ -539,6 +494,7 @@ public struct MissionTodoListView: View {
 
     private func cycleSpotlightTask(direction: Int) {
         guard !activeTasks.isEmpty else { return }
+        spotlightSlideDirection = direction
         let newIndex = (currentSpotlightIndex + direction + activeTasks.count) % activeTasks.count
         spotlightTaskId = activeTasks[newIndex].id
     }
@@ -546,6 +502,7 @@ public struct MissionTodoListView: View {
     private func advanceSpotlightAfterToggle(completedId: String) {
         let remaining = activeTasks.filter { $0.id != completedId }
         if let next = remaining.first {
+            spotlightSlideDirection = 1
             spotlightTaskId = next.id
         } else {
             isSpotlight = false
@@ -592,125 +549,220 @@ private struct SwipeableTaskRow: View {
 
     @Environment(\.theme) private var theme
     @State private var dragOffset: CGFloat = 0
-    @State private var isSwiping: Bool = false
+    @State private var isHorizontalDrag: Bool = false
+
+    // Raw drag distance needed to commit an action
+    private let triggerThreshold: CGFloat = 65
+    // Max visible travel before hard rubber-band
+    private let dragCap: CGFloat = 88
+
+    // Proportional reveal for the action hint labels (0→1 over first half of travel)
+    private var actionProgress: CGFloat {
+        min(abs(dragOffset) / (triggerThreshold * 0.6), 1.0)
+    }
+
+    // App-brand colours (consistent with the rest of the app)
+    private var completionColor: Color { AppColors.personalEmerald }
+    private var deleteColor: Color { theme.danger }
 
     var body: some View {
-        ZStack {
-            // Background Action Reveal (Green on right swipe, Red on left swipe)
-            HStack {
-                if dragOffset > 0 {
-                    // Complete Action
-                    HStack(spacing: 6) {
-                        Image(systemName: task.done ? "arrow.uturn.backward.circle.fill" : "checkmark.circle.fill")
-                            .font(.system(size: 16, weight: .bold))
-                        Text(task.done ? "Undone" : "Done")
-                            .font(.system(size: 12, weight: .bold))
+        VStack(spacing: 0) {
+            ZStack {
+                // ── Action Background ──
+                // Always present, tinted by swipe direction with proportional opacity.
+                // No sudden pop — colour fades in smoothly as the row slides away.
+                Color.clear
+                    .background(
+                        dragOffset > 0
+                            ? completionColor.opacity(0.13 * actionProgress)
+                            : (dragOffset < 0 ? deleteColor.opacity(0.13 * actionProgress) : Color.clear)
+                    )
+                    .overlay(alignment: dragOffset >= 0 ? .leading : .trailing) {
+                        if dragOffset > 0 {
+                            // Right-swipe hint → Complete / Undo
+                            HStack(spacing: 6) {
+                                Image(systemName: task.done
+                                      ? "arrow.uturn.backward.circle"
+                                      : "checkmark.circle")
+                                    .font(.system(size: 17, weight: .semibold))
+                                Text(task.done ? "Undo" : "Done")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .tracking(0.3)
+                            }
+                            .foregroundStyle(completionColor)
+                            .opacity(actionProgress)
+                            .padding(.leading, 18)
+                        } else if dragOffset < 0 {
+                            // Left-swipe hint → Delete
+                            HStack(spacing: 6) {
+                                Text("Delete")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .tracking(0.3)
+                                Image(systemName: "trash")
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            .foregroundStyle(deleteColor)
+                            .opacity(actionProgress)
+                            .padding(.trailing, 18)
+                        }
                     }
-                    .foregroundStyle(Color(uiColor: .systemGreen))
-                    .padding(.leading, 16)
 
-                    Spacer()
-                } else if dragOffset < 0 {
-                    Spacer()
+                // ── Foreground Row Content ──
+                // Clear at rest → atmosphere bleeds through.
+                // Solid theme.background only while dragging → cleanly masks the action zone.
+                rowContent
+                    .background(abs(dragOffset) > 0 ? theme.background : Color.clear)
+                    .offset(x: dragOffset)
+            }
 
-                    // Delete Action
-                    HStack(spacing: 6) {
-                        Text("Delete")
-                            .font(.system(size: 12, weight: .bold))
-                        Image(systemName: "trash.fill")
-                            .font(.system(size: 15, weight: .bold))
-                    }
-                    .foregroundStyle(theme.danger)
-                    .padding(.trailing, 16)
+            Divider()
+                .overlay(theme.divider.opacity(0.35))
+        }
+        .contextMenu {
+            if !task.done, let onSpotlight {
+                Button {
+                    HapticsManager.shared.impact(.medium)
+                    onSpotlight()
+                } label: {
+                    Label("Spotlight This Task", systemImage: "scope")
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(
-                dragOffset > 0
-                    ? Color(uiColor: .systemGreen).opacity(0.12)
-                    : (dragOffset < 0 ? theme.danger.opacity(0.12) : Color.clear)
-            )
 
-            // Foreground Content
-            HStack(spacing: 12) {
-                if isReordering {
-                    // Priority Reordering Arrows
-                    HStack(spacing: 8) {
-                        Button {
-                            HapticsManager.shared.impact(.light)
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                onMoveUp()
-                            }
-                        } label: {
-                            Image(systemName: "chevron.up")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(index > 0 ? theme.accent : theme.textMuted)
-                                .frame(width: 24, height: 24)
-                        }
-                        .disabled(index == 0)
-
-                        Button {
-                            HapticsManager.shared.impact(.light)
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                onMoveDown()
-                            }
-                        } label: {
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(index < totalCount - 1 ? theme.accent : theme.textMuted)
-                                .frame(width: 24, height: 24)
-                        }
-                        .disabled(index == totalCount - 1)
-                    }
-                    .transition(.move(edge: .leading).combined(with: .opacity))
-                }
-
-                // Checkbox
+            if !task.done, let onFocus = onFocusTask {
                 Button {
-                    HapticsManager.shared.selection()
-                    withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
-                        onToggle()
-                    }
+                    HapticsManager.shared.impact(.light)
+                    onFocus()
                 } label: {
-                    ZStack {
+                    Label("Focus with Timer", systemImage: "timer")
+                }
+            }
+
+            Button(role: .destructive) {
+                HapticsManager.shared.impact(.heavy)
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    onDelete()
+                }
+            } label: {
+                Label("Delete Task", systemImage: "trash")
+            }
+        }
+        .gesture(
+            DragGesture(minimumDistance: 10, coordinateSpace: .local)
+                .onChanged { gesture in
+                    guard !isReordering else { return }
+                    let dx = gesture.translation.width
+                    let dy = gesture.translation.height
+
+                    // Axis-lock: lock to horizontal once intent is clear,
+                    // then ignore vertical drift for the rest of this gesture.
+                    if !isHorizontalDrag {
+                        guard abs(dx) > abs(dy) * 1.1 else { return }
+                        isHorizontalDrag = true
+                    }
+
+                    // Rubber-band: 0.72 friction up to cap, then compressed further
+                    let sign: CGFloat = dx > 0 ? 1 : -1
+                    let absDx = abs(dx)
+                    let scaled: CGFloat
+                    if absDx * 0.72 <= dragCap {
+                        scaled = absDx * 0.72
+                    } else {
+                        let excess = absDx * 0.72 - dragCap
+                        scaled = dragCap + excess * 0.18
+                    }
+                    dragOffset = sign * min(scaled, dragCap + 14)
+                }
+                .onEnded { gesture in
+                    defer { isHorizontalDrag = false }
+
+                    guard !isReordering, isHorizontalDrag else {
+                        withAnimation(.spring(response: 0.32, dampingFraction: 0.80)) {
+                            dragOffset = 0
+                        }
+                        return
+                    }
+
+                    let dx = gesture.translation.width
+
+                    if dx > triggerThreshold {
+                        // ✅ Committed right swipe → Toggle complete / undo
+                        HapticsManager.shared.notification(.success)
+                        withAnimation(.spring(response: 0.26, dampingFraction: 0.76)) {
+                            dragOffset = 0
+                        }
+                        // Slight delay lets spring-back animate before model update
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.04) {
+                            onToggle()
+                        }
+                    } else if dx < -triggerThreshold {
+                        // 🗑️ Committed left swipe → Delete
+                        HapticsManager.shared.impact(.heavy)
+                        withAnimation(.spring(response: 0.26, dampingFraction: 0.76)) {
+                            dragOffset = 0
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.04) {
+                            onDelete()
+                        }
+                    } else {
+                        // Below threshold → spring back
+                        withAnimation(.spring(response: 0.32, dampingFraction: 0.80)) {
+                            dragOffset = 0
+                        }
+                    }
+                }
+        )
+    }
+
+    // ── Main Row Content ──
+    @ViewBuilder
+    private var rowContent: some View {
+        HStack(spacing: 12) {
+            if isReordering {
+                reorderArrows
+                    .transition(.move(edge: .leading).combined(with: .opacity))
+            }
+
+            // Checkbox
+            Button {
+                HapticsManager.shared.selection()
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
+                    onToggle()
+                }
+            } label: {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(task.done ? theme.accent : theme.textTertiary, lineWidth: 1.5)
+                        .frame(width: 20, height: 20)
+
+                    if task.done {
                         RoundedRectangle(cornerRadius: 5)
-                            .stroke(task.done ? theme.accent : theme.textTertiary, lineWidth: 1.5)
+                            .fill(theme.accentDim)
                             .frame(width: 20, height: 20)
 
-                        if task.done {
-                            RoundedRectangle(cornerRadius: 5)
-                                .fill(theme.accentDim)
-                                .frame(width: 20, height: 20)
-
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .heavy))
-                                .foregroundStyle(theme.accent)
-                        }
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .heavy))
+                            .foregroundStyle(theme.accent)
                     }
-                    .frame(width: 38, height: 38)
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .frame(width: 38, height: 38)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
 
-                // Task Title with Progressive Strikethrough Sweep Animation
-                ZStack(alignment: .leading) {
-                    Text(task.text)
-                        .font(.system(size: 15, weight: .regular))
-                        .foregroundStyle(task.done ? theme.textTertiary : theme.textPrimary)
-                        .opacity(task.done ? 0.45 : 1.0)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                        .animation(.easeInOut(duration: 0.28), value: task.done)
-
-                    GeometryReader { textGeo in
-                        Rectangle()
-                            .fill(theme.textTertiary)
-                            .frame(height: 1.2)
-                            .scaleEffect(x: task.done ? 1.0 : 0.0, y: 1.0, anchor: .leading)
-                            .animation(.spring(response: 0.32, dampingFraction: 0.72), value: task.done)
-                            .position(x: textGeo.size.width / 2, y: textGeo.size.height / 2)
-                    }
-                    .allowsHitTesting(false)
+            // Task text with progressive strikethrough sweep
+            Text(task.text)
+                .font(.system(size: 15, weight: .regular))
+                .foregroundStyle(task.done ? theme.textTertiary : theme.textPrimary)
+                .opacity(task.done ? 0.45 : 1.0)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .animation(.easeInOut(duration: 0.28), value: task.done)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(theme.textTertiary)
+                        .frame(height: 1.2)
+                        .scaleEffect(x: task.done ? 1.0 : 0.0, anchor: .leading)
+                        .animation(.spring(response: 0.32, dampingFraction: 0.72), value: task.done)
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -720,107 +772,68 @@ private struct SwipeableTaskRow: View {
                     }
                 }
 
-                Spacer()
+            Spacer()
 
-                if isReordering {
-                    // Priority Badge
-                    Text("#\(index + 1)")
-                        .font(.system(size: 11, weight: .heavy))
-                        .foregroundStyle(theme.accent)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(
-                            Capsule().fill(theme.accentDim)
-                        )
-                } else if !task.done, let onFocus = onFocusTask {
-                    // Focus on Task in Pomodoro Shortcut
-                    Button {
-                        HapticsManager.shared.impact(.light)
-                        onFocus()
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "timer")
-                                .font(.system(size: 10, weight: .bold))
-                            Text("FOCUS")
-                                .font(.system(size: 9, weight: .bold))
-                                .tracking(1)
-                        }
-                        .foregroundStyle(theme.accent)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule().fill(theme.accentDim)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.vertical, 12)
-            .background(theme.background)
-            .offset(x: dragOffset)
-            .contextMenu {
-                if !task.done, let onSpotlight = onSpotlight {
-                    Button {
-                        HapticsManager.shared.impact(.medium)
-                        onSpotlight()
-                    } label: {
-                        Label("Spotlight This Task", systemImage: "scope")
-                    }
-                }
-
-                if !task.done, let onFocus = onFocusTask {
-                    Button {
-                        HapticsManager.shared.impact(.light)
-                        onFocus()
-                    } label: {
-                        Label("Focus with Timer", systemImage: "timer")
-                    }
-                }
-
-                Button(role: .destructive) {
-                    HapticsManager.shared.impact(.heavy)
-                    onDelete()
+            if isReordering {
+                Text("#\(index + 1)")
+                    .font(.system(size: 11, weight: .heavy))
+                    .foregroundStyle(theme.accent)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(theme.accentDim))
+            } else if !task.done, let onFocus = onFocusTask {
+                Button {
+                    HapticsManager.shared.impact(.light)
+                    onFocus()
                 } label: {
-                    Label("Delete Task", systemImage: "trash")
+                    HStack(spacing: 4) {
+                        Image(systemName: "timer")
+                            .font(.system(size: 10, weight: .bold))
+                        Text("FOCUS")
+                            .font(.system(size: 9, weight: .bold))
+                            .tracking(1)
+                    }
+                    .foregroundStyle(theme.accent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(theme.accentDim))
                 }
+                .buttonStyle(.plain)
             }
-            .gesture(
-                DragGesture(minimumDistance: 15, coordinateSpace: .local)
-                    .onChanged { gesture in
-                        guard !isReordering else { return }
-                        let translation = gesture.translation.width
-                        // Apply friction beyond threshold
-                        if translation > 0 {
-                            dragOffset = min(translation * 0.7, 100)
-                        } else {
-                            dragOffset = max(translation * 0.7, -100)
-                        }
-                    }
-                    .onEnded { gesture in
-                        guard !isReordering else { return }
-                        let translation = gesture.translation.width
-                        if translation > 60 {
-                            // Swiped right -> Toggle Complete
-                            HapticsManager.shared.notification(.success)
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                onToggle()
-                                dragOffset = 0
-                            }
-                        } else if translation < -60 {
-                            // Swiped left -> Delete Task
-                            HapticsManager.shared.impact(.heavy)
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                onDelete()
-                                dragOffset = 0
-                            }
-                        } else {
-                            // Spring back
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                dragOffset = 0
-                            }
-                        }
-                    }
-            )
+        }
+        .padding(.vertical, 12)
+    }
+
+    // ── Reorder Priority Arrows ──
+    @ViewBuilder
+    private var reorderArrows: some View {
+        HStack(spacing: 8) {
+            Button {
+                HapticsManager.shared.impact(.light)
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                    onMoveUp()
+                }
+            } label: {
+                Image(systemName: "chevron.up")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(index > 0 ? theme.accent : theme.textMuted)
+                    .frame(width: 24, height: 24)
+            }
+            .disabled(index == 0)
+
+            Button {
+                HapticsManager.shared.impact(.light)
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                    onMoveDown()
+                }
+            } label: {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(index < totalCount - 1 ? theme.accent : theme.textMuted)
+                    .frame(width: 24, height: 24)
+            }
+            .disabled(index == totalCount - 1)
         }
     }
 }
+

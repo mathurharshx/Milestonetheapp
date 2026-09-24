@@ -20,6 +20,14 @@ public struct VaultSheet: View {
         ZStack {
             theme.background.ignoresSafeArea()
 
+            // ── Atmospheric Alive Waves ──
+            AliveDuneAtmosphereView(
+                accentColor: theme.accent,
+                secondaryColor: theme.surfaceLight,
+                intensity: 0.75
+            )
+            .ignoresSafeArea()
+
             VStack(spacing: 0) {
                 // Top Header Bar
                 HStack {
@@ -222,7 +230,7 @@ public struct VaultSheet: View {
             }
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallSheet()
+            PaywallSheet(initialFeature: .vault)
         }
         .confirmationDialog(
             "Switch Active Mission?",

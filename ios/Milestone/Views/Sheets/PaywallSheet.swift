@@ -66,7 +66,15 @@ public struct PaywallSheet: View {
             // Obsidian Backdrop
             theme.background.ignoresSafeArea()
 
-            // Ambient Gold Rim Flare
+            // ── Atmospheric Alive Waves ──
+            AliveDuneAtmosphereView(
+                accentColor: theme.accent,
+                secondaryColor: theme.surfaceLight,
+                intensity: 0.85
+            )
+            .ignoresSafeArea()
+
+            // Ambient Rim Flare
             VStack {
                 Circle()
                     .fill(theme.accent.opacity(0.14))
@@ -110,13 +118,19 @@ public struct PaywallSheet: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 14) {
                         // Title
-                        Text("Master your focus.")
-                            .font(.system(size: 25, weight: .bold))
-                            .tracking(-0.5)
-                            .foregroundStyle(theme.textPrimary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 4)
-                            .padding(.top, 2)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Master your focus.")
+                                .font(.system(size: 25, weight: .bold))
+                                .tracking(-0.5)
+                                .foregroundStyle(theme.textPrimary)
+
+                            Text("Soundscapes, the vault, and dual-track.")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(theme.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 4)
+                        .padding(.top, 2)
 
                         // ── 1. Underline Tab Switcher: MONTHLY (1st) & ANNUAL (2nd) ──
                         VStack(spacing: 0) {
@@ -175,10 +189,10 @@ public struct PaywallSheet: View {
                                 bentoCard(
                                     feature: .dualMissions,
                                     icon: "circle.grid.2x1.fill",
-                                    iconColor: Color(red: 0.32, green: 0.72, blue: 0.53),
+                                    iconColor: AppColors.personalEmerald,
                                     title: "Dual Missions",
                                     badge: "BALANCED",
-                                    badgeColor: Color(red: 0.32, green: 0.72, blue: 0.53),
+                                    badgeColor: AppColors.personalEmerald,
                                     summary: "Run 1 Work Mission and 1 Personal Mission simultaneously.",
                                     detail: "The only exception to the single-goal rule. Dual Missions allows ambitious creators to balance one professional mission and one personal mission side-by-side without context switching or burnout."
                                 )
@@ -532,25 +546,35 @@ public struct PaywallSheet: View {
                         dismiss()
                     }
                 } catch {
+#if DEBUG
                     if subscriptionStore.isTestFlightOrSandbox {
-                        print("TestFlight/Sandbox purchase fallback: \(error.localizedDescription) - activating Pro for testing")
+                        print("Debug purchase fallback: \(error.localizedDescription) - activating Pro for testing")
                         subscriptionStore.activatePro()
                         dismiss()
                     } else {
                         alertMessage = error.localizedDescription
                         showAlert = true
                     }
+#else
+                    alertMessage = error.localizedDescription
+                    showAlert = true
+#endif
                 }
             } else {
                 // If products are not yet propagated on Apple's sandbox CDN
+#if DEBUG
                 if subscriptionStore.isTestFlightOrSandbox {
-                    print("TestFlight/Sandbox: Products not loaded yet - activating Pro for testing")
+                    print("Debug: Products not loaded yet - activating Pro for testing")
                     subscriptionStore.activatePro()
                     dismiss()
                 } else {
                     alertMessage = "Connecting to the App Store. Please ensure you have an active internet connection and try again."
                     showAlert = true
                 }
+#else
+                alertMessage = "Unable to connect to the App Store. Please check your internet connection and try again."
+                showAlert = true
+#endif
             }
         }
     }

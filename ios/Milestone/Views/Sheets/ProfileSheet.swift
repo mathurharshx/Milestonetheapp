@@ -61,7 +61,17 @@ public struct ProfileSheet: View {
                 Spacer()
             }
             .padding(.horizontal, 24)
-            .background(theme.background.ignoresSafeArea())
+            .background(
+                ZStack {
+                    theme.background
+                    AliveDuneAtmosphereView(
+                        accentColor: theme.accent,
+                        secondaryColor: theme.surfaceLight,
+                        intensity: 0.70
+                    )
+                }
+                .ignoresSafeArea()
+            )
             .onAppear {
                 name = userStore.userName
             }

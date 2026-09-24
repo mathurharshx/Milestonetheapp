@@ -59,7 +59,7 @@ public struct RootView: View {
             userStore.handleDeepLink(url: url)
         }
         .sheet(isPresented: Bindable(userStore).showPaywallSheet) {
-            PaywallSheet()
+            PaywallSheet(initialFeature: userStore.paywallInitialFeature)
         }
     }
 }

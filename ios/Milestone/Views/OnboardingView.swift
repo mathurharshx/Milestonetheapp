@@ -19,6 +19,14 @@ public struct OnboardingView: View {
         ZStack {
             theme.background.ignoresSafeArea()
 
+            // ── Atmospheric Alive Waves ──
+            AliveDuneAtmosphereView(
+                accentColor: theme.accent,
+                secondaryColor: theme.surfaceLight,
+                intensity: 0.80
+            )
+            .ignoresSafeArea()
+
             VStack {
                 if step == 1 {
                     // ── Step 1: The Manifest ──

@@ -9,18 +9,19 @@ public enum KeystoneEvent: Equatable {
 }
 
 /// A luxury continuous-corner rounded card housing the Mission Title, Countdown, and Dot Grid Matrix.
-/// Features an organic, living ambient aurora in the background and reactive lighting ripples on task events.
+/// Features an organic, living ambient aurora in the background, reactive lighting ripples on task events,
+/// and smooth 3D spatial ascension to Vault upon mission victory.
 public struct KeystoneCardView<Content: View>: View {
     @ViewBuilder public let content: () -> Content
     public let event: KeystoneEvent
     public let isCompleting: Bool
     public let isAscending: Bool
+    public let missionCategory: MissionCategory
 
     @Environment(\.theme) private var theme
 
     // Ambient Living Aurora State
     @State private var auroraPulse: Bool = false
-    @State private var auroraRotation: Double = 0.0
 
     // Reactive Illumination Overlays
     @State private var pulseOpacity: Double = 0.0
@@ -29,8 +30,8 @@ public struct KeystoneCardView<Content: View>: View {
     @State private var rimGlowColor: Color = .clear
     @State private var scaleBreath: CGFloat = 1.0
 
-    // Emerald Green for Accomplishment
-    private let successEmerald = Color(red: 0.32, green: 0.72, blue: 0.53)
+    // Emerald Green for Accomplishment & Personal Pillar
+    private let successEmerald = AppColors.personalEmerald
 
     // Warm Celestial Amber for Task Removal / Decluttering
     private let removalAmber = Color(red: 0.90, green: 0.62, blue: 0.32)
@@ -39,12 +40,18 @@ public struct KeystoneCardView<Content: View>: View {
         event: KeystoneEvent = .none,
         isCompleting: Bool = false,
         isAscending: Bool = false,
+        missionCategory: MissionCategory = .work,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.event = event
         self.isCompleting = isCompleting
         self.isAscending = isAscending
+        self.missionCategory = missionCategory
         self.content = content
+    }
+
+    private var activeAccentColor: Color {
+        missionCategory == .personal ? successEmerald : theme.accent
     }
 
     public var body: some View {
@@ -63,13 +70,14 @@ public struct KeystoneCardView<Content: View>: View {
                     Circle()
                         .fill(
                             RadialGradient(
-                                colors: [
-                                    theme.accent.opacity(auroraPulse ? 0.12 : 0.05),
-                                    theme.accent.opacity(0.0)
+                                stops: [
+                                    .init(color: activeAccentColor.opacity(isCompleting ? 0.25 : (auroraPulse ? 0.12 : 0.05)), location: 0.0),
+                                    .init(color: activeAccentColor.opacity(isCompleting ? 0.08 : (auroraPulse ? 0.04 : 0.01)), location: 0.5),
+                                    .init(color: Color.clear, location: 0.95)
                                 ],
                                 center: .center,
-                                startRadius: 10,
-                                endRadius: w * 0.6
+                                startRadius: 0,
+                                endRadius: max(w, h) * 0.55
                             )
                         )
                         .frame(width: w * 0.9, height: h * 0.9)
@@ -77,19 +85,18 @@ public struct KeystoneCardView<Content: View>: View {
                             x: auroraPulse ? w * 0.70 : w * 0.35,
                             y: auroraPulse ? h * 0.30 : h * 0.65
                         )
-                        .blur(radius: 35)
 
                     // Orb 2: Deep Charcoal / Subtle Secondary Radiance
                     Circle()
                         .fill(
                             RadialGradient(
-                                colors: [
-                                    theme.textTertiary.opacity(auroraPulse ? 0.08 : 0.03),
-                                    Color.clear
+                                stops: [
+                                    .init(color: theme.textTertiary.opacity(auroraPulse ? 0.08 : 0.03), location: 0.0),
+                                    .init(color: Color.clear, location: 0.90)
                                 ],
                                 center: .center,
-                                startRadius: 10,
-                                endRadius: w * 0.5
+                                startRadius: 0,
+                                endRadius: max(w, h) * 0.45
                             )
                         )
                         .frame(width: w * 0.75, height: h * 0.75)
@@ -97,7 +104,6 @@ public struct KeystoneCardView<Content: View>: View {
                             x: auroraPulse ? w * 0.30 : w * 0.65,
                             y: auroraPulse ? h * 0.70 : h * 0.35
                         )
-                        .blur(radius: 30)
                 }
             }
             .allowsHitTesting(false)
@@ -117,22 +123,23 @@ public struct KeystoneCardView<Content: View>: View {
                 )
                 .allowsHitTesting(false)
 
-            // ── Mission Victory Radiant Bloom & Elevation Flare ──
+            // ── Mission Victory Radiant Bloom & Elevation Flare (Covers full card proportionally) ──
             if isCompleting {
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                successEmerald.opacity(0.32),
-                                successEmerald.opacity(0.10),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 10,
-                            endRadius: 260
-                        )
+                GeometryReader { geo in
+                    let maxDim = max(geo.size.width, geo.size.height)
+                    RadialGradient(
+                        colors: [
+                            activeAccentColor.opacity(0.24),
+                            activeAccentColor.opacity(0.08),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 10,
+                        endRadius: maxDim * 0.75
                     )
-                    .transition(.opacity)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                .transition(.opacity)
             }
 
             // ── Embedded Mission Content (Title + Countdown + Dot Matrix) ──
@@ -142,11 +149,11 @@ public struct KeystoneCardView<Content: View>: View {
             .padding(.vertical, 16)
             .padding(.horizontal, 16)
 
-            // ── Subtle Glass Rim Stroke (Catches Light on Events & Victory) ──
+            // ── Continuous Glass Rim Stroke (Unbroken on all 4 sides: Top, Bottom, Left, Right) ──
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(
+                .strokeBorder(
                     isCompleting
-                        ? successEmerald.opacity(isAscending ? 0.95 : 0.75)
+                        ? activeAccentColor.opacity(isAscending ? 0.95 : 0.80)
                         : (rimGlowOpacity > 0
                             ? rimGlowColor.opacity(rimGlowOpacity)
                             : theme.border.opacity(0.4)),
@@ -159,20 +166,19 @@ public struct KeystoneCardView<Content: View>: View {
         .offset(y: isAscending ? -32 : (isCompleting ? -8 : 0))
         .opacity(isAscending ? 0.65 : 1.0)
         .rotation3DEffect(
-            .degrees(isCompleting ? (isAscending ? -6.0 : -3.5) : 0),
+            .degrees(isCompleting ? (isAscending ? -3.0 : -1.5) : 0),
             axis: (x: 1, y: 0, z: 0),
-            perspective: 0.8
+            perspective: 0.2
         )
         .shadow(
             color: isCompleting
-                ? successEmerald.opacity(isAscending ? 0.65 : 0.45)
+                ? activeAccentColor.opacity(isAscending ? 0.50 : 0.35)
                 : (rimGlowOpacity > 0 ? rimGlowColor.opacity(0.2) : theme.accent.opacity(0.04)),
-            radius: isCompleting ? (isAscending ? 40 : 28) : (rimGlowOpacity > 0 ? 16 : 10),
+            radius: isCompleting ? (isAscending ? 36 : 24) : (rimGlowOpacity > 0 ? 16 : 10),
             x: 0,
-            y: isCompleting ? (isAscending ? -12 : -6) : 4
+            y: isCompleting ? (isAscending ? -10 : -4) : 4
         )
         .onAppear {
-            // Start the infinite living aurora drift
             withAnimation(.easeInOut(duration: 6.5).repeatForever(autoreverses: true)) {
                 auroraPulse = true
             }
@@ -185,15 +191,13 @@ public struct KeystoneCardView<Content: View>: View {
     private func handleEvent(_ event: KeystoneEvent) {
         switch event {
         case .taskCompleted:
-            // Emerald-Gold Wave Wash + Rim Flare
             withAnimation(.easeOut(duration: 0.25)) {
-                pulseColor = successEmerald
+                pulseColor = activeAccentColor
                 pulseOpacity = 0.20
-                rimGlowColor = successEmerald
+                rimGlowColor = activeAccentColor
                 rimGlowOpacity = 0.70
                 scaleBreath = 1.008
             }
-            // Decay back to ambient
             withAnimation(.easeOut(duration: 1.1).delay(0.25)) {
                 pulseOpacity = 0.0
                 rimGlowOpacity = 0.0
@@ -201,12 +205,11 @@ public struct KeystoneCardView<Content: View>: View {
             }
 
         case .taskAdded:
-            // Spring expansion breath + Warm Accent Rim Flare
             withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
                 scaleBreath = 1.018
-                rimGlowColor = theme.accent
+                rimGlowColor = activeAccentColor
                 rimGlowOpacity = 0.55
-                pulseColor = theme.accent
+                pulseColor = activeAccentColor
                 pulseOpacity = 0.12
             }
             withAnimation(.easeOut(duration: 0.8).delay(0.2)) {
@@ -216,7 +219,6 @@ public struct KeystoneCardView<Content: View>: View {
             }
 
         case .taskDeleted:
-            // Warm subtle amber release wave (curation / decluttering)
             withAnimation(.easeOut(duration: 0.22)) {
                 pulseColor = removalAmber
                 pulseOpacity = 0.14

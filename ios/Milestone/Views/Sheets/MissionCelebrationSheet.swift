@@ -37,6 +37,14 @@ public struct MissionCelebrationSheet: View {
             theme.background
                 .ignoresSafeArea()
 
+            // ── Atmospheric Alive Waves ──
+            AliveDuneAtmosphereView(
+                accentColor: mission.category == .personal ? AppColors.personalEmerald : theme.accent,
+                secondaryColor: mission.category == .personal ? Color(red: 0x1A/255.0, green: 0x2E/255.0, blue: 0x22/255.0) : theme.surfaceLight,
+                intensity: 0.90
+            )
+            .ignoresSafeArea()
+
             // ── 2. Ambient Matrix Illumination Wave ──
             VStack {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 12), spacing: 10) {

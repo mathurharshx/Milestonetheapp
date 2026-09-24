@@ -17,7 +17,7 @@ public struct MainTabView: View {
                         userStore.selectedTab = .archive
                     }
                 })
-                .toolbarBackground(theme.background, for: .navigationBar)
+                .toolbarBackground(.hidden, for: .navigationBar)
             }
             .tabItem {
                 Image(systemName: "scope")
@@ -28,7 +28,7 @@ public struct MainTabView: View {
             // Tab 2: Pomodoro
             NavigationStack {
                 PomodoroTabView()
-                    .toolbarBackground(theme.background, for: .navigationBar)
+                    .toolbarBackground(.hidden, for: .navigationBar)
             }
             .tabItem {
                 Image(systemName: "hourglass")
@@ -39,7 +39,7 @@ public struct MainTabView: View {
             // Tab 3: Archive
             NavigationStack {
                 ArchiveTabView()
-                    .toolbarBackground(theme.background, for: .navigationBar)
+                    .toolbarBackground(.hidden, for: .navigationBar)
             }
             .tabItem {
                 Image(systemName: "archivebox")
@@ -50,7 +50,7 @@ public struct MainTabView: View {
             // Tab 4: Settings
             NavigationStack {
                 SettingsTabView()
-                    .toolbarBackground(theme.background, for: .navigationBar)
+                    .toolbarBackground(.hidden, for: .navigationBar)
             }
             .tabItem {
                 Image(systemName: "gearshape")
@@ -59,7 +59,6 @@ public struct MainTabView: View {
             .tag(TabItem.settings)
         }
         .tint(theme.textPrimary)
-        .toolbarBackground(theme.background, for: .tabBar)
-        .toolbarBackground(.visible, for: .tabBar)
+        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
     }
 }

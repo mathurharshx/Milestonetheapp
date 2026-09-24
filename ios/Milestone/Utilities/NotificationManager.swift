@@ -83,7 +83,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
 
             let trigger1 = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(remainingSeconds), repeats: false)
             let req1 = UNNotificationRequest(identifier: "milestone.notification.pomodoro.\(timestamp).current", content: content1, trigger: trigger1)
-            self.center.add(req1)
+            try? await self.center.add(req1)
 
             // 2. Pre-Scheduled Next Phase Backup Notification
             if nextPhaseDuration > 0 {
@@ -105,7 +105,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
 
                 let trigger2 = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(remainingSeconds + nextPhaseDuration), repeats: false)
                 let req2 = UNNotificationRequest(identifier: "milestone.notification.pomodoro.\(timestamp).next", content: content2, trigger: trigger2)
-                self.center.add(req2)
+                try? await self.center.add(req2)
             }
         }
     }
@@ -159,10 +159,10 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
             let request = UNNotificationRequest(identifier: self.morningIdentifier, content: content, trigger: trigger)
 
-            self.center.add(request) { error in
-                if let error = error {
-                    print("Failed to schedule morning reminder: \(error.localizedDescription)")
-                }
+            do {
+                try await self.center.add(request)
+            } catch {
+                print("Failed to schedule morning reminder: \(error.localizedDescription)")
             }
         }
     }
@@ -200,10 +200,10 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
             let request = UNNotificationRequest(identifier: self.deadlineIdentifier, content: content, trigger: trigger)
 
-            self.center.add(request) { error in
-                if let error = error {
-                    print("Failed to schedule mission deadline notification: \(error.localizedDescription)")
-                }
+            do {
+                try await self.center.add(request)
+            } catch {
+                print("Failed to schedule mission deadline notification: \(error.localizedDescription)")
             }
         }
     }

@@ -9,7 +9,7 @@ public struct PomodoroTabView: View {
     @Environment(\.theme) private var theme
 
     @State private var flashOpacity: Double = 0.0
-    @State private var flashColor: Color = Color(red: 0.32, green: 0.72, blue: 0.53)
+    @State private var flashColor: Color = AppColors.personalEmerald
     @State private var showPaywall: Bool = false
 
     public init() {}
@@ -19,13 +19,22 @@ public struct PomodoroTabView: View {
         case .focus:
             return theme.accent
         case .shortBreak, .longBreak:
-            return Color(red: 0.32, green: 0.72, blue: 0.53) // Serene Sage Emerald
+            return AppColors.personalEmerald // Serene Sage Emerald
         }
     }
 
     public var body: some View {
         ZStack {
             theme.background.ignoresSafeArea()
+
+            // ── Atmospheric Alive Waves (Synchronized to Focus/Break cadence) ──
+            AliveDuneAtmosphereView(
+                accentColor: phaseColor,
+                secondaryColor: pomodoroStore.phase == .focus ? theme.surfaceLight : Color(red: 0x1A/255.0, green: 0x2E/255.0, blue: 0x22/255.0),
+                intensity: 0.85,
+                isBreathingSync: pomodoroStore.isRunning
+            )
+            .ignoresSafeArea()
 
             // Subtle Ambient Screen Flash Pulse on Phase Transition
             flashColor
@@ -57,7 +66,7 @@ public struct PomodoroTabView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "scope")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(theme.accent)
+                            .foregroundStyle(phaseColor)
 
                         Text(taskTitle)
                             .font(.system(size: 12, weight: .semibold))
@@ -80,19 +89,20 @@ public struct PomodoroTabView: View {
                     .padding(.vertical, 7)
                     .background(
                         Capsule()
-                            .fill(theme.surfaceLight)
+                            .fill(theme.surface.opacity(0.85))
                     )
                     .overlay(
                         Capsule()
-                            .stroke(theme.accent.opacity(0.4), lineWidth: 1)
+                            .stroke(phaseColor.opacity(0.35), lineWidth: 1)
                     )
+                    .shadow(color: Color.black.opacity(0.35), radius: 8, x: 0, y: 2)
                     .padding(.bottom, 16)
                     .transition(.opacity.combined(with: .scale))
                 }
 
                 // Phase Badge
                 Text(pomodoroStore.phase.title)
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.system(size: 10, weight: .heavy))
                     .tracking(3.5)
                     .foregroundStyle(phaseColor)
                     .padding(.horizontal, 18)
@@ -100,6 +110,10 @@ public struct PomodoroTabView: View {
                     .background(
                         Capsule()
                             .fill(phaseColor.opacity(0.14))
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(phaseColor.opacity(0.25), lineWidth: 1)
                     )
                     .padding(.bottom, 20)
 
@@ -110,13 +124,14 @@ public struct PomodoroTabView: View {
                         let isActive = i < pomodoroStore.currentSession
 
                         Circle()
-                            .fill(isCurrent ? phaseColor : (isActive ? phaseColor.opacity(0.3) : theme.dotEmpty))
+                            .fill(isCurrent ? phaseColor : (isActive ? phaseColor.opacity(0.4) : theme.dotEmpty))
                             .frame(width: 7, height: 7)
                             .scaleEffect(isCurrent ? 1.3 : 1.0)
+                            .shadow(color: isCurrent ? phaseColor.opacity(0.45) : Color.clear, radius: 4)
                     }
 
                     Text("\(pomodoroStore.currentSession) / \(pomodoroStore.totalSessions)")
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: 10, weight: .semibold))
                         .tracking(1.5)
                         .foregroundStyle(theme.textTertiary)
                         .padding(.leading, 6)
@@ -136,7 +151,7 @@ public struct PomodoroTabView: View {
                         HStack(spacing: 6) {
                             Image(systemName: soundscapeManager.isPlaying ? "waveform" : "speaker.wave.2")
                                 .font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(soundscapeManager.isPlaying ? theme.accent : theme.textTertiary)
+                                .foregroundStyle(soundscapeManager.isPlaying ? phaseColor : theme.textTertiary)
 
                             Text(soundscapeManager.isPlaying ? soundscapeManager.currentSoundscape.rawValue : "Focus Soundscape")
                                 .font(.system(size: 11, weight: .semibold))
@@ -145,18 +160,18 @@ public struct PomodoroTabView: View {
                             if !subscriptionStore.isProUser {
                                 Image(systemName: "crown.fill")
                                     .font(.system(size: 9))
-                                    .foregroundStyle(theme.accent)
+                                    .foregroundStyle(Color(red: 0.88, green: 0.76, blue: 0.44))
                             }
                         }
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, 14)
                         .padding(.vertical, 7)
                         .background(
                             Capsule()
-                                .fill(theme.surfaceLight.opacity(0.6))
+                                .fill(theme.surface.opacity(0.85))
                         )
                         .overlay(
                             Capsule()
-                                .stroke(soundscapeManager.isPlaying ? theme.accent.opacity(0.6) : theme.border.opacity(0.3), lineWidth: 1)
+                                .stroke(soundscapeManager.isPlaying ? phaseColor.opacity(0.5) : theme.border.opacity(0.35), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
@@ -174,10 +189,14 @@ public struct PomodoroTabView: View {
                             Image(systemName: "slider.horizontal.3")
                                 .font(.system(size: 11, weight: .bold))
                                 .foregroundStyle(theme.textTertiary)
-                                .padding(7)
+                                .padding(8)
                                 .background(
                                     Circle()
-                                        .fill(theme.surfaceLight.opacity(0.5))
+                                        .fill(theme.surface.opacity(0.85))
+                                )
+                                .overlay(
+                                    Circle()
+                                        .stroke(theme.border.opacity(0.35), lineWidth: 1)
                                 )
                         }
                     }
@@ -206,7 +225,7 @@ public struct PomodoroTabView: View {
                             pomodoroStore.start()
                         } label: {
                             Text(pomodoroStore.isStarted ? "RESUME" : "START")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.system(size: 12, weight: .heavy))
                                 .tracking(3.5)
                                 .foregroundStyle(theme.background)
                                 .frame(minWidth: 140, minHeight: 52)
@@ -214,6 +233,11 @@ public struct PomodoroTabView: View {
                                     RoundedRectangle(cornerRadius: 16)
                                         .fill(phaseColor)
                                 )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                                )
+                                .shadow(color: phaseColor.opacity(0.35), radius: 10, x: 0, y: 3)
                                 .contentShape(RoundedRectangle(cornerRadius: 16))
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -223,13 +247,17 @@ public struct PomodoroTabView: View {
                             pomodoroStore.pause()
                         } label: {
                             Text("PAUSE")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.system(size: 12, weight: .heavy))
                                 .tracking(3.5)
                                 .foregroundStyle(phaseColor)
                                 .frame(minWidth: 140, minHeight: 52)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(theme.surfaceLight.opacity(0.75))
+                                )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 16)
-                                        .stroke(phaseColor.opacity(0.3), lineWidth: 1)
+                                        .stroke(phaseColor.opacity(0.35), lineWidth: 1)
                                 )
                                 .contentShape(RoundedRectangle(cornerRadius: 16))
                         }
@@ -242,10 +270,18 @@ public struct PomodoroTabView: View {
                             pomodoroStore.reset()
                         } label: {
                             Text("RESET")
-                                .font(.system(size: 12, weight: .medium))
-                                .tracking(2)
+                                .font(.system(size: 12, weight: .heavy))
+                                .tracking(2.5)
                                 .foregroundStyle(theme.textTertiary)
                                 .frame(minWidth: 80, minHeight: 52)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(theme.surface.opacity(0.6))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(theme.border.opacity(0.4), lineWidth: 1)
+                                )
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -285,17 +321,17 @@ public struct PomodoroTabView: View {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 13, weight: .bold))
                             Text("COMPLETE TASK")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.system(size: 11, weight: .heavy))
                                 .tracking(1.8)
                         }
-                        .foregroundStyle(Color(uiColor: .systemGreen))
+                        .foregroundStyle(AppColors.personalEmerald)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 9)
                         .background(
-                            Capsule().fill(Color(uiColor: .systemGreen).opacity(0.12))
+                            Capsule().fill(AppColors.personalEmerald.opacity(0.14))
                         )
                         .overlay(
-                            Capsule().stroke(Color(uiColor: .systemGreen).opacity(0.3), lineWidth: 1)
+                            Capsule().stroke(AppColors.personalEmerald.opacity(0.35), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
@@ -324,7 +360,7 @@ public struct PomodoroTabView: View {
             flashColor = theme.accent.opacity(0.8)
             AudioManager.shared.play(.breakComplete)
         } else {
-            flashColor = Color(red: 0.32, green: 0.72, blue: 0.53) // Serene Emerald
+            flashColor = AppColors.personalEmerald // Serene Sage Emerald
             AudioManager.shared.play(.focusComplete)
         }
 

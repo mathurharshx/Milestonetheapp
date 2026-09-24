@@ -12,6 +12,7 @@ public struct SettingsTabView: View {
 
     @State private var showProfileSheet: Bool = false
     @State private var showPaywallSheet: Bool = false
+    @State private var paywallFeature: PaywallSheet.PremiumFeature? = nil
     @State private var showRestoreAlert: Bool = false
     @State private var restoreAlertMessage: String = ""
     @State private var reminderDate: Date = Date()
@@ -23,7 +24,7 @@ public struct SettingsTabView: View {
 
     private var appVersionString: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "4"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "11"
         return "Version \(version) (\(build))"
     }
 
@@ -53,6 +54,7 @@ public struct SettingsTabView: View {
                     // ── SOVEREIGN PRO BANNER ──
                     Button {
                         HapticsManager.shared.impact(.medium)
+                        paywallFeature = nil
                         showPaywallSheet = true
                     } label: {
                         HStack(spacing: 14) {
@@ -517,6 +519,7 @@ public struct SettingsTabView: View {
                     }
                     .buttonStyle(.plain)
 
+#if DEBUG
                     if subscriptionStore.isTestFlightOrSandbox {
                         Divider().overlay(theme.divider)
 
@@ -556,6 +559,7 @@ public struct SettingsTabView: View {
                         }
                         .buttonStyle(.plain)
                     }
+#endif
 
                     Divider().overlay(theme.divider)
 
@@ -586,12 +590,22 @@ public struct SettingsTabView: View {
             }
             .scrollIndicators(.hidden)
         }
-        .background(theme.background.ignoresSafeArea())
+        .background(
+            ZStack {
+                theme.background
+                AliveDuneAtmosphereView(
+                    accentColor: theme.accent,
+                    secondaryColor: theme.surfaceLight,
+                    intensity: 0.75
+                )
+            }
+            .ignoresSafeArea()
+        )
         .sheet(isPresented: $showProfileSheet) {
             ProfileSheet()
         }
         .sheet(isPresented: $showPaywallSheet) {
-            PaywallSheet()
+            PaywallSheet(initialFeature: paywallFeature)
         }
         .alert("Restore Purchases", isPresented: $showRestoreAlert) {
             Button("OK", role: .cancel) {}

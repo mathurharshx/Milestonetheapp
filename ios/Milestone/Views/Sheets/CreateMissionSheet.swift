@@ -31,9 +31,24 @@ public struct CreateMissionSheet: View {
     @State private var alertMessage: String = ""
 
     public var category: MissionCategory? = nil
+    public var isEmbedded: Bool = false
 
-    public init(category: MissionCategory? = nil) {
+    // Alive Living Border & Button State
+    @State private var isHeroBreathing: Bool = false
+    @State private var heroBorderAngle: Double = 0.0
+    @State private var isButtonBreathing: Bool = false
+
+    private var effectiveCategory: MissionCategory {
+        category ?? missionStore.activePillar
+    }
+
+    private var accentColor: Color {
+        effectiveCategory == .personal ? AppColors.personalEmerald : theme.accent
+    }
+
+    public init(category: MissionCategory? = nil, isEmbedded: Bool = false) {
         self.category = category
+        self.isEmbedded = isEmbedded
     }
 
     private var isReady: Bool {
@@ -53,12 +68,53 @@ public struct CreateMissionSheet: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            ScrollViewReader { proxy in
-                VStack(spacing: 0) {
-                    // ── Scrollable Form Area ──
-                    ScrollView(showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: 26) {
+        Group {
+            if isEmbedded {
+                formContent
+            } else {
+                NavigationStack {
+                    ZStack {
+                        // ── Living Atmosphere ──
+                        AliveDuneAtmosphereView(
+                            accentColor: accentColor,
+                            secondaryColor: effectiveCategory == .personal ? Color(red: 0x1A/255.0, green: 0x2E/255.0, blue: 0x22/255.0) : theme.surfaceLight,
+                            intensity: 0.70
+                        )
+                        .ignoresSafeArea()
+
+                        formContent
+                    }
+                }
+            }
+        }
+        .alert(alertTitle, isPresented: $showAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(alertMessage)
+        }
+        .sheet(isPresented: $showPaywallSheet) {
+            PaywallSheet(initialFeature: .dualMissions)
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+                isHeroBreathing = true
+            }
+            withAnimation(.linear(duration: 6.0).repeatForever(autoreverses: false)) {
+                heroBorderAngle = 360
+            }
+            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                isButtonBreathing = true
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var formContent: some View {
+        ScrollViewReader { proxy in
+            VStack(spacing: 0) {
+                // ── Scrollable Form Area ──
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 26) {
                         // Header
                         VStack(alignment: .center, spacing: 8) {
                             Text(category == .personal ? "New Personal Mission" : "New Mission")
@@ -103,13 +159,12 @@ public struct CreateMissionSheet: View {
                             }
                             .frame(maxWidth: .infinity)
                         }
-                        .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 20)
 
-                        // 1. TITLE (REQUIRED)
+                        // 1. HERO SECTION: TITLE (REQUIRED)
                         VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 4) {
-                                Text("TITLE")
+                                Text("AWAITING MISSION")
                                     .font(.system(size: 11, weight: .bold))
                                     .tracking(2)
                                     .foregroundStyle(theme.textSecondary)
@@ -117,11 +172,21 @@ public struct CreateMissionSheet: View {
                                 Text("REQUIRED")
                                     .font(.system(size: 9, weight: .semibold))
                                     .tracking(1.5)
-                                    .foregroundStyle(theme.accent)
+                                    .foregroundStyle(accentColor)
+
+                                Spacer()
+
+                                if !title.isEmpty {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundStyle(accentColor)
+                                        .transition(.scale.combined(with: .opacity))
+                                }
                             }
 
+                            // Sleek, compact single-row mission title text field
                             TextField("Define your mission", text: $title)
-                                .font(.system(size: 18, weight: .medium))
+                                .font(.system(size: 17, weight: .medium))
                                 .foregroundStyle(theme.textPrimary)
                                 .focused($focusedField, equals: .title)
                                 .submitLabel(.next)
@@ -131,12 +196,50 @@ public struct CreateMissionSheet: View {
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 14)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .fill(theme.surfaceLight.opacity(0.6))
+                                    ZStack {
+                                        // Deep glass base
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .fill(theme.surfaceLight.opacity(0.6))
+
+                                        // Living Inner Ambient Radial Aura
+                                        RadialGradient(
+                                            colors: [
+                                                accentColor.opacity(isHeroBreathing ? (title.isEmpty ? 0.08 : 0.04) : 0.01),
+                                                Color.clear
+                                            ],
+                                            center: .center,
+                                            startRadius: 10,
+                                            endRadius: 100
+                                        )
+                                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                    }
                                 )
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .stroke(theme.border.opacity(0.6), lineWidth: 1)
+                                    // Outer Soft Ambient Glowing Bloom
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .stroke(
+                                            accentColor.opacity(isHeroBreathing ? (focusedField == .title || title.isEmpty ? 0.35 : 0.18) : 0.08),
+                                            lineWidth: isHeroBreathing ? 2.2 : 1.2
+                                        )
+                                        .blur(radius: isHeroBreathing ? 5 : 2)
+                                )
+                                .overlay(
+                                    // Sharp Living Sweeping Gradient Border
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .stroke(
+                                            AngularGradient(
+                                                gradient: Gradient(colors: [
+                                                    accentColor.opacity(0.85),
+                                                    accentColor.opacity(0.18),
+                                                    accentColor.opacity(0.75),
+                                                    accentColor.opacity(0.12),
+                                                    accentColor.opacity(0.85)
+                                                ]),
+                                                center: .center,
+                                                angle: .degrees(heroBorderAngle)
+                                            ),
+                                            lineWidth: focusedField == .title ? 1.4 : 1.0
+                                        )
                                 )
                         }
 
@@ -401,7 +504,12 @@ public struct CreateMissionSheet: View {
                                         .focused($focusedField, equals: .taskInput)
                                         .submitLabel(.done)
                                         .onSubmit {
-                                            addTodo(proxy: proxy)
+                                            let trimmed = todoInput.trimmingCharacters(in: .whitespacesAndNewlines)
+                                            if trimmed.isEmpty {
+                                                focusedField = nil
+                                            } else {
+                                                addTodo(proxy: proxy)
+                                            }
                                         }
 
                                     if !todoInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -433,97 +541,62 @@ public struct CreateMissionSheet: View {
                 }
                 .scrollIndicators(.hidden)
                 .scrollDismissesKeyboard(.interactively)
+                .onChange(of: focusedField) { _, newField in
+                    if newField == .taskInput {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                proxy.scrollTo("taskInputRow", anchor: .bottom)
+                            }
+                        }
+                    }
+                }
 
-                // ── Bottom Action (BEGIN MISSION) - hides gracefully when keyboard is up ──
-                if focusedField == nil {
-                    VStack(spacing: 0) {
-                        Button {
-                            handleSubmit()
-                        } label: {
+                // ── Bottom Action (BEGIN MISSION) ──
+                VStack(spacing: 0) {
+                    Button {
+                        handleSubmit()
+                    } label: {
+                        HStack(spacing: 8) {
                             Text("BEGIN MISSION")
                                 .font(.system(size: 13, weight: .bold))
                                 .tracking(3)
-                                .foregroundStyle(isReady ? theme.background : theme.textTertiary)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 54)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(isReady ? theme.accent : theme.surfaceLight)
-                                )
-                        }
-                        .disabled(!isReady)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 12)
-                        .padding(.bottom, 16)
-                    }
-                    .background(theme.background)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-            }
-            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: focusedField)
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    if focusedField == .taskInput {
-                        HStack(alignment: .center, spacing: 6) {
-                            Circle()
-                                .fill(todos.isEmpty ? theme.textTertiary : theme.accent)
-                                .frame(width: 6, height: 6)
 
-                            HStack(alignment: .firstTextBaseline, spacing: 3) {
-                                Text("\(todos.count)")
+                            if isReady {
+                                Image(systemName: "arrow.right")
                                     .font(.system(size: 12, weight: .bold))
-                                    .foregroundStyle(todos.isEmpty ? theme.textTertiary : theme.accent)
-
-                                Text(todos.count == 1 ? "task added" : "tasks added")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundStyle(theme.textSecondary)
                             }
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
+                        .foregroundStyle(isReady ? theme.background : theme.textTertiary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
                         .background(
-                            Capsule()
-                                .fill(theme.surfaceLight.opacity(0.8))
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(isReady ? accentColor : theme.surfaceLight)
                         )
                         .overlay(
-                            Capsule()
-                                .stroke(theme.border.opacity(0.5), lineWidth: 0.5)
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(
+                                    isReady
+                                        ? Color.white.opacity(0.18)
+                                        : accentColor.opacity(isButtonBreathing ? 0.22 : 0.08),
+                                    lineWidth: 1
+                                )
+                        )
+                        .shadow(
+                            color: isReady
+                                ? accentColor.opacity(isButtonBreathing ? 0.45 : 0.18)
+                                : accentColor.opacity(isButtonBreathing ? 0.14 : 0.03),
+                            radius: isReady ? (isButtonBreathing ? 14 : 7) : (isButtonBreathing ? 8 : 4),
+                            x: 0,
+                            y: isReady ? 3 : 1
                         )
                     }
-
-                    Spacer()
-
-                    Button {
-                        HapticsManager.shared.impact(.light)
-                        focusedField = nil
-                    } label: {
-                        HStack(spacing: 5) {
-                            Text("Done")
-                                .font(.system(size: 12, weight: .bold))
-
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .bold))
-                        }
-                        .foregroundStyle(theme.background)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 5)
-                        .background(
-                            Capsule()
-                                .fill(theme.accent)
-                        )
-                    }
-                    .buttonStyle(.plain)
+                    .disabled(!isReady)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
+                    .padding(.bottom, 12)
                 }
-            }
-            }
-            .background(theme.background.ignoresSafeArea())
-            .alert(alertTitle, isPresented: $showAlert) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(alertMessage)
-            }
-            .sheet(isPresented: $showPaywallSheet) {
-                PaywallSheet(initialFeature: .dualMissions)
+                .background(Color.clear)
             }
         }
     }
@@ -532,11 +605,8 @@ public struct CreateMissionSheet: View {
         let text = todoInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         HapticsManager.shared.impact(.light)
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-            todos.append(TodoTask(text: text))
-        }
+        todos.append(TodoTask(text: text))
         todoInput = ""
-        focusedField = .taskInput
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             withAnimation(.easeOut(duration: 0.2)) {
                 proxy?.scrollTo("taskInputRow", anchor: .bottom)

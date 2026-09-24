@@ -14,6 +14,14 @@ public struct ArchiveTabView: View {
         ZStack {
             theme.background.ignoresSafeArea()
 
+            // ── Atmospheric Alive Waves ──
+            AliveDuneAtmosphereView(
+                accentColor: theme.accent,
+                secondaryColor: theme.surfaceLight,
+                intensity: 0.75
+            )
+            .ignoresSafeArea()
+
             VStack(alignment: .leading, spacing: 0) {
                 // Header
                 VStack(alignment: .leading, spacing: 6) {
