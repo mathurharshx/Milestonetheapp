@@ -7,7 +7,6 @@ struct MilestoneWidgetBundle: WidgetBundle {
         MilestoneDotMatrixWidget()
         MilestoneMissionWidget()
         MilestonePomodoroWidget()
-        MilestoneMomentumWidget()
         PomodoroLiveActivity()
     }
 }

@@ -108,18 +108,6 @@ public final class MissionStore {
         if let activeData = UserDefaults.standard.data(forKey: activeKey),
            let mission = try? decoder.decode(Mission.self, from: activeData) {
             self.activeMission = mission
-        } else if !UserDefaults.standard.bool(forKey: hasInitializedFirstMissionKey) && archivedMissions.isEmpty && vaultMissions.isEmpty {
-            UserDefaults.standard.set(true, forKey: hasInitializedFirstMissionKey)
-            let target = Calendar.current.date(byAdding: .day, value: 64, to: Date()) ?? Date()
-            self.activeMission = Mission(
-                title: "Launch Milestone v1.0",
-                todos: [
-                    TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
-                    TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false)
-                ],
-                targetDate: target,
-                category: .work
-            )
         } else {
             self.activeMission = nil
         }
