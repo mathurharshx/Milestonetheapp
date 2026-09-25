@@ -71,17 +71,22 @@ struct MilestoneMissionWidgetView: View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
             HStack {
-                Text("MISSION")
-                    .font(.system(size: 9, weight: .heavy))
-                    .tracking(2.5)
-                    .foregroundStyle(entry.data.textSecondaryColor)
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(entry.data.activeGlowColor)
+                        .frame(width: 5, height: 5)
+                    Text(entry.data.missionCategory == "personal" ? "PERSONAL" : "MISSION")
+                        .font(.system(size: 8.5, weight: .heavy))
+                        .tracking(2.0)
+                        .foregroundStyle(entry.data.textSecondaryColor)
+                }
 
                 Spacer()
 
                 if entry.data.missionTodosTotal > 0 {
                     Text("\(entry.data.missionTodosDone)/\(entry.data.missionTodosTotal)")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(entry.data.textSecondaryColor)
+                        .font(.system(size: 9.5, weight: .heavy))
+                        .foregroundStyle(entry.data.activeGlowColor)
                 }
             }
 
@@ -94,7 +99,7 @@ struct MilestoneMissionWidgetView: View {
                 .foregroundStyle(entry.data.textPrimaryColor)
 
             Text("DAYS REMAINING")
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 8.5, weight: .heavy))
                 .tracking(1.5)
                 .foregroundStyle(entry.data.textSecondaryColor)
                 .padding(.bottom, 8)
@@ -103,7 +108,7 @@ struct MilestoneMissionWidgetView: View {
 
             // Mission Title
             Text(entry.data.missionTitle ?? "Active Mission")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 13, weight: .bold))
                 .lineLimit(1)
                 .foregroundStyle(entry.data.textPrimaryColor)
         }
@@ -118,10 +123,16 @@ struct MilestoneMissionWidgetView: View {
         HStack(spacing: 16) {
             // Left Column: Mission Countdown
             VStack(alignment: .leading, spacing: 3) {
-                Text("MISSION")
-                    .font(.system(size: 9, weight: .heavy))
-                    .tracking(2.5)
-                    .foregroundStyle(entry.data.textSecondaryColor)
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(entry.data.activeGlowColor)
+                        .frame(width: 5, height: 5)
+
+                    Text(entry.data.missionCategory == "personal" ? "PERSONAL" : "KEYSTONE")
+                        .font(.system(size: 8.5, weight: .heavy))
+                        .tracking(2.2)
+                        .foregroundStyle(entry.data.textSecondaryColor)
+                }
 
                 Text("\(daysRemaining)")
                     .font(.system(size: 38, weight: .bold))
@@ -129,14 +140,14 @@ struct MilestoneMissionWidgetView: View {
                     .foregroundStyle(entry.data.textPrimaryColor)
 
                 Text("DAYS REMAINING")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 8.5, weight: .heavy))
                     .tracking(1.5)
                     .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
 
                 Text(entry.data.missionTitle ?? "No active mission")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 13, weight: .bold))
                     .lineLimit(1)
                     .foregroundStyle(entry.data.textPrimaryColor)
             }
@@ -146,7 +157,7 @@ struct MilestoneMissionWidgetView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("PRIORITY TASK")
-                        .font(.system(size: 9, weight: .heavy))
+                        .font(.system(size: 8.5, weight: .heavy))
                         .tracking(1.5)
                         .foregroundStyle(entry.data.textSecondaryColor)
 
@@ -154,16 +165,23 @@ struct MilestoneMissionWidgetView: View {
 
                     if entry.data.missionTodosTotal > 0 {
                         Text("\(entry.data.missionTodosDone)/\(entry.data.missionTodosTotal)")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(entry.data.textSecondaryColor)
+                            .font(.system(size: 9.5, weight: .heavy))
+                            .foregroundStyle(entry.data.activeGlowColor)
                     }
                 }
 
-                Text(entry.data.topPendingTaskText ?? (entry.data.missionTodosTotal > 0 ? "All tasks completed" : "No pending tasks"))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(entry.data.textPrimaryColor)
-                    .lineLimit(2)
-                    .frame(maxHeight: .infinity, alignment: .topLeading)
+                HStack(alignment: .top, spacing: 6) {
+                    Image(systemName: "circle")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(entry.data.activeGlowColor)
+                        .padding(.top, 2)
+
+                    Text(entry.data.topPendingTaskText ?? (entry.data.missionTodosTotal > 0 ? "All tasks completed" : "No pending tasks"))
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(entry.data.textPrimaryColor)
+                        .lineLimit(2)
+                        .frame(maxHeight: .infinity, alignment: .topLeading)
+                }
 
                 // Progress Bar
                 GeometryReader { geo in
@@ -173,7 +191,7 @@ struct MilestoneMissionWidgetView: View {
                             .frame(height: 4)
 
                         Capsule()
-                            .fill(entry.data.textPrimaryColor)
+                            .fill(entry.data.accentColor)
                             .frame(width: geo.size.width * CGFloat(progressRatio), height: 4)
                     }
                 }

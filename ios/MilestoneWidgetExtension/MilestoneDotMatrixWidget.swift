@@ -47,6 +47,10 @@ struct MilestoneDotMatrixWidgetView: View {
         return max(0, Int(floor(diff / 86400.0)))
     }
 
+    private var isPersonal: Bool {
+        entry.data.missionCategory == "personal"
+    }
+
     var body: some View {
         Group {
             switch family {
@@ -54,8 +58,12 @@ struct MilestoneDotMatrixWidgetView: View {
                 smallView
             case .systemMedium:
                 mediumView
+            case .systemLarge:
+                largeView
             case .accessoryRectangular:
                 accessoryRectangularView
+            case .accessoryCircular:
+                accessoryCircularView
             default:
                 smallView
             }
@@ -63,20 +71,53 @@ struct MilestoneDotMatrixWidgetView: View {
         .widgetURL(URL(string: "milestone://mission"))
     }
 
+    // ── Helper for Burning Dot Matrix Rendering ──
+    @ViewBuilder
+    private func dotView(index: Int, activeIndex: Int, dotSize: CGFloat) -> some View {
+        if index < activeIndex {
+            // Completed day (solid obsidian / primary)
+            Circle()
+                .fill(entry.data.textPrimaryColor.opacity(0.85))
+                .frame(width: dotSize, height: dotSize)
+        } else if index == activeIndex {
+            // Today's Burning Dot (Glow ring + core)
+            ZStack {
+                Circle()
+                    .fill(entry.data.activeGlowColor.opacity(0.40))
+                    .frame(width: dotSize + 4, height: dotSize + 4)
+
+                Circle()
+                    .fill(entry.data.activeGlowColor)
+                    .frame(width: dotSize, height: dotSize)
+            }
+            .frame(width: dotSize, height: dotSize)
+        } else {
+            // Unreached day (subtle track)
+            Circle()
+                .fill(entry.data.trackColor)
+                .frame(width: dotSize, height: dotSize)
+        }
+    }
+
     // ── Small Widget (2x2 Matrix) ──
     private var smallView: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
             HStack {
-                Text("MATRIX")
-                    .font(.system(size: 9, weight: .heavy))
-                    .tracking(2.5)
-                    .foregroundStyle(entry.data.textSecondaryColor)
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(entry.data.activeGlowColor)
+                        .frame(width: 5, height: 5)
+                    Text(isPersonal ? "PERSONAL" : "RUNWAY")
+                        .font(.system(size: 8.5, weight: .heavy))
+                        .tracking(2.0)
+                        .foregroundStyle(entry.data.textSecondaryColor)
+                }
 
                 Spacer()
 
                 Text("\(daysRemaining)D")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 11, weight: .black))
                     .foregroundStyle(entry.data.textPrimaryColor)
             }
             .padding(.bottom, 8)
@@ -87,19 +128,24 @@ struct MilestoneDotMatrixWidgetView: View {
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 6), spacing: 4) {
                 ForEach(0..<sampleCount, id: \.self) { i in
-                    Circle()
-                        .fill(i < elapsedSampled ? entry.data.textPrimaryColor.opacity(0.85) : (i == elapsedSampled ? entry.data.textPrimaryColor : entry.data.trackColor))
-                        .frame(width: 6, height: 6)
+                    dotView(index: i, activeIndex: elapsedSampled, dotSize: 6)
                 }
             }
 
             Spacer()
 
             // Footer
-            Text(entry.data.missionTitle ?? "Active Mission")
-                .font(.system(size: 12, weight: .medium))
-                .lineLimit(1)
-                .foregroundStyle(entry.data.textPrimaryColor)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(entry.data.missionTitle ?? "Active Mission")
+                    .font(.system(size: 12, weight: .bold))
+                    .lineLimit(1)
+                    .foregroundStyle(entry.data.textPrimaryColor)
+
+                Text("\(daysElapsed) OF \(totalDays) DAYS SPENT")
+                    .font(.system(size: 7.5, weight: .heavy))
+                    .tracking(1.0)
+                    .foregroundStyle(entry.data.textTertiaryColor)
+            }
         }
         .padding(14)
         .containerBackground(for: .widget) {
@@ -111,28 +157,40 @@ struct MilestoneDotMatrixWidgetView: View {
     private var mediumView: some View {
         HStack(spacing: 16) {
             // Left Column: Countdown Details
-            VStack(alignment: .leading, spacing: 4) {
-                Text("MILESTONE")
-                    .font(.system(size: 9, weight: .heavy))
-                    .tracking(2.5)
-                    .foregroundStyle(entry.data.textSecondaryColor)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(entry.data.activeGlowColor)
+                        .frame(width: 5, height: 5)
+                    Text(isPersonal ? "PERSONAL" : "MILESTONE")
+                        .font(.system(size: 8.5, weight: .heavy))
+                        .tracking(2.2)
+                        .foregroundStyle(entry.data.textSecondaryColor)
+                }
 
                 Text("\(daysRemaining)")
                     .font(.system(size: 38, weight: .bold))
                     .tracking(-1)
                     .foregroundStyle(entry.data.textPrimaryColor)
 
-                Text("DAYS LEFT")
-                    .font(.system(size: 9, weight: .semibold))
+                Text("DAYS REMAINING")
+                    .font(.system(size: 8.5, weight: .heavy))
                     .tracking(1.5)
                     .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
 
-                Text(entry.data.missionTitle ?? "No active mission")
-                    .font(.system(size: 13, weight: .semibold))
-                    .lineLimit(1)
-                    .foregroundStyle(entry.data.textPrimaryColor)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(entry.data.missionTitle ?? "No active mission")
+                        .font(.system(size: 13, weight: .bold))
+                        .lineLimit(1)
+                        .foregroundStyle(entry.data.textPrimaryColor)
+
+                    Text("\(daysElapsed)/\(totalDays) DAYS PASSED")
+                        .font(.system(size: 8, weight: .heavy))
+                        .tracking(1)
+                        .foregroundStyle(entry.data.textTertiaryColor)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -140,14 +198,104 @@ struct MilestoneDotMatrixWidgetView: View {
             let sampleCount = 60
             let elapsedSampled = totalDays > 0 ? Int((Double(daysElapsed) / Double(totalDays)) * Double(sampleCount)) : 0
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 10), spacing: 4) {
-                ForEach(0..<sampleCount, id: \.self) { i in
+            VStack(alignment: .trailing, spacing: 4) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 10), spacing: 4) {
+                    ForEach(0..<sampleCount, id: \.self) { i in
+                        dotView(index: i, activeIndex: elapsedSampled, dotSize: 5.5)
+                    }
+                }
+                .frame(width: 145)
+            }
+        }
+        .padding(16)
+        .containerBackground(for: .widget) {
+            entry.data.backgroundColor
+        }
+    }
+
+    // ── Large Widget (Full Runway Sprint Matrix) ──
+    private var largeView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header Bar
+            HStack {
+                HStack(spacing: 5) {
                     Circle()
-                        .fill(i < elapsedSampled ? entry.data.textPrimaryColor.opacity(0.85) : (i == elapsedSampled ? entry.data.textPrimaryColor : entry.data.trackColor))
-                        .frame(width: 5.5, height: 5.5)
+                        .fill(entry.data.activeGlowColor)
+                        .frame(width: 6, height: 6)
+                    Text(isPersonal ? "PERSONAL SPRINT" : "KEYSTONE SPRINT")
+                        .font(.system(size: 9.5, weight: .heavy))
+                        .tracking(2.5)
+                        .foregroundStyle(entry.data.textSecondaryColor)
+                }
+
+                Spacer()
+
+                HStack(spacing: 4) {
+                    Text("\(daysRemaining)")
+                        .font(.system(size: 15, weight: .black))
+                        .foregroundStyle(entry.data.textPrimaryColor)
+                    Text("DAYS LEFT")
+                        .font(.system(size: 9, weight: .heavy))
+                        .tracking(1)
+                        .foregroundStyle(entry.data.textSecondaryColor)
                 }
             }
-            .frame(width: 140)
+            .padding(.bottom, 12)
+
+            // Large Dense Matrix (96 dots: 12 cols x 8 rows)
+            let sampleCount = 96
+            let elapsedSampled = totalDays > 0 ? Int((Double(daysElapsed) / Double(totalDays)) * Double(sampleCount)) : 0
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 12), spacing: 5) {
+                ForEach(0..<sampleCount, id: \.self) { i in
+                    dotView(index: i, activeIndex: elapsedSampled, dotSize: 7)
+                }
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(entry.data.surfaceColor.opacity(0.4))
+            )
+
+            Spacer()
+
+            // Footer / Active Mission Stats
+            HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(entry.data.missionTitle ?? "Active Mission")
+                        .font(.system(size: 15, weight: .bold))
+                        .lineLimit(1)
+                        .foregroundStyle(entry.data.textPrimaryColor)
+
+                    if let topTask = entry.data.topPendingTaskText {
+                        HStack(spacing: 5) {
+                            Image(systemName: "arrow.right.circle.fill")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(entry.data.activeGlowColor)
+                            Text(topTask)
+                                .font(.system(size: 11, weight: .medium))
+                                .lineLimit(1)
+                                .foregroundStyle(entry.data.textSecondaryColor)
+                        }
+                    }
+                }
+
+                Spacer()
+
+                // Progress Percentage
+                let pct = totalDays > 0 ? Int((Double(daysElapsed) / Double(totalDays)) * 100) : 0
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(pct)%")
+                        .font(.system(size: 18, weight: .black))
+                        .foregroundStyle(entry.data.textPrimaryColor)
+                    Text("BURNOUT RATIO")
+                        .font(.system(size: 7.5, weight: .heavy))
+                        .tracking(1)
+                        .foregroundStyle(entry.data.textTertiaryColor)
+                }
+            }
+            .padding(.top, 8)
         }
         .padding(16)
         .containerBackground(for: .widget) {
@@ -160,13 +308,13 @@ struct MilestoneDotMatrixWidgetView: View {
         VStack(alignment: .leading, spacing: 3) {
             HStack {
                 Text(entry.data.missionTitle ?? "Milestone")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: 11.5, weight: .bold))
                     .lineLimit(1)
 
                 Spacer()
 
                 Text("\(daysRemaining)d")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: 12, weight: .black))
             }
 
             // Mini 2-row dot strip (16 dots)
@@ -175,11 +323,44 @@ struct MilestoneDotMatrixWidgetView: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 8), spacing: 3) {
                 ForEach(0..<sampleCount, id: \.self) { i in
                     Circle()
-                        .fill(i < elapsedSampled ? Color.white : Color.white.opacity(0.25))
+                        .fill(i < elapsedSampled ? Color.white : (i == elapsedSampled ? Color.white : Color.white.opacity(0.25)))
                         .frame(width: 4.5, height: 4.5)
                 }
             }
             .padding(.top, 2)
+        }
+        .containerBackground(for: .widget) {
+            Color.clear
+        }
+    }
+
+    // ── Lock Screen Circular (Runway Dot Ring) ──
+    private var accessoryCircularView: some View {
+        ZStack {
+            AccessoryWidgetBackground()
+
+            let progress = totalDays > 0 ? min(1.0, Double(daysElapsed) / Double(totalDays)) : 0.0
+
+            Circle()
+                .stroke(Color.white.opacity(0.25), lineWidth: 3.5)
+                .frame(width: 44, height: 44)
+
+            Circle()
+                .trim(from: 0, to: CGFloat(max(0.02, progress)))
+                .stroke(Color.white, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .frame(width: 44, height: 44)
+
+            VStack(spacing: -1) {
+                Text("\(daysRemaining)")
+                    .font(.system(size: 14, weight: .black))
+                    .foregroundStyle(Color.white)
+
+                Text("DAYS")
+                    .font(.system(size: 7, weight: .heavy))
+                    .tracking(0.5)
+                    .foregroundStyle(Color.white.opacity(0.7))
+            }
         }
         .containerBackground(for: .widget) {
             Color.clear
@@ -197,7 +378,7 @@ public struct MilestoneDotMatrixWidget: Widget {
             MilestoneDotMatrixWidgetView(entry: entry)
         }
         .configurationDisplayName("Dot Matrix")
-        .description("Pure visual dot matrix representation of your active milestone.")
-        .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular])
+        .description("Pure visual dot matrix runway representing your active milestone sprint.")
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryRectangular, .accessoryCircular])
     }
 }

@@ -98,7 +98,9 @@ public struct MissionTabView: View {
                                 todos: mission.todos,
                                 onToggle: { id in
                                     let willBeDone = !(mission.todos.first(where: { $0.id == id })?.done ?? true)
-                                    missionStore.toggleTodo(id: id)
+                                    withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
+                                        missionStore.toggleTodo(id: id)
+                                    }
                                     if willBeDone {
                                         keystoneEvent = .taskCompleted
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
@@ -109,7 +111,9 @@ public struct MissionTabView: View {
                                     }
                                 },
                                 onDelete: { id in
-                                    missionStore.deleteTodo(id: id)
+                                    withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
+                                        missionStore.deleteTodo(id: id)
+                                    }
                                     keystoneEvent = .taskDeleted
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
                                         if keystoneEvent == .taskDeleted {
@@ -118,10 +122,14 @@ public struct MissionTabView: View {
                                     }
                                 },
                                 onMove: { indices, newOffset in
-                                    missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                        missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
+                                    }
                                 },
                                 onAddTask: { text in
-                                    missionStore.addTodo(text: text)
+                                    withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
+                                        missionStore.addTodo(text: text)
+                                    }
                                     keystoneEvent = .taskAdded
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                         if keystoneEvent == .taskAdded {

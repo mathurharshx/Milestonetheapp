@@ -19,9 +19,11 @@ public struct MilestoneWidgetData: Codable {
     public var missionTitle: String?
     public var missionTargetDate: Double?   // Unix timestamp (seconds)
     public var missionCreatedAt: Double?    // Unix timestamp (seconds)
+    public var missionCategory: String?     // "work" | "personal"
     public var missionTodosTotal: Int
     public var missionTodosDone: Int
     public var topPendingTaskText: String?
+    public var topPendingTaskId: String?
 
     // ── Momentum & Habit state ──
     public var focusStreak: Int             // e.g. 5
@@ -45,9 +47,11 @@ public struct MilestoneWidgetData: Codable {
         missionTitle: String? = nil,
         missionTargetDate: Double? = nil,
         missionCreatedAt: Double? = nil,
+        missionCategory: String? = "work",
         missionTodosTotal: Int = 0,
         missionTodosDone: Int = 0,
         topPendingTaskText: String? = nil,
+        topPendingTaskId: String? = nil,
         focusStreak: Int = 1,
         todayFocusMinutes: Int = 25,
         weeklyFocusLevels: [Int] = [1, 2, 3, 2, 3, 1, 2],
@@ -66,9 +70,11 @@ public struct MilestoneWidgetData: Codable {
         self.missionTitle = missionTitle
         self.missionTargetDate = missionTargetDate
         self.missionCreatedAt = missionCreatedAt
+        self.missionCategory = missionCategory
         self.missionTodosTotal = missionTodosTotal
         self.missionTodosDone = missionTodosDone
         self.topPendingTaskText = topPendingTaskText
+        self.topPendingTaskId = topPendingTaskId
         self.focusStreak = focusStreak
         self.todayFocusMinutes = todayFocusMinutes
         self.weeklyFocusLevels = weeklyFocusLevels
@@ -102,6 +108,20 @@ extension MilestoneWidgetData {
 
     public var trackColor: Color {
         isDarkMode ? Color(red: 0x33/255.0, green: 0x33/255.0, blue: 0x33/255.0) : Color(red: 0xD1/255.0, green: 0xD1/255.0, blue: 0xD6/255.0)
+    }
+
+    public var accentColor: Color {
+        if missionCategory == "personal" {
+            return Color(red: 0x10/255.0, green: 0xB9/255.0, blue: 0x81/255.0) // personalEmerald
+        }
+        return isDarkMode ? Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0) : Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0)
+    }
+
+    public var activeGlowColor: Color {
+        if missionCategory == "personal" {
+            return Color(red: 0x34/255.0, green: 0xD3/255.0, blue: 0x99/255.0)
+        }
+        return isDarkMode ? Color(red: 0xE6/255.0, green: 0xC8/255.0, blue: 0x75/255.0) : Color(red: 0x11/255.0, green: 0x18/255.0, blue: 0x27/255.0)
     }
 }
 

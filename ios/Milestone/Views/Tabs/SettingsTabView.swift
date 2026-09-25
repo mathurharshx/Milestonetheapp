@@ -487,6 +487,176 @@ public struct SettingsTabView: View {
                         Divider().overlay(theme.divider)
                     }
 
+                    // ── HOME & LOCK SCREEN WIDGETS ──
+                    SectionHeader(title: "HOME & LOCK SCREEN WIDGETS")
+                        .padding(.top, 24)
+
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Add Milestone's brutalist dot matrix and countdown widgets directly to your Home Screen and Lock Screen.")
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundStyle(theme.textSecondary)
+                            .lineSpacing(3)
+
+                        // Widget Showcase Cards Carousel / Grid
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                // Small Dot Matrix Preview
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        Circle()
+                                            .fill(theme.accent)
+                                            .frame(width: 5, height: 5)
+                                        Text("DOT MATRIX")
+                                            .font(.system(size: 8, weight: .heavy))
+                                            .tracking(1.5)
+                                            .foregroundStyle(theme.textTertiary)
+                                        Spacer()
+                                        Text("24D")
+                                            .font(.system(size: 9.5, weight: .black))
+                                            .foregroundStyle(theme.textPrimary)
+                                    }
+
+                                    // 30-dot mini grid
+                                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 6), spacing: 3) {
+                                        ForEach(0..<24, id: \.self) { i in
+                                            Circle()
+                                                .fill(i < 8 ? theme.textPrimary.opacity(0.85) : (i == 8 ? theme.accent : theme.border.opacity(0.5)))
+                                                .frame(width: 5, height: 5)
+                                        }
+                                    }
+                                    .padding(.vertical, 4)
+
+                                    Text("Active Sprint Runway")
+                                        .font(.system(size: 9.5, weight: .bold))
+                                        .lineLimit(1)
+                                        .foregroundStyle(theme.textPrimary)
+                                }
+                                .padding(12)
+                                .frame(width: 140, height: 135)
+                                .background(theme.surface.opacity(0.7))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(theme.border.opacity(0.4), lineWidth: 1)
+                                )
+
+                                // Medium Banner Preview
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
+                                        HStack(spacing: 4) {
+                                            Circle()
+                                                .fill(theme.accent)
+                                                .frame(width: 5, height: 5)
+                                            Text("KEYSTONE")
+                                                .font(.system(size: 8, weight: .heavy))
+                                                .tracking(1.5)
+                                                .foregroundStyle(theme.textTertiary)
+                                        }
+                                        Spacer()
+                                        Text("14/30D")
+                                            .font(.system(size: 9, weight: .bold))
+                                            .foregroundStyle(theme.accent)
+                                    }
+
+                                    HStack(spacing: 12) {
+                                        VStack(alignment: .leading, spacing: 1) {
+                                            Text("16")
+                                                .font(.system(size: 26, weight: .black))
+                                                .foregroundStyle(theme.textPrimary)
+                                            Text("DAYS LEFT")
+                                                .font(.system(size: 7.5, weight: .heavy))
+                                                .tracking(1)
+                                                .foregroundStyle(theme.textTertiary)
+                                        }
+
+                                        Spacer()
+
+                                        // Mini 4x6 grid
+                                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 6), spacing: 3) {
+                                            ForEach(0..<24, id: \.self) { i in
+                                                Circle()
+                                                    .fill(i < 10 ? theme.textPrimary.opacity(0.85) : (i == 10 ? theme.accent : theme.border.opacity(0.5)))
+                                                    .frame(width: 4.5, height: 4.5)
+                                            }
+                                        }
+                                        .frame(width: 65)
+                                    }
+
+                                    Spacer()
+
+                                    Text("Always-On Sprint Radar")
+                                        .font(.system(size: 9.5, weight: .bold))
+                                        .lineLimit(1)
+                                        .foregroundStyle(theme.textPrimary)
+                                }
+                                .padding(12)
+                                .frame(width: 200, height: 135)
+                                .background(theme.surface.opacity(0.7))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(theme.border.opacity(0.4), lineWidth: 1)
+                                )
+
+                                // Lock Screen Ring Preview
+                                VStack(spacing: 6) {
+                                    Text("LOCK SCREEN")
+                                        .font(.system(size: 8, weight: .heavy))
+                                        .tracking(1.5)
+                                        .foregroundStyle(theme.textTertiary)
+
+                                    ZStack {
+                                        Circle()
+                                            .stroke(theme.border.opacity(0.4), lineWidth: 3)
+                                            .frame(width: 48, height: 48)
+
+                                        Circle()
+                                            .trim(from: 0, to: 0.65)
+                                            .stroke(theme.accent, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                                            .rotationEffect(.degrees(-90))
+                                            .frame(width: 48, height: 48)
+
+                                        VStack(spacing: -1) {
+                                            Text("16")
+                                                .font(.system(size: 13, weight: .black))
+                                                .foregroundStyle(theme.textPrimary)
+                                            Text("DAYS")
+                                                .font(.system(size: 6.5, weight: .heavy))
+                                                .foregroundStyle(theme.textTertiary)
+                                        }
+                                    }
+                                    .padding(.vertical, 2)
+
+                                    Text("Glanceable AOD")
+                                        .font(.system(size: 9.5, weight: .bold))
+                                        .foregroundStyle(theme.textPrimary)
+                                }
+                                .padding(12)
+                                .frame(width: 120, height: 135)
+                                .background(theme.surface.opacity(0.7))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(theme.border.opacity(0.4), lineWidth: 1)
+                                )
+                            }
+                            .padding(.vertical, 4)
+                        }
+
+                        HStack(spacing: 6) {
+                            Image(systemName: "hand.tap.fill")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(theme.accent)
+                            Text("Touch & hold your Home Screen → tap '+' → search 'Milestone'")
+                                .font(.system(size: 11.5, weight: .medium))
+                                .foregroundStyle(theme.textTertiary)
+                        }
+                        .padding(.top, 2)
+                    }
+                    .padding(.vertical, 6)
+
+                    Divider().overlay(theme.divider)
+
                     // ── ABOUT & LEGAL SECTION ──
                     SectionHeader(title: "ABOUT & LEGAL")
                         .padding(.top, 24)

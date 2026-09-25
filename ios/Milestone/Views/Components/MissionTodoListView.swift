@@ -148,13 +148,24 @@ public struct MissionTodoListView: View {
             .padding(.bottom, 10)
 
             // ── Main Content Area ──
-            if isSpotlight {
-                // ── SPOTLIGHT MODE (Ultra-minimal: isolates the single next step) ──
-                spotlightView
-            } else {
-                // ── NORMAL LIST MODE ──
-                normalListView
+            Group {
+                if isSpotlight {
+                    // ── SPOTLIGHT MODE (Ultra-minimal: isolates the single next step) ──
+                    spotlightView
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .scale(scale: 0.98)),
+                            removal: .opacity
+                        ))
+                } else {
+                    // ── NORMAL LIST MODE ──
+                    normalListView
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .move(edge: .top)),
+                            removal: .opacity
+                        ))
+                }
             }
+            .animation(.spring(response: 0.35, dampingFraction: 0.78), value: isSpotlight)
 
             // ── Inline Add Task Row ──
             HStack(spacing: 12) {
@@ -408,15 +419,22 @@ public struct MissionTodoListView: View {
                             spotlightTask(id: task.id)
                         }
                     )
-                    .offset(y: hasAppeared ? 0 : 22)
+                    .offset(y: hasAppeared ? 0 : 18)
                     .opacity(hasAppeared ? 1 : 0)
                     .animation(
-                        .spring(response: 0.45, dampingFraction: 0.76)
-                        .delay(min(Double(index) * 0.05, 0.45)),
+                        .spring(response: 0.40, dampingFraction: 0.78)
+                        .delay(min(Double(index) * 0.04, 0.36)),
                         value: hasAppeared
+                    )
+                    .transition(
+                        .asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .move(edge: .bottom).combined(with: .opacity)
+                        )
                     )
                 }
             }
+            .animation(.spring(response: 0.38, dampingFraction: 0.78), value: activeTasks.map(\.id))
         }
     }
 
@@ -475,12 +493,19 @@ public struct MissionTodoListView: View {
                             onFocusTask: nil,
                             onSpotlight: nil
                         )
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+                        .transition(
+                            .asymmetric(
+                                insertion: .move(edge: .top).combined(with: .opacity),
+                                removal: .move(edge: .top).combined(with: .opacity)
+                            )
+                        )
                     }
                 }
+                .animation(.spring(response: 0.38, dampingFraction: 0.78), value: completedTasks.map(\.id))
             }
         }
-        .padding(.top, 6)
+        .clipped()
+        .animation(.spring(response: 0.38, dampingFraction: 0.78), value: isCompletedExpanded)
     }
 
     private func spotlightTask(id: String) {
@@ -618,6 +643,7 @@ private struct SwipeableTaskRow: View {
             Divider()
                 .overlay(theme.divider.opacity(0.35))
         }
+        .contentShape(Rectangle())
         .contextMenu {
             if !task.done, let onSpotlight {
                 Button {
@@ -646,18 +672,25 @@ private struct SwipeableTaskRow: View {
                 Label("Delete Task", systemImage: "trash")
             }
         }
-        .gesture(
-            DragGesture(minimumDistance: 10, coordinateSpace: .local)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 8, coordinateSpace: .local)
                 .onChanged { gesture in
                     guard !isReordering else { return }
                     let dx = gesture.translation.width
                     let dy = gesture.translation.height
 
-                    // Axis-lock: lock to horizontal once intent is clear,
-                    // then ignore vertical drift for the rest of this gesture.
+                    // Instant vertical escape hatch: If the user is scrolling vertically,
+                    // yield immediately so the ScrollView scrolls with zero resistance/dead spot.
                     if !isHorizontalDrag {
-                        guard abs(dx) > abs(dy) * 1.1 else { return }
-                        isHorizontalDrag = true
+                        if abs(dy) > abs(dx) {
+                            dragOffset = 0
+                            return
+                        }
+                        if abs(dx) > 6 && abs(dx) > abs(dy) {
+                            isHorizontalDrag = true
+                        } else {
+                            return
+                        }
                     }
 
                     // Rubber-band: 0.72 friction up to cap, then compressed further
@@ -673,10 +706,11 @@ private struct SwipeableTaskRow: View {
                     dragOffset = sign * min(scaled, dragCap + 14)
                 }
                 .onEnded { gesture in
-                    defer { isHorizontalDrag = false }
+                    let wasHorizontal = isHorizontalDrag
+                    isHorizontalDrag = false
 
-                    guard !isReordering, isHorizontalDrag else {
-                        withAnimation(.spring(response: 0.32, dampingFraction: 0.80)) {
+                    guard !isReordering, wasHorizontal else {
+                        withAnimation(.spring(response: 0.30, dampingFraction: 0.80)) {
                             dragOffset = 0
                         }
                         return
@@ -690,7 +724,6 @@ private struct SwipeableTaskRow: View {
                         withAnimation(.spring(response: 0.26, dampingFraction: 0.76)) {
                             dragOffset = 0
                         }
-                        // Slight delay lets spring-back animate before model update
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.04) {
                             onToggle()
                         }
@@ -705,7 +738,7 @@ private struct SwipeableTaskRow: View {
                         }
                     } else {
                         // Below threshold → spring back
-                        withAnimation(.spring(response: 0.32, dampingFraction: 0.80)) {
+                        withAnimation(.spring(response: 0.30, dampingFraction: 0.80)) {
                             dragOffset = 0
                         }
                     }
@@ -750,29 +783,31 @@ private struct SwipeableTaskRow: View {
             .buttonStyle(.plain)
 
             // Task text with progressive strikethrough sweep
-            Text(task.text)
-                .font(.system(size: 15, weight: .regular))
-                .foregroundStyle(task.done ? theme.textTertiary : theme.textPrimary)
-                .opacity(task.done ? 0.45 : 1.0)
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
-                .animation(.easeInOut(duration: 0.28), value: task.done)
-                .overlay(alignment: .leading) {
-                    Rectangle()
-                        .fill(theme.textTertiary)
-                        .frame(height: 1.2)
-                        .scaleEffect(x: task.done ? 1.0 : 0.0, anchor: .leading)
-                        .animation(.spring(response: 0.32, dampingFraction: 0.72), value: task.done)
+            Button {
+                HapticsManager.shared.selection()
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.72)) {
+                    onToggle()
                 }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    HapticsManager.shared.selection()
-                    withAnimation(.spring(response: 0.32, dampingFraction: 0.72)) {
-                        onToggle()
+            } label: {
+                Text(task.text)
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundStyle(task.done ? theme.textTertiary : theme.textPrimary)
+                    .opacity(task.done ? 0.45 : 1.0)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .animation(.easeInOut(duration: 0.28), value: task.done)
+                    .overlay(alignment: .leading) {
+                        Rectangle()
+                            .fill(theme.textTertiary)
+                            .frame(height: 1.2)
+                            .scaleEffect(x: task.done ? 1.0 : 0.0, anchor: .leading)
+                            .animation(.spring(response: 0.32, dampingFraction: 0.72), value: task.done)
                     }
-                }
+            }
+            .buttonStyle(.plain)
 
-            Spacer()
+            Spacer(minLength: 16)
+                .contentShape(Rectangle())
 
             if isReordering {
                 Text("#\(index + 1)")

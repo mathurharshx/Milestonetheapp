@@ -293,9 +293,10 @@ public final class MissionStore {
     public func syncToWidget() {
         let existing = SharedWidgetStore.load() ?? MilestoneWidgetData()
 
-        let totalTodos = activeMission?.todos.count ?? 0
-        let doneTodos = activeMission?.todos.filter(\.done).count ?? 0
-        let topTask = activeMission?.todos.first(where: { !$0.done })?.text
+        let current = currentPillarMission ?? activeMission
+        let totalTodos = current?.todos.count ?? 0
+        let doneTodos = current?.todos.filter(\.done).count ?? 0
+        let topTask = current?.todos.first(where: { !$0.done })
 
         let updated = MilestoneWidgetData(
             isDarkMode: existing.isDarkMode,
@@ -306,12 +307,14 @@ public final class MissionStore {
             pomodoroSession: existing.pomodoroSession,
             pomodoroTotalSessions: existing.pomodoroTotalSessions,
             pomodoroTargetEndTime: existing.pomodoroTargetEndTime,
-            missionTitle: activeMission?.title,
-            missionTargetDate: activeMission?.targetDate.timeIntervalSince1970,
-            missionCreatedAt: activeMission?.createdAt.timeIntervalSince1970,
+            missionTitle: current?.title,
+            missionTargetDate: current?.targetDate.timeIntervalSince1970,
+            missionCreatedAt: current?.createdAt.timeIntervalSince1970,
+            missionCategory: current?.category.rawValue ?? "work",
             missionTodosTotal: totalTodos,
             missionTodosDone: doneTodos,
-            topPendingTaskText: topTask,
+            topPendingTaskText: topTask?.text,
+            topPendingTaskId: topTask?.id,
             focusStreak: existing.focusStreak,
             todayFocusMinutes: existing.todayFocusMinutes,
             weeklyFocusLevels: existing.weeklyFocusLevels,
