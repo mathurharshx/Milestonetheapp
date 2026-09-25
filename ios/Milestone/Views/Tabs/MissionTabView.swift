@@ -75,7 +75,7 @@ public struct MissionTabView: View {
                             // Countdown Timer
                             CountdownTimerView(countdown: countdown)
 
-                            // Dot Grid Matrix with Completion Glow Wave (<48h / <24h sprint tracks)
+                            // Dot Grid Matrix with Completion Glow Wave (<48h / <24h runway tracks)
                             DotGridView(
                                 totalDays: countdown.totalDays,
                                 daysElapsed: countdown.daysElapsed,

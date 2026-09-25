@@ -39,7 +39,7 @@ public struct DotGridView: View {
     }
 
     private var dotItems: [DotItem] {
-        // 1. Hourly Sprint Mode for Short Deadlines (< 48 hours or <= 2 days)
+        // 1. Hourly Mode for Short Deadlines (< 48 hours or <= 2 days)
         if isUnder24h || totalDays <= 1 {
             let totalUnits = 24
             let remaining = max(0, min(24, hoursRemaining > 0 ? hoursRemaining : 24 - hoursElapsed))
