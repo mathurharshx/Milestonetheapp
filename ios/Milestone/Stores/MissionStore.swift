@@ -273,26 +273,43 @@ public final class MissionStore {
             targetDate = now.addingTimeInterval(15)
         }
 
-        if var mission = currentPillarMission {
+        if var mission = activeMission {
             mission.createdAt = createdAt
             mission.targetDate = targetDate
             mission.isActive = true
-            self.currentPillarMission = mission
+            self.activeMission = mission
         } else {
-            createMission(
+            self.activeMission = Mission(
+                id: "work_test_mission",
                 title: "Launch Milestone v1.0",
-                targetDate: targetDate,
                 todos: [
                     TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
                     TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false),
                     TodoTask(id: "3", text: "Publish Launch Announcement", done: false)
-                ]
+                ],
+                targetDate: targetDate,
+                createdAt: createdAt,
+                isActive: true,
+                category: .work
             )
-            if var newM = currentPillarMission {
-                newM.createdAt = createdAt
-                self.currentPillarMission = newM
-            }
         }
+
+        // Also seed activePersonalMission so Dual Pillar Large Widget has rich live data to test
+        let pCreated = Calendar.current.date(byAdding: .day, value: -10, to: now) ?? now
+        let pTarget = Calendar.current.date(byAdding: .day, value: 20, to: now) ?? now
+        self.activePersonalMission = Mission(
+            id: "personal_test_mission",
+            title: "Half Marathon 2026",
+            todos: [
+                TodoTask(id: "p1", text: "Morning 10km Endurance Run", done: true),
+                TodoTask(id: "p2", text: "Electrolyte Recovery & Mobility", done: false)
+            ],
+            targetDate: pTarget,
+            createdAt: pCreated,
+            isActive: true,
+            category: .personal
+        )
+
         syncToWidget()
     }
     #endif
@@ -361,6 +378,33 @@ public final class MissionStore {
         let doneTodos = current?.todos.filter(\.done).count ?? 0
         let topTask = current?.todos.first(where: { !$0.done })
 
+        // Construct dedicated payloads for Work & Personal
+        let workPayload: MissionWidgetPayload? = activeMission.map { m in
+            MissionWidgetPayload(
+                title: m.title,
+                targetDate: m.targetDate.timeIntervalSince1970,
+                createdAt: m.createdAt.timeIntervalSince1970,
+                category: "work",
+                todosTotal: m.todos.count,
+                todosDone: m.todos.filter(\.done).count,
+                topPendingTaskText: m.todos.first(where: { !$0.done })?.text,
+                topPendingTaskId: m.todos.first(where: { !$0.done })?.id
+            )
+        }
+
+        let personalPayload: MissionWidgetPayload? = activePersonalMission.map { m in
+            MissionWidgetPayload(
+                title: m.title,
+                targetDate: m.targetDate.timeIntervalSince1970,
+                createdAt: m.createdAt.timeIntervalSince1970,
+                category: "personal",
+                todosTotal: m.todos.count,
+                todosDone: m.todos.filter(\.done).count,
+                topPendingTaskText: m.todos.first(where: { !$0.done })?.text,
+                topPendingTaskId: m.todos.first(where: { !$0.done })?.id
+            )
+        }
+
         let updated = MilestoneWidgetData(
             isDarkMode: existing.isDarkMode,
             pomodoroPhase: existing.pomodoroPhase,
@@ -378,6 +422,8 @@ public final class MissionStore {
             missionTodosDone: doneTodos,
             topPendingTaskText: topTask?.text,
             topPendingTaskId: topTask?.id,
+            workMissionPayload: workPayload,
+            personalMissionPayload: personalPayload,
             focusStreak: existing.focusStreak,
             todayFocusMinutes: existing.todayFocusMinutes,
             weeklyFocusLevels: existing.weeklyFocusLevels,

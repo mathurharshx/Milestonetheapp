@@ -2,6 +2,37 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
+public struct MissionWidgetPayload: Codable {
+    public var title: String
+    public var targetDate: Double
+    public var createdAt: Double
+    public var category: String       // "work" | "personal"
+    public var todosTotal: Int
+    public var todosDone: Int
+    public var topPendingTaskText: String?
+    public var topPendingTaskId: String?
+
+    public init(
+        title: String,
+        targetDate: Double,
+        createdAt: Double,
+        category: String = "work",
+        todosTotal: Int = 0,
+        todosDone: Int = 0,
+        topPendingTaskText: String? = nil,
+        topPendingTaskId: String? = nil
+    ) {
+        self.title = title
+        self.targetDate = targetDate
+        self.createdAt = createdAt
+        self.category = category
+        self.todosTotal = todosTotal
+        self.todosDone = todosDone
+        self.topPendingTaskText = topPendingTaskText
+        self.topPendingTaskId = topPendingTaskId
+    }
+}
+
 public struct MilestoneWidgetData: Codable {
     // ── Theme State (Default Dark Mode) ──
     public var isDarkMode: Bool
@@ -15,7 +46,7 @@ public struct MilestoneWidgetData: Codable {
     public var pomodoroTotalSessions: Int   // 4
     public var pomodoroTargetEndTime: Double? // Unix timestamp (seconds)
 
-    // ── Mission state ──
+    // ── Mission state (Active Pillar) ──
     public var missionTitle: String?
     public var missionTargetDate: Double?   // Unix timestamp (seconds)
     public var missionCreatedAt: Double?    // Unix timestamp (seconds)
@@ -24,6 +55,10 @@ public struct MilestoneWidgetData: Codable {
     public var missionTodosDone: Int
     public var topPendingTaskText: String?
     public var topPendingTaskId: String?
+
+    // ── Dual-Pillar Flagship Payload (Work & Personal) ──
+    public var workMissionPayload: MissionWidgetPayload?
+    public var personalMissionPayload: MissionWidgetPayload?
 
     // ── Momentum & Habit state ──
     public var focusStreak: Int             // e.g. 5
@@ -52,6 +87,8 @@ public struct MilestoneWidgetData: Codable {
         missionTodosDone: Int = 0,
         topPendingTaskText: String? = nil,
         topPendingTaskId: String? = nil,
+        workMissionPayload: MissionWidgetPayload? = nil,
+        personalMissionPayload: MissionWidgetPayload? = nil,
         focusStreak: Int = 1,
         todayFocusMinutes: Int = 25,
         weeklyFocusLevels: [Int] = [1, 2, 3, 2, 3, 1, 2],
@@ -75,6 +112,8 @@ public struct MilestoneWidgetData: Codable {
         self.missionTodosDone = missionTodosDone
         self.topPendingTaskText = topPendingTaskText
         self.topPendingTaskId = topPendingTaskId
+        self.workMissionPayload = workMissionPayload
+        self.personalMissionPayload = personalMissionPayload
         self.focusStreak = focusStreak
         self.todayFocusMinutes = todayFocusMinutes
         self.weeklyFocusLevels = weeklyFocusLevels

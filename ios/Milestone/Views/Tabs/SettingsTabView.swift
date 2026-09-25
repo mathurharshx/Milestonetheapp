@@ -678,6 +678,83 @@ public struct SettingsTabView: View {
                                         .stroke(theme.border.opacity(0.4), lineWidth: 1)
                                 )
 
+                                // Flagship Dual-Pillar Large Preview
+                                HStack(spacing: 0) {
+                                    // Left: Work
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack {
+                                            Circle().fill(Color.white).frame(width: 4, height: 4)
+                                            Text("WORK")
+                                                .font(.system(size: 7.5, weight: .heavy))
+                                                .foregroundStyle(theme.textTertiary)
+                                            Spacer()
+                                            Text("85D")
+                                                .font(.system(size: 8.5, weight: .black))
+                                                .foregroundStyle(theme.textPrimary)
+                                        }
+
+                                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 5), spacing: 2) {
+                                            ForEach(0..<15, id: \.self) { i in
+                                                Circle()
+                                                    .fill(i < 3 ? theme.border.opacity(0.3) : Color.white)
+                                                    .frame(width: 3.5, height: 3.5)
+                                            }
+                                        }
+
+                                        Spacer()
+
+                                        Text("Launch v1.0")
+                                            .font(.system(size: 8, weight: .bold))
+                                            .lineLimit(1)
+                                            .foregroundStyle(theme.textPrimary)
+                                    }
+                                    .padding(.trailing, 8)
+
+                                    // Hairline Divider
+                                    Rectangle()
+                                        .fill(theme.border.opacity(0.5))
+                                        .frame(width: 1)
+                                        .padding(.vertical, 4)
+
+                                    // Right: Personal
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack {
+                                            Circle().fill(Color(red: 0x10/255.0, green: 0xB9/255.0, blue: 0x81/255.0)).frame(width: 4, height: 4)
+                                            Text("PERSONAL")
+                                                .font(.system(size: 7.5, weight: .heavy))
+                                                .foregroundStyle(theme.textTertiary)
+                                            Spacer()
+                                            Text("20D")
+                                                .font(.system(size: 8.5, weight: .black))
+                                                .foregroundStyle(theme.textPrimary)
+                                        }
+
+                                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 5), spacing: 2) {
+                                            ForEach(0..<15, id: \.self) { i in
+                                                Circle()
+                                                    .fill(i < 4 ? theme.border.opacity(0.3) : Color.white)
+                                                    .frame(width: 3.5, height: 3.5)
+                                            }
+                                        }
+
+                                        Spacer()
+
+                                        Text("Marathon 2026")
+                                            .font(.system(size: 8, weight: .bold))
+                                            .lineLimit(1)
+                                            .foregroundStyle(theme.textPrimary)
+                                    }
+                                    .padding(.leading, 8)
+                                }
+                                .padding(10)
+                                .frame(width: 190, height: 135)
+                                .background(theme.surface.opacity(0.7))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(theme.border.opacity(0.4), lineWidth: 1)
+                                )
+
                                 // Lock Screen Ring Preview
                                 VStack(spacing: 6) {
                                     Text("LOCK SCREEN")

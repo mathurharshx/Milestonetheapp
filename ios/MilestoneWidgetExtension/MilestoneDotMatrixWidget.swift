@@ -213,93 +213,185 @@ struct MilestoneDotMatrixWidgetView: View {
         }
     }
 
-    // ── Large Widget (Full Runway Matrix) ──
+    // ── Large Widget (Flagship Dual-Pillar Matrix: Work on Left, Personal on Right) ──
     private var largeView: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header Bar
-            HStack {
-                HStack(spacing: 5) {
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: 6, height: 6)
-                    Text(isPersonal ? "PERSONAL RUNWAY" : "KEYSTONE RUNWAY")
-                        .font(.system(size: 9.5, weight: .heavy))
-                        .tracking(2.5)
-                        .foregroundStyle(entry.data.textSecondaryColor)
-                }
-
-                Spacer()
-
-                HStack(spacing: 4) {
-                    Text("\(daysRemaining)")
-                        .font(.system(size: 15, weight: .black))
-                        .foregroundStyle(entry.data.textPrimaryColor)
-                    Text("DAYS LEFT")
-                        .font(.system(size: 9, weight: .heavy))
-                        .tracking(1)
-                        .foregroundStyle(entry.data.textSecondaryColor)
-                }
-            }
-            .padding(.bottom, 12)
-
-            // Large Dense Matrix (96 dots: 12 cols x 8 rows)
-            let sampleCount = 96
-            let elapsedSampled = totalDays > 0 ? Int((Double(daysElapsed) / Double(totalDays)) * Double(sampleCount)) : 0
-
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 12), spacing: 5) {
-                ForEach(0..<sampleCount, id: \.self) { i in
-                    dotView(index: i, elapsedSampled: elapsedSampled, dotSize: 7)
-                }
-            }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(entry.data.surfaceColor.opacity(0.4))
+        HStack(spacing: 0) {
+            // ── Left Column: Work Mission ──
+            pillarColumnView(
+                title: "WORK",
+                icon: "briefcase.fill",
+                accentColor: Color.white,
+                payload: entry.data.workMissionPayload ?? fallbackWorkPayload
             )
+            .padding(.trailing, 12)
 
-            Spacer()
+            // ── Centered Subtle Hairline Divider ──
+            Rectangle()
+                .fill(Color.white.opacity(0.12))
+                .frame(width: 1)
+                .padding(.vertical, 4)
 
-            // Footer / Active Mission Stats
-            HStack(alignment: .bottom) {
+            // ── Right Column: Personal Mission ──
+            pillarColumnView(
+                title: "PERSONAL",
+                icon: "leaf.fill",
+                accentColor: Color(red: 0x10/255.0, green: 0xB9/255.0, blue: 0x81/255.0),
+                payload: entry.data.personalMissionPayload ?? fallbackPersonalPayload
+            )
+            .padding(.leading, 12)
+        }
+        .padding(14)
+        .containerBackground(for: .widget) {
+            entry.data.backgroundColor
+        }
+    }
+
+    private var fallbackWorkPayload: MissionWidgetPayload? {
+        if entry.data.missionCategory != "personal", let title = entry.data.missionTitle, let target = entry.data.missionTargetDate, let created = entry.data.missionCreatedAt {
+            return MissionWidgetPayload(
+                title: title,
+                targetDate: target,
+                createdAt: created,
+                category: "work",
+                todosTotal: entry.data.missionTodosTotal,
+                todosDone: entry.data.missionTodosDone,
+                topPendingTaskText: entry.data.topPendingTaskText,
+                topPendingTaskId: entry.data.topPendingTaskId
+            )
+        }
+        return nil
+    }
+
+    private var fallbackPersonalPayload: MissionWidgetPayload? {
+        if entry.data.missionCategory == "personal", let title = entry.data.missionTitle, let target = entry.data.missionTargetDate, let created = entry.data.missionCreatedAt {
+            return MissionWidgetPayload(
+                title: title,
+                targetDate: target,
+                createdAt: created,
+                category: "personal",
+                todosTotal: entry.data.missionTodosTotal,
+                todosDone: entry.data.missionTodosDone,
+                topPendingTaskText: entry.data.topPendingTaskText,
+                topPendingTaskId: entry.data.topPendingTaskId
+            )
+        }
+        return nil
+    }
+
+    // ── Dedicated Single Pillar Column for Large Dual Matrix ──
+    @ViewBuilder
+    private func pillarColumnView(
+        title: String,
+        icon: String,
+        accentColor: Color,
+        payload: MissionWidgetPayload?
+    ) -> some View {
+        if let payload = payload {
+            let pDiff = Date(timeIntervalSince1970: payload.targetDate).timeIntervalSince(Date())
+            let pRemaining = max(0, Int(ceil(pDiff / 86400.0)))
+            let pTotalDiff = Date(timeIntervalSince1970: payload.targetDate).timeIntervalSince(Date(timeIntervalSince1970: payload.createdAt))
+            let pTotal = max(1, Int(ceil(pTotalDiff / 86400.0)))
+            let pElapsedDiff = Date().timeIntervalSince(Date(timeIntervalSince1970: payload.createdAt))
+            let pElapsed = max(0, Int(floor(pElapsedDiff / 86400.0)))
+
+            // 36 dots (6 cols x 6 rows)
+            let sampleCount = 36
+            let elapsedSampled = pTotal > 0 ? Int((Double(pElapsed) / Double(pTotal)) * Double(sampleCount)) : 0
+
+            VStack(alignment: .leading, spacing: 0) {
+                // Header Bar
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(accentColor)
+                        .frame(width: 5, height: 5)
+
+                    Text(title)
+                        .font(.system(size: 8.5, weight: .heavy))
+                        .tracking(1.8)
+                        .foregroundStyle(entry.data.textSecondaryColor)
+
+                    Spacer()
+
+                    Text("\(pRemaining)D")
+                        .font(.system(size: 11, weight: .black))
+                        .foregroundStyle(entry.data.textPrimaryColor)
+                }
+                .padding(.bottom, 6)
+
+                // 36-Dot Matrix
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 6), spacing: 4) {
+                    ForEach(0..<sampleCount, id: \.self) { i in
+                        dotView(index: i, elapsedSampled: elapsedSampled, dotSize: 5.5)
+                    }
+                }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 2)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(entry.data.surfaceColor.opacity(0.35))
+                )
+
+                Spacer(minLength: 4)
+
+                // Footer: Mission Details & Top Task
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(entry.data.missionTitle ?? "Active Mission")
-                        .font(.system(size: 15, weight: .bold))
+                    Text(payload.title)
+                        .font(.system(size: 12, weight: .bold))
                         .lineLimit(1)
                         .foregroundStyle(entry.data.textPrimaryColor)
 
-                    if let topTask = entry.data.topPendingTaskText {
-                        HStack(spacing: 5) {
+                    if let topTask = payload.topPendingTaskText {
+                        HStack(spacing: 4) {
                             Image(systemName: "arrow.right.circle.fill")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(.system(size: 8, weight: .bold))
                                 .foregroundStyle(Color.white)
                             Text(topTask)
-                                .font(.system(size: 11, weight: .medium))
+                                .font(.system(size: 9.5, weight: .medium))
                                 .lineLimit(1)
                                 .foregroundStyle(entry.data.textSecondaryColor)
                         }
+                    } else {
+                        let pct = pTotal > 0 ? Int((Double(pRemaining) / Double(pTotal)) * 100) : 0
+                        Text("\(pRemaining)/\(pTotal)D · \(pct)% LEFT")
+                            .font(.system(size: 7.5, weight: .heavy))
+                            .tracking(0.8)
+                            .foregroundStyle(entry.data.textTertiaryColor)
                     }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            // Elegant Obsidian Empty State
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(accentColor.opacity(0.6))
+                        .frame(width: 5, height: 5)
+                    Text(title)
+                        .font(.system(size: 8.5, weight: .heavy))
+                        .tracking(1.8)
+                        .foregroundStyle(entry.data.textSecondaryColor)
                 }
 
                 Spacer()
 
-                // Days Remaining Percentage
-                let remainingPct = totalDays > 0 ? Int((Double(daysRemaining) / Double(totalDays)) * 100) : 0
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(remainingPct)%")
-                        .font(.system(size: 18, weight: .black))
-                        .foregroundStyle(entry.data.textPrimaryColor)
-                    Text("REMAINING")
-                        .font(.system(size: 7.5, weight: .heavy))
-                        .tracking(1)
+                VStack(alignment: .leading, spacing: 4) {
+                    Image(systemName: icon)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(entry.data.textTertiaryColor)
+
+                    Text("No Active \(title.capitalized) Mission")
+                        .font(.system(size: 10.5, weight: .bold))
+                        .foregroundStyle(entry.data.textSecondaryColor)
+
+                    Text("Create a \(title.lowercased()) mission in app")
+                        .font(.system(size: 8, weight: .medium))
                         .foregroundStyle(entry.data.textTertiaryColor)
                 }
+
+                Spacer()
             }
-            .padding(.top, 8)
-        }
-        .padding(16)
-        .containerBackground(for: .widget) {
-            entry.data.backgroundColor
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
