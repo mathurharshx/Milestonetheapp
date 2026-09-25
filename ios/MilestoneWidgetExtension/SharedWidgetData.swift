@@ -87,41 +87,35 @@ public struct MilestoneWidgetData: Codable {
 // ── Shared Color Palette Helper for Widgets ──
 extension MilestoneWidgetData {
     public var backgroundColor: Color {
-        isDarkMode ? Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0) : Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0)
+        isDarkMode ? Color(red: 0x0A/255.0, green: 0x0A/255.0, blue: 0x0A/255.0) : Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0)
     }
 
     public var surfaceColor: Color {
-        isDarkMode ? Color(red: 0x2A/255.0, green: 0x2A/255.0, blue: 0x2A/255.0) : Color(red: 0xE5/255.0, green: 0xE5/255.0, blue: 0xEA/255.0)
+        isDarkMode ? Color(red: 0x14/255.0, green: 0x14/255.0, blue: 0x14/255.0) : Color(red: 0xE5/255.0, green: 0xE5/255.0, blue: 0xEA/255.0)
     }
 
     public var textPrimaryColor: Color {
-        isDarkMode ? Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0) : Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0)
+        isDarkMode ? Color(red: 0xFA/255.0, green: 0xFA/255.0, blue: 0xFA/255.0) : Color(red: 0x1A/255.0, green: 0x1A/255.0, blue: 0x1A/255.0)
     }
 
     public var textSecondaryColor: Color {
-        textPrimaryColor.opacity(0.60)
+        textPrimaryColor.opacity(0.55)
     }
 
     public var textTertiaryColor: Color {
-        textPrimaryColor.opacity(0.35)
+        textPrimaryColor.opacity(0.30)
     }
 
     public var trackColor: Color {
-        isDarkMode ? Color(red: 0x33/255.0, green: 0x33/255.0, blue: 0x33/255.0) : Color(red: 0xD1/255.0, green: 0xD1/255.0, blue: 0xD6/255.0)
+        isDarkMode ? Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0) : Color(red: 0xD1/255.0, green: 0xD1/255.0, blue: 0xD6/255.0)
     }
 
     public var accentColor: Color {
-        if missionCategory == "personal" {
-            return Color(red: 0x10/255.0, green: 0xB9/255.0, blue: 0x81/255.0) // personalEmerald
-        }
-        return isDarkMode ? Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0) : Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0)
+        isDarkMode ? Color(red: 0xFA/255.0, green: 0xFA/255.0, blue: 0xFA/255.0) : Color(red: 0x1A/255.0, green: 0x1A/255.0, blue: 0x1A/255.0)
     }
 
     public var activeGlowColor: Color {
-        if missionCategory == "personal" {
-            return Color(red: 0x34/255.0, green: 0xD3/255.0, blue: 0x99/255.0)
-        }
-        return isDarkMode ? Color(red: 0xE6/255.0, green: 0xC8/255.0, blue: 0x75/255.0) : Color(red: 0x11/255.0, green: 0x18/255.0, blue: 0x27/255.0) // Warm gold or obsidian
+        isDarkMode ? Color(red: 0xFA/255.0, green: 0xFA/255.0, blue: 0xFA/255.0) : Color(red: 0x1A/255.0, green: 0x1A/255.0, blue: 0x1A/255.0)
     }
 }
 

@@ -516,17 +516,16 @@ public struct SettingsTabView: View {
                                             .foregroundStyle(theme.textPrimary)
                                     }
 
-                                    // 30-dot mini grid
-                                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 6), spacing: 3) {
+                                                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 6), spacing: 3) {
                                         ForEach(0..<24, id: \.self) { i in
                                             Circle()
-                                                .fill(i < 8 ? theme.textPrimary.opacity(0.85) : (i == 8 ? theme.accent : theme.border.opacity(0.5)))
+                                                .fill(i < 8 ? theme.border.opacity(0.35) : Color.white)
                                                 .frame(width: 5, height: 5)
                                         }
                                     }
                                     .padding(.vertical, 4)
 
-                                    Text("Active Sprint Runway")
+                                    Text("Active Mission Runway")
                                         .font(.system(size: 9.5, weight: .bold))
                                         .lineLimit(1)
                                         .foregroundStyle(theme.textPrimary)
@@ -537,7 +536,7 @@ public struct SettingsTabView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 16)
-                                        .stroke(theme.border.opacity(0.4), lineWidth: 1)
+                                         .stroke(theme.border.opacity(0.4), lineWidth: 1)
                                 )
 
                                 // Medium Banner Preview
@@ -545,7 +544,7 @@ public struct SettingsTabView: View {
                                     HStack {
                                         HStack(spacing: 4) {
                                             Circle()
-                                                .fill(theme.accent)
+                                                .fill(Color.white)
                                                 .frame(width: 5, height: 5)
                                             Text("KEYSTONE")
                                                 .font(.system(size: 8, weight: .heavy))
@@ -575,7 +574,7 @@ public struct SettingsTabView: View {
                                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 6), spacing: 3) {
                                             ForEach(0..<24, id: \.self) { i in
                                                 Circle()
-                                                    .fill(i < 10 ? theme.textPrimary.opacity(0.85) : (i == 10 ? theme.accent : theme.border.opacity(0.5)))
+                                                    .fill(i < 10 ? theme.border.opacity(0.35) : Color.white)
                                                     .frame(width: 4.5, height: 4.5)
                                             }
                                         }
@@ -584,7 +583,7 @@ public struct SettingsTabView: View {
 
                                     Spacer()
 
-                                    Text("Always-On Sprint Radar")
+                                    Text("Always-On Mission Radar")
                                         .font(.system(size: 9.5, weight: .bold))
                                         .lineLimit(1)
                                         .foregroundStyle(theme.textPrimary)
