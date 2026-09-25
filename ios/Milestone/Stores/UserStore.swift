@@ -1,6 +1,28 @@
 import SwiftUI
 import Observation
 
+public enum MissionTestPreset: String, CaseIterable, Identifiable {
+    case standard90Days = "90 Days (5 Days Passed · 85 Left)"
+    case halfWay30Days = "30 Days (15 Days Passed · 15 Left)"
+    case finalStretch3Days = "30 Days (27 Days Passed · 3 Left)"
+    case hourly48h = "48 Hours (12h Passed · 36h Left)"
+    case urgent24h = "24 Hours (6h Passed · 18h Left)"
+    case completingNow = "Imminent (15 Seconds Left)"
+
+    public var id: String { rawValue }
+
+    public var title: String {
+        switch self {
+        case .standard90Days: return "90D Runway (5D Spent)"
+        case .halfWay30Days: return "30D Horizon (15D Spent)"
+        case .finalStretch3Days: return "30D Horizon (3D Left)"
+        case .hourly48h: return "48H Runway Track"
+        case .urgent24h: return "24H Urgent Track"
+        case .completingNow: return "Imminent 15s Target"
+        }
+    }
+}
+
 @Observable
 public final class UserStore {
     public var userName: String {
@@ -61,6 +83,19 @@ public final class UserStore {
     public var isTestModeEnabled: Bool {
         didSet {
             UserDefaults.standard.set(isTestModeEnabled, forKey: "milestone:isTestModeEnabled")
+        }
+    }
+
+    // ── Simulator Mission Test Mode & Horizon Presets ──
+    public var isMissionTestModeEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isMissionTestModeEnabled, forKey: "milestone:isMissionTestModeEnabled")
+        }
+    }
+
+    public var selectedMissionTestPreset: MissionTestPreset {
+        didSet {
+            UserDefaults.standard.set(selectedMissionTestPreset.rawValue, forKey: "milestone:selectedMissionTestPreset")
         }
     }
 
@@ -132,6 +167,9 @@ public final class UserStore {
         let savedMin = UserDefaults.standard.object(forKey: "milestone:morningReminderMinute") as? Int ?? 0
         self.morningReminderMinute = savedMin
         self.isTestModeEnabled = UserDefaults.standard.bool(forKey: "milestone:isTestModeEnabled")
+        self.isMissionTestModeEnabled = UserDefaults.standard.bool(forKey: "milestone:isMissionTestModeEnabled")
+        let savedPresetKey = UserDefaults.standard.string(forKey: "milestone:selectedMissionTestPreset") ?? MissionTestPreset.standard90Days.rawValue
+        self.selectedMissionTestPreset = MissionTestPreset(rawValue: savedPresetKey) ?? .standard90Days
         self.soundEnabled = UserDefaults.standard.object(forKey: "milestone:soundEnabled") as? Bool ?? true
     }
 }

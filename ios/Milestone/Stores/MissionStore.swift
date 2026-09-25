@@ -234,6 +234,69 @@ public final class MissionStore {
         self.archivedMissions.removeAll(where: { ids.contains($0.id) })
     }
 
+    #if DEBUG
+    // ── Apply Simulator Mission Test Preset ──
+    public func applyTestPreset(_ preset: MissionTestPreset) {
+        let now = Date()
+        let createdAt: Date
+        let targetDate: Date
+
+        switch preset {
+        case .standard90Days:
+            // 90 days total: 5 days passed, 85 days remaining
+            createdAt = Calendar.current.date(byAdding: .day, value: -5, to: now) ?? now
+            targetDate = Calendar.current.date(byAdding: .day, value: 85, to: now) ?? now
+
+        case .halfWay30Days:
+            // 30 days total: 15 days passed, 15 days remaining
+            createdAt = Calendar.current.date(byAdding: .day, value: -15, to: now) ?? now
+            targetDate = Calendar.current.date(byAdding: .day, value: 15, to: now) ?? now
+
+        case .finalStretch3Days:
+            // 30 days total: 27 days passed, 3 days remaining
+            createdAt = Calendar.current.date(byAdding: .day, value: -27, to: now) ?? now
+            targetDate = Calendar.current.date(byAdding: .day, value: 3, to: now) ?? now
+
+        case .hourly48h:
+            // 48 hours total: 12 hours passed, 36 hours remaining (< 48h runway track)
+            createdAt = now.addingTimeInterval(-12 * 3600)
+            targetDate = now.addingTimeInterval(36 * 3600)
+
+        case .urgent24h:
+            // 24 hours total: 6 hours passed, 18 hours remaining (< 24h urgent track)
+            createdAt = now.addingTimeInterval(-6 * 3600)
+            targetDate = now.addingTimeInterval(18 * 3600)
+
+        case .completingNow:
+            // 15 seconds remaining: immediate test of completion wave & celebration
+            createdAt = Calendar.current.date(byAdding: .day, value: -30, to: now) ?? now
+            targetDate = now.addingTimeInterval(15)
+        }
+
+        if var mission = currentPillarMission {
+            mission.createdAt = createdAt
+            mission.targetDate = targetDate
+            mission.isActive = true
+            self.currentPillarMission = mission
+        } else {
+            createMission(
+                title: "Launch Milestone v1.0",
+                targetDate: targetDate,
+                todos: [
+                    TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
+                    TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false),
+                    TodoTask(id: "3", text: "Publish Launch Announcement", done: false)
+                ]
+            )
+            if var newM = currentPillarMission {
+                newM.createdAt = createdAt
+                self.currentPillarMission = newM
+            }
+        }
+        syncToWidget()
+    }
+    #endif
+
     private func saveActiveMission() {
         if let mission = activeMission {
             if let encoded = try? encoder.encode(mission) {

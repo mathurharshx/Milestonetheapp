@@ -222,6 +222,87 @@ public struct SettingsTabView: View {
 
                     Divider().overlay(theme.divider)
 
+                    // ── Mission Test Mode (Simulator Only) ──
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Mission Test Mode (Simulator)")
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundStyle(theme.textPrimary)
+
+                                Text("Test dot matrix, horizon tracks, & animations")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundStyle(theme.accent)
+                            }
+
+                            Spacer()
+
+                            Toggle("", isOn: Binding(
+                                get: { userStore.isMissionTestModeEnabled },
+                                set: { newValue in
+                                    userStore.isMissionTestModeEnabled = newValue
+                                    HapticsManager.shared.impact(.light)
+                                    if newValue {
+                                        missionStore.applyTestPreset(userStore.selectedMissionTestPreset)
+                                    }
+                                }
+                            ))
+                            .labelsHidden()
+                            .tint(Color(uiColor: .systemGreen))
+                        }
+
+                        if userStore.isMissionTestModeEnabled {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("ACTIVE SCENARIO")
+                                    .font(.system(size: 9, weight: .heavy))
+                                    .tracking(1.5)
+                                    .foregroundStyle(theme.textTertiary)
+
+                                Picker("Scenario", selection: Binding(
+                                    get: { userStore.selectedMissionTestPreset },
+                                    set: { newPreset in
+                                        userStore.selectedMissionTestPreset = newPreset
+                                        missionStore.applyTestPreset(newPreset)
+                                        HapticsManager.shared.impact(.medium)
+                                    }
+                                )) {
+                                    ForEach(MissionTestPreset.allCases) { preset in
+                                        Text(preset.rawValue).tag(preset)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .tint(theme.accent)
+                                .padding(8)
+                                .background(theme.surfaceLight.opacity(0.6))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                                Button {
+                                    missionStore.applyTestPreset(userStore.selectedMissionTestPreset)
+                                    userStore.selectedTab = .mission
+                                    HapticsManager.shared.notification(.success)
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "play.circle.fill")
+                                        Text("Apply & Open Mission Runway")
+                                            .font(.system(size: 13, weight: .semibold))
+                                    }
+                                    .foregroundStyle(theme.accent)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(theme.accent.opacity(0.3), lineWidth: 1)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(.top, 4)
+                        }
+                    }
+                    .padding(.vertical, 14)
+
+                    Divider().overlay(theme.divider)
+
                     Button {
                         HapticsManager.shared.notification(.success)
                         let target = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()

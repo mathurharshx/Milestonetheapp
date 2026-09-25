@@ -55,6 +55,48 @@ public struct MissionTabView: View {
                         isAscending: isAscendingToVault,
                         missionCategory: mission.category
                     ) {
+#if DEBUG
+                        if userStore.isMissionTestModeEnabled {
+                            Menu {
+                                ForEach(MissionTestPreset.allCases) { preset in
+                                    Button {
+                                        userStore.selectedMissionTestPreset = preset
+                                        missionStore.applyTestPreset(preset)
+                                        HapticsManager.shared.impact(.light)
+                                    } label: {
+                                        HStack {
+                                            Text(preset.rawValue)
+                                            if userStore.selectedMissionTestPreset == preset {
+                                                Image(systemName: "checkmark")
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                HStack(spacing: 5) {
+                                    Circle()
+                                        .fill(Color(uiColor: .systemGreen))
+                                        .frame(width: 5, height: 5)
+                                    Text("TEST: \(userStore.selectedMissionTestPreset.title)")
+                                        .font(.system(size: 8.5, weight: .heavy))
+                                        .tracking(1.0)
+                                        .foregroundStyle(theme.accent)
+                                    Image(systemName: "chevron.up.chevron.down")
+                                        .font(.system(size: 7, weight: .bold))
+                                        .foregroundStyle(theme.textTertiary)
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(
+                                    Capsule()
+                                        .stroke(theme.accent.opacity(0.4), lineWidth: 1)
+                                        .background(Capsule().fill(theme.surfaceLight.opacity(0.8)))
+                                )
+                            }
+                            .padding(.top, 4)
+                        }
+#endif
+
                         // Mission Title
                         Text(mission.title)
                             .font(.system(size: 28, weight: .medium))
