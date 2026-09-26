@@ -31,8 +31,13 @@ public struct PaywallSheet: View {
     @State private var showAlert: Bool = false
     @State private var showCelebration: Bool = false
 
-    public init(initialFeature: PremiumFeature? = nil) {
+    var isEmbedded: Bool = false
+    var onContinueFree: (() -> Void)? = nil
+
+    public init(initialFeature: PremiumFeature? = nil, isEmbedded: Bool = false, onContinueFree: (() -> Void)? = nil) {
         _expandedFeature = State(initialValue: initialFeature)
+        self.isEmbedded = isEmbedded
+        self.onContinueFree = onContinueFree
     }
 
     private var annualProduct: Product? {
@@ -103,22 +108,37 @@ public struct PaywallSheet: View {
 
                     Spacer()
 
-                    Button {
-                        HapticsManager.shared.impact(.light)
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 24, weight: .medium))
-                            .foregroundStyle(theme.textTertiary.opacity(0.7))
+                    if !isEmbedded {
+                        Button {
+                            HapticsManager.shared.impact(.light)
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 24, weight: .medium))
+                                .foregroundStyle(theme.textTertiary.opacity(0.7))
+                        }
+                    } else if let onContinue = onContinueFree {
+                        Button {
+                            HapticsManager.shared.impact(.light)
+                            onContinue()
+                        } label: {
+                            Text("SKIP")
+                                .font(.system(size: 11, weight: .bold))
+                                .tracking(1.5)
+                                .foregroundStyle(theme.textTertiary)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Capsule().fill(theme.surfaceLight.opacity(0.6)))
+                        }
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.top, isEmbedded ? 8 : 16)
                 .padding(.bottom, 6)
 
                 // ── Scrollable Content Area ──
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 14) {
+                    VStack(spacing: 16) {
                         // Title
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Master your focus.")
@@ -131,7 +151,6 @@ public struct PaywallSheet: View {
                                 .foregroundStyle(theme.textSecondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 4)
                         .padding(.top, 2)
 
                         // ── 1. Underline Tab Switcher: ANNUAL (1st & Default) & MONTHLY (2nd Decoy) ──
@@ -157,20 +176,19 @@ public struct PaywallSheet: View {
                                 .fill(theme.border.opacity(0.35))
                                 .frame(height: 1)
                         }
-                        .padding(.horizontal, 4)
 
                         // ── 2. Interactive Bento Grid of Features (4 Pillars) ──
                         VStack(spacing: 10) {
-                            // Bento 1: Flagship Dual-Pillar & Dot Matrix Widgets (Hero)
+                            // Bento 1: Flagship Dual-Pillar & Dedicated Work/Personal Dot Matrix Widgets (Hero)
                             bentoCard(
                                 feature: .widgets,
                                 icon: "square.grid.2x2.fill",
                                 iconColor: theme.accent,
-                                title: "Dual-Pillar & Dot Matrix Widgets",
-                                badge: "HOME & LOCK SCREEN",
+                                title: "Work & Personal Dot Matrix Widgets",
+                                badge: "CLEAN COUNTDOWNS",
                                 badgeColor: theme.accent,
-                                summary: "Unlock the Large Dual-Pillar widget (Work + Personal side-by-side) & burning dot countdowns.",
-                                detail: "Display Work and Personal countdowns together on iOS 18 with 1:1 burning runway dots. Includes interactive lock screen circular rings, rectangular runway strips, and desktop-grade Home Screen matrices."
+                                summary: "Ultra-clean Work & Personal dot matrix widgets + Large Dual-Pillar home screen view.",
+                                detail: "Display Work and Personal countdowns with pure burning runway dots and remaining days. Includes dedicated minimalist Work and Personal Home Screen widgets, interactive Lock Screen rings, and side-by-side matrices."
                             )
 
                             // Bento 2: ADHD Focus Soundscapes
@@ -212,10 +230,9 @@ public struct PaywallSheet: View {
                                 )
                             }
                         }
-                        .padding(.horizontal, 2)
 
                         // ── 3. Dynamic Pricing Display ──
-                        VStack(spacing: 4) {
+                        VStack(spacing: 6) {
                             if selectedPeriod == .monthly {
                                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                                     Text(monthlyProduct?.displayPrice ?? "$3.99")
@@ -230,6 +247,7 @@ public struct PaywallSheet: View {
                                 Text("Billed monthly. Cancel anytime in App Store settings.")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(theme.textTertiary)
+                                    .multilineTextAlignment(.center)
                             } else if selectedPeriod == .annual {
                                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                                     Text(annualProduct?.displayPrice ?? "$29.99")
@@ -241,13 +259,14 @@ public struct PaywallSheet: View {
                                         .foregroundStyle(theme.textSecondary)
 
                                     Text(annualPerMonthString)
-                                        .font(.system(size: 13, weight: .semibold))
+                                        .font(.system(size: 13, weight: .bold))
                                         .foregroundStyle(theme.accent)
                                 }
 
                                 Text("Includes 3-day free trial. Cancel anytime in App Store before trial ends.")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(theme.textTertiary)
+                                    .multilineTextAlignment(.center)
                             } else {
                                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                                     Text(lifetimeProduct?.displayPrice ?? "$39.99")
@@ -262,9 +281,11 @@ public struct PaywallSheet: View {
                                 Text("Pay once. Never pay again. All current and future updates included forever.")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(theme.textTertiary)
+                                    .multilineTextAlignment(.center)
                             }
                         }
-                        .padding(.vertical, 4)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
 
                         // ── 4. Highlighted Lifetime Pass Look Below ──
                         Button {
@@ -286,7 +307,7 @@ public struct PaywallSheet: View {
                                     .font(.system(size: 12, weight: .bold))
                                     .foregroundStyle(theme.textPrimary)
 
-                                Text("Pay \(lifetimeProduct?.displayPrice ?? "$39.99") once for lifetime access")
+                                Text("Pay \(lifetimeProduct?.displayPrice ?? "$39.99") once")
                                     .font(.system(size: 12, weight: .regular))
                                     .foregroundStyle(theme.textSecondary)
 
@@ -308,7 +329,7 @@ public struct PaywallSheet: View {
                                 }
                             }
                             .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 12)
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(selectedPeriod == .lifetime ? theme.accent.opacity(0.12) : theme.surfaceLight.opacity(0.5))
@@ -319,14 +340,14 @@ public struct PaywallSheet: View {
                             )
                         }
                         .buttonStyle(.plain)
-                        .padding(.bottom, 12)
+                        .padding(.bottom, isEmbedded ? 8 : 12)
                     }
                     .padding(.horizontal, 20)
                 }
             }
             .safeAreaInset(edge: .bottom) {
                 // ── 5. App Store Review Compliant Grounded Bottom Bar ──
-                VStack(spacing: 10) {
+                VStack(spacing: 8) {
                     Button {
                         handlePurchase()
                     } label: {
@@ -350,6 +371,18 @@ public struct PaywallSheet: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(isPurchasing)
+
+                    if isEmbedded, let onContinue = onContinueFree {
+                        Button {
+                            HapticsManager.shared.impact(.light)
+                            onContinue()
+                        } label: {
+                            Text("Continue with Free Plan")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(theme.textSecondary)
+                                .padding(.vertical, 4)
+                        }
+                    }
 
                     // App Store Compliant Legal & Restore Links
                     HStack(spacing: 14) {
@@ -379,8 +412,8 @@ public struct PaywallSheet: View {
                     .foregroundStyle(theme.textTertiary)
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 12)
-                .padding(.bottom, 10)
+                .padding(.top, 10)
+                .padding(.bottom, 8)
                 .background(
                     theme.background
                         .shadow(color: Color.black.opacity(0.5), radius: 12, y: -4)

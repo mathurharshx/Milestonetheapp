@@ -76,7 +76,7 @@ struct MilestoneDotMatrixWidgetView: View {
 
     // ── Helper for Burning Dot Matrix Rendering ──
     @ViewBuilder
-    private func dotView(index: Int, elapsedSampled: Int, dotSize: CGFloat) -> some View {
+    public static func renderDot(index: Int, elapsedSampled: Int, dotSize: CGFloat) -> some View {
         if index < elapsedSampled {
             // Passed day: clearly defined, muted silver/graphite dot (crisply visible on dark background)
             Circle()
@@ -100,6 +100,10 @@ struct MilestoneDotMatrixWidgetView: View {
                 .fill(Color.white)
                 .frame(width: dotSize, height: dotSize)
         }
+    }
+
+    private func dotView(index: Int, elapsedSampled: Int, dotSize: CGFloat) -> some View {
+        Self.renderDot(index: index, elapsedSampled: elapsedSampled, dotSize: dotSize)
     }
 
     // ── Small Widget (2x2 Matrix) ──
@@ -358,19 +362,14 @@ struct MilestoneDotMatrixWidgetView: View {
             let pTotal = WidgetDateCalculations.totalDays(createdAt: pCreatedDate, targetDate: pTargetDate)
             let pElapsed = WidgetDateCalculations.daysElapsed(createdAt: pCreatedDate, asOf: entry.date)
 
-            // Dynamic 1:1 Matrix Engine:
-            // For missions up to 84 days (including 65-day runways), render exactly 1 dot per day!
-            // Above 84 days, smoothly sample to keep layout crisp.
             let (dotCount, dotCols, dotSize, dotSpacing): (Int, Int, CGFloat, CGFloat) = {
                 if pTotal <= 36 {
                     return (pTotal, 6, 6.5, 4.5)
                 } else if pTotal <= 56 {
                     return (pTotal, 7, 5.8, 3.8)
                 } else if pTotal <= 84 {
-                    // Perfect for 65-day missions: 7 columns x 10 rows (up to 70-84 dots)
                     return (pTotal, 7, 5.4, 3.6)
                 } else {
-                    // Long-range runway: sample 70 dots
                     return (70, 7, 5.4, 3.6)
                 }
             }()
@@ -397,7 +396,7 @@ struct MilestoneDotMatrixWidgetView: View {
                 }
                 .padding(.bottom, 6)
 
-                // Pure Dot Matrix (No dark rounded box behind dots)
+                // Pure Dot Matrix
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: dotSpacing), count: dotCols), spacing: dotSpacing) {
                     ForEach(0..<dotCount, id: \.self) { i in
                         dotView(index: i, elapsedSampled: elapsedSampled, dotSize: dotSize)
@@ -535,6 +534,324 @@ struct MilestoneDotMatrixWidgetView: View {
     }
 }
 
+// ─────────────────────────────────────────────────────────────
+// MARK: - Dedicated Clean Pillar Dot Matrix View (Dots + Days Remaining Only)
+// ─────────────────────────────────────────────────────────────
+public struct CleanPillarDotMatrixView: View {
+    let entry: DotMatrixEntry
+    let pillar: String // "work" | "personal"
+    @Environment(\.widgetFamily) var family
+
+    private var isPersonal: Bool { pillar == "personal" }
+
+    private var payload: MissionWidgetPayload? {
+        if isPersonal {
+            if let p = entry.data.personalMissionPayload { return p }
+            if entry.data.missionCategory == "personal", let t = entry.data.missionTitle, let target = entry.data.missionTargetDate, let created = entry.data.missionCreatedAt {
+                return MissionWidgetPayload(title: t, targetDate: target, createdAt: created, category: "personal")
+            }
+            return nil
+        } else {
+            if let w = entry.data.workMissionPayload { return w }
+            if entry.data.missionCategory != "personal", let t = entry.data.missionTitle, let target = entry.data.missionTargetDate, let created = entry.data.missionCreatedAt {
+                return MissionWidgetPayload(title: t, targetDate: target, createdAt: created, category: "work")
+            }
+            return nil
+        }
+    }
+
+    private var daysRemaining: Int {
+        guard let p = payload else { return 0 }
+        let target = Date(timeIntervalSince1970: p.targetDate)
+        return WidgetDateCalculations.daysRemaining(targetDate: target, asOf: entry.date)
+    }
+
+    private var totalDays: Int {
+        guard let p = payload else { return 30 }
+        let created = Date(timeIntervalSince1970: p.createdAt)
+        let target = Date(timeIntervalSince1970: p.targetDate)
+        return WidgetDateCalculations.totalDays(createdAt: created, targetDate: target)
+    }
+
+    private var daysElapsed: Int {
+        guard let p = payload else { return 0 }
+        let created = Date(timeIntervalSince1970: p.createdAt)
+        return WidgetDateCalculations.daysElapsed(createdAt: created, asOf: entry.date)
+    }
+
+    public var body: some View {
+        Group {
+            if isPersonal && !entry.data.isProUser {
+                lockedProView
+            } else if let _ = payload {
+                switch family {
+                case .systemSmall:
+                    cleanSmallView
+                case .systemMedium:
+                    cleanMediumView
+                case .accessoryRectangular:
+                    cleanAccessoryRectangularView
+                case .accessoryCircular:
+                    cleanAccessoryCircularView
+                default:
+                    cleanSmallView
+                }
+            } else {
+                emptyPillarView
+            }
+        }
+        .widgetURL(URL(string: isPersonal ? "milestone://personal" : "milestone://mission"))
+    }
+
+    // ── Pure Minimalist Small: Only Dots + Days Remaining ──
+    private var cleanSmallView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header: Clean Glowing Dot Indicator + Days Remaining
+            HStack(spacing: 5) {
+                Circle()
+                    .fill(isPersonal ? Color(red: 0x10/255.0, green: 0xB9/255.0, blue: 0x81/255.0) : Color.white)
+                    .frame(width: 5, height: 5)
+
+                Text("\(daysRemaining) DAYS REMAINING")
+                    .font(.system(size: 8.5, weight: .heavy))
+                    .tracking(1.4)
+                    .foregroundStyle(entry.data.textSecondaryColor)
+
+                Spacer()
+            }
+            .padding(.bottom, 12)
+
+            // Centered Pure Dot Matrix
+            let (dotCount, dotCols, dotSize, dotSpacing): (Int, Int, CGFloat, CGFloat) = {
+                if totalDays <= 30 {
+                    return (totalDays, 5, 7.4, 5.2)
+                } else if totalDays <= 48 {
+                    return (totalDays, 6, 6.4, 4.2)
+                } else if totalDays <= 65 {
+                    return (totalDays, 7, 5.8, 3.8)
+                } else {
+                    return (48, 6, 6.4, 4.2)
+                }
+            }()
+            let elapsedSampled = totalDays > 0 ? (dotCount == totalDays ? daysElapsed : Int((Double(daysElapsed) / Double(totalDays)) * Double(dotCount))) : 0
+
+            Spacer(minLength: 0)
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: dotSpacing), count: dotCols), spacing: dotSpacing) {
+                ForEach(0..<dotCount, id: \.self) { i in
+                    MilestoneDotMatrixWidgetView.renderDot(index: i, elapsedSampled: elapsedSampled, dotSize: dotSize)
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .containerBackground(for: .widget) {
+            entry.data.backgroundColor
+        }
+    }
+
+    // ── Pure Minimalist Medium: Clean Left Countdown + Dense Dot Matrix ──
+    private var cleanMediumView: some View {
+        HStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 5) {
+                    Circle()
+                        .fill(isPersonal ? Color(red: 0x10/255.0, green: 0xB9/255.0, blue: 0x81/255.0) : Color.white)
+                        .frame(width: 5, height: 5)
+
+                    Text(isPersonal ? "PERSONAL" : "WORK")
+                        .font(.system(size: 8.5, weight: .heavy))
+                        .tracking(2.2)
+                        .foregroundStyle(entry.data.textSecondaryColor)
+                }
+
+                Spacer()
+
+                Text("\(daysRemaining)")
+                    .font(.system(size: 44, weight: .black))
+                    .tracking(-1.5)
+                    .foregroundStyle(entry.data.textPrimaryColor)
+
+                Text("DAYS REMAINING")
+                    .font(.system(size: 9, weight: .heavy))
+                    .tracking(1.6)
+                    .foregroundStyle(entry.data.textSecondaryColor)
+
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            // Right Dot Matrix
+            let (medDotCount, medCols, medDotSize, medSpacing): (Int, Int, CGFloat, CGFloat) = {
+                if totalDays <= 50 {
+                    return (totalDays, 10, 6.5, 4.4)
+                } else if totalDays <= 80 {
+                    return (totalDays, 10, 5.8, 3.8)
+                } else {
+                    return (70, 10, 5.8, 3.8)
+                }
+            }()
+            let medElapsedSampled = totalDays > 0 ? (medDotCount == totalDays ? daysElapsed : Int((Double(daysElapsed) / Double(totalDays)) * Double(medDotCount))) : 0
+
+            VStack(alignment: .trailing) {
+                Spacer()
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: medSpacing), count: medCols), spacing: medSpacing) {
+                    ForEach(0..<medDotCount, id: \.self) { i in
+                        MilestoneDotMatrixWidgetView.renderDot(index: i, elapsedSampled: medElapsedSampled, dotSize: medDotSize)
+                    }
+                }
+                .frame(width: 154)
+                Spacer()
+            }
+        }
+        .padding(18)
+        .containerBackground(for: .widget) {
+            entry.data.backgroundColor
+        }
+    }
+
+    // ── Accessory Rectangular ──
+    private var cleanAccessoryRectangularView: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack {
+                Text(isPersonal ? "PERSONAL" : "WORK")
+                    .font(.system(size: 10, weight: .heavy))
+                    .tracking(1.5)
+
+                Spacer()
+
+                Text("\(daysRemaining)d")
+                    .font(.system(size: 13, weight: .black))
+            }
+
+            let sampleCount = 16
+            let elapsedSampled = totalDays > 0 ? Int((Double(daysElapsed) / Double(totalDays)) * Double(sampleCount)) : 0
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 8), spacing: 3) {
+                ForEach(0..<sampleCount, id: \.self) { i in
+                    Circle()
+                        .fill(i < elapsedSampled ? Color.white.opacity(0.24) : Color.white)
+                        .frame(width: 4.5, height: 4.5)
+                }
+            }
+            .padding(.top, 2)
+        }
+        .containerBackground(for: .widget) {
+            Color.clear
+        }
+    }
+
+    // ── Accessory Circular ──
+    private var cleanAccessoryCircularView: some View {
+        ZStack {
+            AccessoryWidgetBackground()
+
+            let remainingRatio = totalDays > 0 ? min(1.0, Double(daysRemaining) / Double(totalDays)) : 1.0
+
+            Circle()
+                .stroke(Color.white.opacity(0.20), lineWidth: 3.5)
+                .frame(width: 44, height: 44)
+
+            Circle()
+                .trim(from: 0, to: CGFloat(max(0.02, remainingRatio)))
+                .stroke(Color.white, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .frame(width: 44, height: 44)
+
+            VStack(spacing: -1) {
+                Text("\(daysRemaining)")
+                    .font(.system(size: 14, weight: .black))
+                    .foregroundStyle(Color.white)
+
+                Text(isPersonal ? "PERS" : "DAYS")
+                    .font(.system(size: 7, weight: .heavy))
+                    .tracking(0.5)
+                    .foregroundStyle(Color.white.opacity(0.7))
+            }
+        }
+        .containerBackground(for: .widget) {
+            Color.clear
+        }
+    }
+
+    // ── Pro Locked View for Personal Widget ──
+    private var lockedProView: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(Color(red: 0x10/255.0, green: 0xB9/255.0, blue: 0x81/255.0))
+                    .frame(width: 5, height: 5)
+                Text("PERSONAL")
+                    .font(.system(size: 8.5, weight: .heavy))
+                    .tracking(1.8)
+                    .foregroundStyle(entry.data.textSecondaryColor)
+                Spacer()
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0))
+            }
+
+            Spacer()
+
+            Image(systemName: "crown.fill")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0))
+
+            Text("MILESTONE PRO")
+                .font(.system(size: 10.5, weight: .black))
+                .tracking(1.2)
+                .foregroundStyle(entry.data.textPrimaryColor)
+
+            Text("Personal pillar countdown requires Milestone Pro.")
+                .font(.system(size: 8.5, weight: .medium))
+                .multilineTextAlignment(.center)
+                .foregroundStyle(entry.data.textSecondaryColor)
+
+            Spacer()
+        }
+        .padding(14)
+        .containerBackground(for: .widget) {
+            entry.data.backgroundColor
+        }
+    }
+
+    // ── Empty State View ──
+    private var emptyPillarView: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(isPersonal ? Color(red: 0x10/255.0, green: 0xB9/255.0, blue: 0x81/255.0) : Color.white)
+                    .frame(width: 5, height: 5)
+                Text(isPersonal ? "PERSONAL" : "WORK")
+                    .font(.system(size: 8.5, weight: .heavy))
+                    .tracking(1.8)
+                    .foregroundStyle(entry.data.textSecondaryColor)
+                Spacer()
+            }
+
+            Spacer()
+
+            Image(systemName: isPersonal ? "leaf.fill" : "briefcase.fill")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(entry.data.textTertiaryColor)
+
+            Text("No Active \(isPersonal ? "Personal" : "Work") Mission")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(entry.data.textSecondaryColor)
+
+            Spacer()
+        }
+        .padding(14)
+        .containerBackground(for: .widget) {
+            entry.data.backgroundColor
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// MARK: - Widget Structs
+// ─────────────────────────────────────────────────────────────
+
 public struct MilestoneDotMatrixWidget: Widget {
     public let kind: String = "MilestoneDotMatrixWidget"
 
@@ -549,3 +866,34 @@ public struct MilestoneDotMatrixWidget: Widget {
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryRectangular, .accessoryCircular])
     }
 }
+
+public struct MilestoneWorkDotMatrixWidget: Widget {
+    public let kind: String = "MilestoneWorkDotMatrixWidget"
+
+    public init() {}
+
+    public var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: DotMatrixProvider()) { entry in
+            CleanPillarDotMatrixView(entry: entry, pillar: "work")
+        }
+        .configurationDisplayName("Work Countdown")
+        .description("Ultra-clean dots and days remaining for your active Work mission.")
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryCircular])
+    }
+}
+
+public struct MilestonePersonalDotMatrixWidget: Widget {
+    public let kind: String = "MilestonePersonalDotMatrixWidget"
+
+    public init() {}
+
+    public var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: DotMatrixProvider()) { entry in
+            CleanPillarDotMatrixView(entry: entry, pillar: "personal")
+        }
+        .configurationDisplayName("Personal Countdown")
+        .description("Ultra-clean dots and days remaining for your active Personal mission (Milestone Pro).")
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryCircular])
+    }
+}
+

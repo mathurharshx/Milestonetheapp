@@ -193,43 +193,12 @@ public struct OnboardingView: View {
                     .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                 } else if step == 4 {
                     // ── Step 4: The Onboarding Hard Paywall ──
-                    VStack(spacing: 0) {
-                        // Skip header
-                        HStack {
-                            Spacer()
-                            Button {
-                                HapticsManager.shared.impact(.light)
-                                finishOnboarding()
-                            } label: {
-                                Text("SKIP")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .tracking(1.5)
-                                    .foregroundStyle(theme.textTertiary)
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        Capsule().fill(theme.surfaceLight.opacity(0.6))
-                                    )
-                            }
+                    PaywallSheet(
+                        isEmbedded: true,
+                        onContinueFree: {
+                            finishOnboarding()
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 14)
-
-                        // Embedded Paywall Sheet with completion
-                        PaywallSheet()
-                            .overlay(alignment: .bottom) {
-                                Button {
-                                    HapticsManager.shared.impact(.light)
-                                    finishOnboarding()
-                                } label: {
-                                    Text("Continue with Free Plan")
-                                        .font(.system(size: 11, weight: .medium))
-                                        .foregroundStyle(theme.textTertiary)
-                                        .padding(.bottom, 6)
-                                }
-                                .offset(y: 20)
-                            }
-                    }
+                    )
                     .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .opacity))
                 }
             }
