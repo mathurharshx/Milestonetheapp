@@ -250,7 +250,7 @@ public struct PaywallSheet: View {
                                     .foregroundStyle(theme.textTertiary)
                             } else {
                                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                    Text(lifetimeProduct?.displayPrice ?? "$49.99")
+                                    Text(lifetimeProduct?.displayPrice ?? "$39.99")
                                         .font(.system(size: 26, weight: .heavy))
                                         .foregroundStyle(theme.textPrimary)
 
@@ -286,7 +286,7 @@ public struct PaywallSheet: View {
                                     .font(.system(size: 12, weight: .bold))
                                     .foregroundStyle(theme.textPrimary)
 
-                                Text("Pay \(lifetimeProduct?.displayPrice ?? "$49.99") once for lifetime access")
+                                Text("Pay \(lifetimeProduct?.displayPrice ?? "$39.99") once for lifetime access")
                                     .font(.system(size: 12, weight: .regular))
                                     .foregroundStyle(theme.textSecondary)
 
@@ -544,7 +544,7 @@ public struct PaywallSheet: View {
         switch selectedPeriod {
         case .monthly: return "UPGRADE TO PRO — \(monthlyProduct?.displayPrice ?? "$4.99")"
         case .annual: return "START 3-DAY FREE TRIAL"
-        case .lifetime: return "GET LIFETIME ACCESS — \(lifetimeProduct?.displayPrice ?? "$49.99")"
+        case .lifetime: return "GET LIFETIME ACCESS — \(lifetimeProduct?.displayPrice ?? "$39.99")"
         }
     }
 

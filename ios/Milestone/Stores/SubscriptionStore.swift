@@ -13,7 +13,7 @@ public enum SubscriptionTier: String, CaseIterable, Identifiable {
         switch self {
         case .monthly: return "$3.99/mo"
         case .annual: return "$29.99/yr"
-        case .lifetime: return "$49.99"
+        case .lifetime: return "$39.99"
         }
     }
 
