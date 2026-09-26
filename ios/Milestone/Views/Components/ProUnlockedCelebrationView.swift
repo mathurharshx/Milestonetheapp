@@ -4,10 +4,8 @@ public struct ProUnlockedCelebrationView: View {
     public let onDismiss: () -> Void
     @Environment(\.theme) private var theme
 
-    @State private var appearScale: CGFloat = 0.8
+    @State private var appearScale: CGFloat = 0.94
     @State private var appearOpacity: Double = 0.0
-    @State private var crownRotation: Double = -12.0
-    @State private var pulseAura: Bool = false
 
     public init(onDismiss: @escaping () -> Void) {
         self.onDismiss = onDismiss
@@ -15,105 +13,85 @@ public struct ProUnlockedCelebrationView: View {
 
     public var body: some View {
         ZStack {
-            // Dark Backdrop
-            Color.black.opacity(0.85)
+            // Ultra-Dark Minimalist Dimmer
+            Color.black.opacity(0.75)
                 .ignoresSafeArea()
 
-            // Glowing Ember Atmosphere
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0).opacity(pulseAura ? 0.35 : 0.15),
-                            Color.clear
-                        ],
-                        center: .center,
-                        startRadius: 20,
-                        endRadius: 180
-                    )
-                )
-                .frame(width: 320, height: 320)
-                .scaleEffect(pulseAura ? 1.15 : 0.95)
-
-            VStack(spacing: 20) {
-                // Crown Badge
+            VStack(spacing: 24) {
+                // Sleek Minimalist Badge
                 ZStack {
                     Circle()
-                        .fill(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0).opacity(0.18))
-                        .frame(width: 90, height: 90)
+                        .fill(theme.surfaceLight.opacity(0.5))
+                        .frame(width: 72, height: 72)
 
                     Circle()
-                        .stroke(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0).opacity(0.4), lineWidth: 1.5)
-                        .frame(width: 90, height: 90)
+                        .stroke(theme.border.opacity(0.35), lineWidth: 1)
+                        .frame(width: 72, height: 72)
 
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 40, weight: .bold))
-                        .foregroundStyle(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0))
-                        .rotationEffect(.degrees(crownRotation))
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundStyle(theme.textPrimary)
                 }
 
-                VStack(spacing: 6) {
-                    Text("PRO ACTIVATED")
-                        .font(.system(size: 11, weight: .heavy))
-                        .tracking(3.5)
-                        .foregroundStyle(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0))
+                // Professional Typography
+                VStack(spacing: 8) {
+                    Text("MILESTONE PRO")
+                        .font(.system(size: 10.5, weight: .bold))
+                        .tracking(2.5)
+                        .foregroundStyle(theme.accent)
 
-                    Text("Full Arsenal Unlocked")
-                        .font(.system(size: 26, weight: .bold))
-                        .tracking(-0.5)
-                        .foregroundStyle(Color.white)
+                    Text("Welcome to Pro")
+                        .font(.system(size: 23, weight: .bold))
+                        .tracking(-0.3)
+                        .foregroundStyle(theme.textPrimary)
 
-                    Text("Dual-Pillar Widgets, ADHD Soundscapes, Dual Missions, and Cold Vault are now fully at your command.")
+                    Text("All features, soundscapes, and dedicated widgets are now active.")
                         .font(.system(size: 13, weight: .regular))
                         .lineSpacing(3)
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(Color.white.opacity(0.65))
-                        .padding(.horizontal, 24)
-                        .padding(.top, 4)
+                        .foregroundStyle(theme.textSecondary)
+                        .padding(.horizontal, 16)
                 }
 
+                // Clean Primary Action
                 Button {
                     HapticsManager.shared.impact(.light)
                     onDismiss()
                 } label: {
-                    Text("BEGIN")
-                        .font(.system(size: 13, weight: .bold))
-                        .tracking(2.0)
-                        .foregroundStyle(Color.black)
+                    Text("CONTINUE")
+                        .font(.system(size: 12.5, weight: .bold))
+                        .tracking(1.8)
+                        .foregroundStyle(theme.background)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 52)
+                        .frame(height: 50)
                         .background(
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(Color.white)
+                                .fill(theme.accent)
                         )
                 }
                 .buttonStyle(.plain)
-                .padding(.horizontal, 32)
-                .padding(.top, 12)
+                .padding(.top, 6)
             }
             .padding(28)
             .background(
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(Color(red: 0x14/255.0, green: 0x14/255.0, blue: 0x16/255.0))
+                RoundedRectangle(cornerRadius: 22)
+                    .fill(theme.surface)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0).opacity(0.35), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 22)
+                    .stroke(theme.border.opacity(0.4), lineWidth: 1)
             )
             .scaleEffect(appearScale)
             .opacity(appearOpacity)
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 28)
         }
         .onAppear {
             HapticsManager.shared.notification(.success)
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.72)) {
+            withAnimation(.spring(response: 0.38, dampingFraction: 0.8)) {
                 appearScale = 1.0
                 appearOpacity = 1.0
-                crownRotation = 0.0
-            }
-            withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
-                pulseAura = true
             }
         }
     }
 }
+
