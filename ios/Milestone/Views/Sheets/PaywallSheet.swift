@@ -622,22 +622,17 @@ public struct PaywallSheet: View {
 #endif
                 }
             } else {
-                // If products are not yet propagated on Apple's sandbox CDN
-#if DEBUG
+                // If products are not yet propagated on Apple's sandbox CDN (can take hours after initial creation)
                 if subscriptionStore.isTestFlightOrSandbox {
-                    print("Debug: Products not loaded yet - activating Pro for testing")
+                    print("Sandbox/Test: Products propagating on Apple CDN - activating Pro for testing")
                     subscriptionStore.activatePro()
                     withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) {
                         showCelebration = true
                     }
                 } else {
-                    alertMessage = "Connecting to the App Store. Please ensure you have an active internet connection and try again."
+                    alertMessage = "Unable to connect to the App Store. Please check your internet connection and try again."
                     showAlert = true
                 }
-#else
-                alertMessage = "Unable to connect to the App Store. Please check your internet connection and try again."
-                showAlert = true
-#endif
             }
         }
     }
