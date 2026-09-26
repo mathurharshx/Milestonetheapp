@@ -13,11 +13,13 @@ public final class MissionStore {
     public var activePersonalMission: Mission? {
         didSet {
             saveActivePersonalMission()
+            syncToWidget()
         }
     }
     public var activePillar: MissionCategory = .work {
         didSet {
             UserDefaults.standard.set(activePillar.rawValue, forKey: activePillarKey)
+            syncToWidget()
         }
     }
 

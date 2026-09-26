@@ -4,6 +4,8 @@ public struct RootView: View {
     @Environment(UserStore.self) private var userStore
     @Environment(ThemeStore.self) private var themeStore
     @Environment(PomodoroStore.self) private var pomodoroStore
+    @Environment(MissionStore.self) private var missionStore
+    @Environment(SubscriptionStore.self) private var subscriptionStore
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
 
@@ -45,12 +47,17 @@ public struct RootView: View {
         .preferredColorScheme(.dark)
         .onAppear {
             themeStore.syncToWidget()
+            missionStore.syncToWidget()
             pomodoroStore.syncFromWidget()
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 themeStore.syncToWidget()
+                missionStore.syncToWidget()
                 pomodoroStore.syncFromWidget()
+                Task {
+                    await subscriptionStore.updateCustomerProductStatus()
+                }
             }
         }
         .onOpenURL { url in

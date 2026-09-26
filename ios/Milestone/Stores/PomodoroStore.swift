@@ -266,6 +266,7 @@ public final class PomodoroStore {
 
         let updated = MilestoneWidgetData(
             isDarkMode: existing.isDarkMode,
+            isProUser: existing.isProUser,
             pomodoroPhase: phase.rawValue,
             pomodoroTimeRemaining: timeRemaining,
             pomodoroTotalTime: totalTime,
@@ -276,9 +277,13 @@ public final class PomodoroStore {
             missionTitle: existing.missionTitle,
             missionTargetDate: existing.missionTargetDate,
             missionCreatedAt: existing.missionCreatedAt,
+            missionCategory: existing.missionCategory,
             missionTodosTotal: existing.missionTodosTotal,
             missionTodosDone: existing.missionTodosDone,
             topPendingTaskText: existing.topPendingTaskText,
+            topPendingTaskId: existing.topPendingTaskId,
+            workMissionPayload: existing.workMissionPayload,
+            personalMissionPayload: existing.personalMissionPayload,
             focusStreak: existing.focusStreak,
             todayFocusMinutes: existing.todayFocusMinutes,
             weeklyFocusLevels: existing.weeklyFocusLevels,
