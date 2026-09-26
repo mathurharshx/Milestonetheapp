@@ -141,12 +141,17 @@ struct MilestoneMissionWidgetView: View {
                     .tracking(-1)
                     .foregroundStyle(entry.data.textPrimaryColor)
 
-                Text("\(daysRemaining)D LEFT")
-                    .font(.system(size: 9.0, weight: .heavy))
-                    .tracking(1.8)
+                Text("DAYS REMAINING")
+                    .font(.system(size: 8.5, weight: .heavy))
+                    .tracking(1.5)
                     .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
+
+                Text(entry.data.missionTitle ?? "No active mission")
+                    .font(.system(size: 13, weight: .bold))
+                    .lineLimit(1)
+                    .foregroundStyle(entry.data.textPrimaryColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -258,6 +263,6 @@ public struct MilestoneMissionWidget: Widget {
         }
         .configurationDisplayName("Mission Card")
         .description("Track your active mission countdown and top priority task.")
-        .supportedFamilies([.systemMedium, .accessoryCircular, .accessoryInline])
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryInline])
     }
 }
