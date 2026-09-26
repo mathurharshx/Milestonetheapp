@@ -131,7 +131,7 @@ public struct MilestoneWidgetData: Codable {
 // ── Shared Color Palette Helper for Widgets ──
 extension MilestoneWidgetData {
     public var backgroundColor: Color {
-        isDarkMode ? Color(red: 0x0A/255.0, green: 0x0A/255.0, blue: 0x0A/255.0) : Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0)
+        isDarkMode ? Color(red: 0x0C/255.0, green: 0x0C/255.0, blue: 0x0E/255.0) : Color(red: 0xF2/255.0, green: 0xF2/255.0, blue: 0xF7/255.0)
     }
 
     public var surfaceColor: Color {

@@ -190,7 +190,9 @@ public struct MissionTabView: View {
                             .padding(.top, 8)
                             .padding(.bottom, 24)
                         }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .scrollIndicators(.hidden)
+                        .scrollDismissesKeyboard(.immediately)
                         .padding(.horizontal, 24)
                         .opacity(isCompletingAnimation ? 0.35 : 1.0)
                         .disabled(isCompletingAnimation)

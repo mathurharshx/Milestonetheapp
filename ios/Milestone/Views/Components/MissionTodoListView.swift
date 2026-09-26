@@ -673,20 +673,20 @@ private struct SwipeableTaskRow: View {
             }
         }
         .simultaneousGesture(
-            DragGesture(minimumDistance: 8, coordinateSpace: .local)
+            DragGesture(minimumDistance: 14, coordinateSpace: .local)
                 .onChanged { gesture in
                     guard !isReordering else { return }
                     let dx = gesture.translation.width
                     let dy = gesture.translation.height
 
-                    // Instant vertical escape hatch: If the user is scrolling vertically,
-                    // yield immediately so the ScrollView scrolls with zero resistance/dead spot.
+                    // Instant vertical escape hatch: If vertical travel exceeds horizontal,
+                    // yield immediately to parent ScrollView without dead scroll.
                     if !isHorizontalDrag {
-                        if abs(dy) > abs(dx) {
+                        if abs(dy) >= abs(dx) {
                             dragOffset = 0
                             return
                         }
-                        if abs(dx) > 6 && abs(dx) > abs(dy) {
+                        if abs(dx) > 10 && abs(dx) > abs(dy) * 1.3 {
                             isHorizontalDrag = true
                         } else {
                             return

@@ -102,36 +102,32 @@ struct MilestoneDotMatrixWidgetView: View {
     // ── Small Widget (2x2 Matrix) ──
     private var smallView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
-            HStack {
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: 5, height: 5)
-                    Text(isPersonal ? "PERSONAL" : "RUNWAY")
-                        .font(.system(size: 8.5, weight: .heavy))
-                        .tracking(2.0)
-                        .foregroundStyle(entry.data.textSecondaryColor)
-                }
+            // Header: Clean countdown indicator
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 5, height: 5)
 
-                Spacer()
-
-                Text("\(daysRemaining)D")
-                    .font(.system(size: 11, weight: .black))
-                    .foregroundStyle(entry.data.textPrimaryColor)
+                Text("\(daysRemaining) DAYS REMAINING")
+                    .font(.system(size: 8.5, weight: .heavy))
+                    .tracking(1.4)
+                    .foregroundStyle(entry.data.textSecondaryColor)
             }
-            .padding(.bottom, 8)
+            .padding(.bottom, 10)
 
-            // Dot Matrix (Adaptive 1:1 or sampled to fit bounds cleanly)
+            // Dot Matrix (Adaptive 1:1 with enlarged, highly legible dots)
             let (dotCount, dotCols, dotSize, dotSpacing): (Int, Int, CGFloat, CGFloat) = {
                 if totalDays <= 30 {
-                    return (totalDays, 6, 6.0, 4.0)
+                    // 5 cols x up to 6 rows: 7.2pt large dots
+                    return (totalDays, 5, 7.2, 5.0)
                 } else if totalDays <= 48 {
-                    return (totalDays, 6, 5.0, 3.5)
+                    // 6 cols x up to 8 rows: 6.2pt dots
+                    return (totalDays, 6, 6.2, 4.2)
                 } else if totalDays <= 65 {
-                    return (totalDays, 7, 4.5, 3.0)
+                    // 7 cols x up to 10 rows (ideal for 65-day mission): 5.6pt dots
+                    return (totalDays, 7, 5.6, 3.6)
                 } else {
-                    return (48, 6, 5.0, 3.5)
+                    return (48, 6, 6.2, 4.2)
                 }
             }()
             let elapsedSampled = totalDays > 0 ? (dotCount == totalDays ? daysElapsed : Int((Double(daysElapsed) / Double(totalDays)) * Double(dotCount))) : 0
@@ -142,20 +138,13 @@ struct MilestoneDotMatrixWidgetView: View {
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 4)
 
-            // Footer
-            VStack(alignment: .leading, spacing: 2) {
-                Text(entry.data.missionTitle ?? "Active Mission")
-                    .font(.system(size: 12, weight: .bold))
-                    .lineLimit(1)
-                    .foregroundStyle(entry.data.textPrimaryColor)
-
-                Text("\(daysRemaining) OF \(totalDays) DAYS LEFT")
-                    .font(.system(size: 7.5, weight: .heavy))
-                    .tracking(1.0)
-                    .foregroundStyle(entry.data.textTertiaryColor)
-            }
+            // Footer: Mission Name Only
+            Text(entry.data.missionTitle ?? "Active Mission")
+                .font(.system(size: 13, weight: .bold))
+                .lineLimit(1)
+                .foregroundStyle(entry.data.textPrimaryColor)
         }
         .padding(14)
         .containerBackground(for: .widget) {
@@ -207,12 +196,12 @@ struct MilestoneDotMatrixWidgetView: View {
             // Right Column: Dense Obsidian Matrix (Dynamic 1:1 up to 80 days)
             let (medDotCount, medCols, medDotSize, medSpacing): (Int, Int, CGFloat, CGFloat) = {
                 if totalDays <= 50 {
-                    return (totalDays, 10, 5.5, 4.0)
+                    return (totalDays, 10, 6.5, 4.2)
                 } else if totalDays <= 80 {
                     // Perfect for 65-day missions: 10 columns x 7 rows
-                    return (totalDays, 10, 4.8, 3.2)
+                    return (totalDays, 10, 5.8, 3.6)
                 } else {
-                    return (70, 10, 4.8, 3.2)
+                    return (70, 10, 5.8, 3.6)
                 }
             }()
             let medElapsedSampled = totalDays > 0 ? (medDotCount == totalDays ? daysElapsed : Int((Double(daysElapsed) / Double(totalDays)) * Double(medDotCount))) : 0
@@ -372,15 +361,15 @@ struct MilestoneDotMatrixWidgetView: View {
             // Above 84 days, smoothly sample to keep layout crisp.
             let (dotCount, dotCols, dotSize, dotSpacing): (Int, Int, CGFloat, CGFloat) = {
                 if pTotal <= 36 {
-                    return (pTotal, 6, 5.5, 4.0)
+                    return (pTotal, 6, 6.5, 4.5)
                 } else if pTotal <= 56 {
-                    return (pTotal, 7, 5.0, 3.5)
+                    return (pTotal, 7, 5.8, 3.8)
                 } else if pTotal <= 84 {
                     // Perfect for 65-day missions: 7 columns x 10 rows (up to 70-84 dots)
-                    return (pTotal, 7, 4.5, 3.2)
+                    return (pTotal, 7, 5.4, 3.6)
                 } else {
                     // Long-range runway: sample 70 dots
-                    return (70, 7, 4.5, 3.2)
+                    return (70, 7, 5.4, 3.6)
                 }
             }()
 
