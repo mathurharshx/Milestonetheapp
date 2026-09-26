@@ -141,17 +141,12 @@ struct MilestoneMissionWidgetView: View {
                     .tracking(-1)
                     .foregroundStyle(entry.data.textPrimaryColor)
 
-                Text("DAYS REMAINING")
-                    .font(.system(size: 8.5, weight: .heavy))
-                    .tracking(1.5)
+                Text("\(daysRemaining)D LEFT")
+                    .font(.system(size: 9.0, weight: .heavy))
+                    .tracking(1.8)
                     .foregroundStyle(entry.data.textSecondaryColor)
 
                 Spacer()
-
-                Text(entry.data.missionTitle ?? "No active mission")
-                    .font(.system(size: 13, weight: .bold))
-                    .lineLimit(1)
-                    .foregroundStyle(entry.data.textPrimaryColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
