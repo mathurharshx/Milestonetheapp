@@ -122,13 +122,23 @@ struct MilestoneDotMatrixWidgetView: View {
             }
             .padding(.bottom, 8)
 
-            // Dot Matrix (30 dots: 6 cols x 5 rows)
-            let sampleCount = min(30, max(12, totalDays))
-            let elapsedSampled = totalDays > 0 ? Int((Double(daysElapsed) / Double(totalDays)) * Double(sampleCount)) : 0
+            // Dot Matrix (Adaptive 1:1 or sampled to fit bounds cleanly)
+            let (dotCount, dotCols, dotSize, dotSpacing): (Int, Int, CGFloat, CGFloat) = {
+                if totalDays <= 30 {
+                    return (totalDays, 6, 6.0, 4.0)
+                } else if totalDays <= 48 {
+                    return (totalDays, 6, 5.0, 3.5)
+                } else if totalDays <= 65 {
+                    return (totalDays, 7, 4.5, 3.0)
+                } else {
+                    return (48, 6, 5.0, 3.5)
+                }
+            }()
+            let elapsedSampled = totalDays > 0 ? (dotCount == totalDays ? daysElapsed : Int((Double(daysElapsed) / Double(totalDays)) * Double(dotCount))) : 0
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 6), spacing: 4) {
-                ForEach(0..<sampleCount, id: \.self) { i in
-                    dotView(index: i, elapsedSampled: elapsedSampled, dotSize: 6)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: dotSpacing), count: dotCols), spacing: dotSpacing) {
+                ForEach(0..<dotCount, id: \.self) { i in
+                    dotView(index: i, elapsedSampled: elapsedSampled, dotSize: dotSize)
                 }
             }
 
@@ -194,17 +204,26 @@ struct MilestoneDotMatrixWidgetView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            // Right Column: Dense Obsidian Matrix (60 dots: 10 cols x 6 rows)
-            let sampleCount = 60
-            let elapsedSampled = totalDays > 0 ? Int((Double(daysElapsed) / Double(totalDays)) * Double(sampleCount)) : 0
+            // Right Column: Dense Obsidian Matrix (Dynamic 1:1 up to 80 days)
+            let (medDotCount, medCols, medDotSize, medSpacing): (Int, Int, CGFloat, CGFloat) = {
+                if totalDays <= 50 {
+                    return (totalDays, 10, 5.5, 4.0)
+                } else if totalDays <= 80 {
+                    // Perfect for 65-day missions: 10 columns x 7 rows
+                    return (totalDays, 10, 4.8, 3.2)
+                } else {
+                    return (70, 10, 4.8, 3.2)
+                }
+            }()
+            let medElapsedSampled = totalDays > 0 ? (medDotCount == totalDays ? daysElapsed : Int((Double(daysElapsed) / Double(totalDays)) * Double(medDotCount))) : 0
 
             VStack(alignment: .trailing, spacing: 4) {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 10), spacing: 4) {
-                    ForEach(0..<sampleCount, id: \.self) { i in
-                        dotView(index: i, elapsedSampled: elapsedSampled, dotSize: 5.5)
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: medSpacing), count: medCols), spacing: medSpacing) {
+                    ForEach(0..<medDotCount, id: \.self) { i in
+                        dotView(index: i, elapsedSampled: medElapsedSampled, dotSize: medDotSize)
                     }
                 }
-                .frame(width: 145)
+                .frame(width: 150)
             }
         }
         .padding(16)
@@ -263,6 +282,9 @@ struct MilestoneDotMatrixWidgetView: View {
     }
 
     private var fallbackPersonalPayload: MissionWidgetPayload? {
+        // Strict Pro Gate: Non-Pro users never receive fallback personal payloads in widgets
+        guard entry.data.isProUser else { return nil }
+
         if entry.data.missionCategory == "personal", let title = entry.data.missionTitle, let target = entry.data.missionTargetDate, let created = entry.data.missionCreatedAt {
             return MissionWidgetPayload(
                 title: title,
@@ -286,7 +308,58 @@ struct MilestoneDotMatrixWidgetView: View {
         accentColor: Color,
         payload: MissionWidgetPayload?
     ) -> some View {
-        if let payload = payload {
+        if title == "PERSONAL" && !entry.data.isProUser {
+            // ── Pro Locked State for Free Users ──
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(accentColor.opacity(0.6))
+                        .frame(width: 5, height: 5)
+                    Text("PERSONAL")
+                        .font(.system(size: 8.5, weight: .heavy))
+                        .tracking(1.8)
+                        .foregroundStyle(entry.data.textSecondaryColor)
+
+                    Spacer()
+
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0))
+                }
+
+                Spacer()
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0))
+
+                    Text("MILESTONE PRO")
+                        .font(.system(size: 11, weight: .black))
+                        .tracking(1.0)
+                        .foregroundStyle(entry.data.textPrimaryColor)
+
+                    Text("Dual-Pillar Work & Personal parallel tracking requires Milestone Pro.")
+                        .font(.system(size: 8.5, weight: .medium))
+                        .lineSpacing(2)
+                        .foregroundStyle(entry.data.textSecondaryColor)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                HStack(spacing: 4) {
+                    Text("UPGRADE IN APP")
+                        .font(.system(size: 7.5, weight: .heavy))
+                        .tracking(1.2)
+                        .foregroundStyle(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0))
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 7, weight: .bold))
+                        .foregroundStyle(Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0))
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else if let payload = payload {
             let pDiff = Date(timeIntervalSince1970: payload.targetDate).timeIntervalSince(Date())
             let pRemaining = max(0, Int(ceil(pDiff / 86400.0)))
             let pTotalDiff = Date(timeIntervalSince1970: payload.targetDate).timeIntervalSince(Date(timeIntervalSince1970: payload.createdAt))
@@ -294,9 +367,24 @@ struct MilestoneDotMatrixWidgetView: View {
             let pElapsedDiff = Date().timeIntervalSince(Date(timeIntervalSince1970: payload.createdAt))
             let pElapsed = max(0, Int(floor(pElapsedDiff / 86400.0)))
 
-            // 36 dots (6 cols x 6 rows)
-            let sampleCount = 36
-            let elapsedSampled = pTotal > 0 ? Int((Double(pElapsed) / Double(pTotal)) * Double(sampleCount)) : 0
+            // Dynamic 1:1 Matrix Engine:
+            // For missions up to 84 days (including 65-day runways), render exactly 1 dot per day!
+            // Above 84 days, smoothly sample to keep layout crisp.
+            let (dotCount, dotCols, dotSize, dotSpacing): (Int, Int, CGFloat, CGFloat) = {
+                if pTotal <= 36 {
+                    return (pTotal, 6, 5.5, 4.0)
+                } else if pTotal <= 56 {
+                    return (pTotal, 7, 5.0, 3.5)
+                } else if pTotal <= 84 {
+                    // Perfect for 65-day missions: 7 columns x 10 rows (up to 70-84 dots)
+                    return (pTotal, 7, 4.5, 3.2)
+                } else {
+                    // Long-range runway: sample 70 dots
+                    return (70, 7, 4.5, 3.2)
+                }
+            }()
+
+            let elapsedSampled = pTotal > 0 ? (dotCount == pTotal ? pElapsed : Int((Double(pElapsed) / Double(pTotal)) * Double(dotCount))) : 0
 
             VStack(alignment: .leading, spacing: 0) {
                 // Header Bar
@@ -318,18 +406,14 @@ struct MilestoneDotMatrixWidgetView: View {
                 }
                 .padding(.bottom, 6)
 
-                // 36-Dot Matrix
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 6), spacing: 4) {
-                    ForEach(0..<sampleCount, id: \.self) { i in
-                        dotView(index: i, elapsedSampled: elapsedSampled, dotSize: 5.5)
+                // Pure Dot Matrix (No dark rounded box behind dots)
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: dotSpacing), count: dotCols), spacing: dotSpacing) {
+                    ForEach(0..<dotCount, id: \.self) { i in
+                        dotView(index: i, elapsedSampled: elapsedSampled, dotSize: dotSize)
                     }
                 }
-                .padding(.vertical, 6)
-                .padding(.horizontal, 2)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(entry.data.surfaceColor.opacity(0.35))
-                )
+                .padding(.vertical, 4)
+                .padding(.horizontal, 1)
 
                 Spacer(minLength: 4)
 

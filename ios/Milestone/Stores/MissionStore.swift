@@ -393,8 +393,11 @@ public final class MissionStore {
             )
         }
 
+        let isPro = UserDefaults.standard.bool(forKey: "milestone:isProUser")
+
         let updated = MilestoneWidgetData(
             isDarkMode: existing.isDarkMode,
+            isProUser: isPro,
             pomodoroPhase: existing.pomodoroPhase,
             pomodoroTimeRemaining: existing.pomodoroTimeRemaining,
             pomodoroTotalTime: existing.pomodoroTotalTime,

@@ -175,6 +175,15 @@ public final class SubscriptionStore {
 
         self.isProUser = hasActiveEntitlement
         UserDefaults.standard.set(hasActiveEntitlement, forKey: "milestone:isProUser")
+        syncProStateToWidgets()
+    }
+
+    private func syncProStateToWidgets() {
+        if var data = SharedWidgetStore.load() {
+            data.isProUser = self.isProUser
+            SharedWidgetStore.save(data)
+            SharedWidgetStore.reloadWidgetTimelines()
+        }
     }
 
     // ── 5. Real-time Transaction Listener ──
@@ -212,6 +221,7 @@ public final class SubscriptionStore {
         guard isTestFlightOrSandbox else { return }
         self.isProUser = true
         UserDefaults.standard.set(true, forKey: "milestone:isProUser")
+        syncProStateToWidgets()
         HapticsManager.shared.notification(.success)
     }
 
@@ -220,6 +230,7 @@ public final class SubscriptionStore {
         guard isTestFlightOrSandbox else { return }
         self.isProUser.toggle()
         UserDefaults.standard.set(isProUser, forKey: "milestone:isProUser")
+        syncProStateToWidgets()
         HapticsManager.shared.notification(.success)
     }
 }

@@ -67,11 +67,15 @@ public struct MilestoneWidgetData: Codable {
     public var quoteText: String?
     public var quoteAuthor: String?
 
+    // ── Pro Entitlement State ──
+    public var isProUser: Bool
+
     // ── Meta ──
     public var lastUpdated: Double          // Unix timestamp (seconds)
 
     public init(
         isDarkMode: Bool = true,
+        isProUser: Bool = false,
         pomodoroPhase: String = "focus",
         pomodoroTimeRemaining: Int = 1500,
         pomodoroTotalTime: Int = 1500,
@@ -97,6 +101,7 @@ public struct MilestoneWidgetData: Codable {
         lastUpdated: Double = Date().timeIntervalSince1970
     ) {
         self.isDarkMode = isDarkMode
+        self.isProUser = isProUser
         self.pomodoroPhase = pomodoroPhase
         self.pomodoroTimeRemaining = pomodoroTimeRemaining
         self.pomodoroTotalTime = pomodoroTotalTime
