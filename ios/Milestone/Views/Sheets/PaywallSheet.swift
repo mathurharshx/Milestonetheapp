@@ -605,9 +605,8 @@ public struct PaywallSheet: View {
                         }
                     }
                 } catch {
-#if DEBUG
                     if subscriptionStore.isTestFlightOrSandbox {
-                        print("Debug purchase fallback: \(error.localizedDescription) - activating Pro for testing")
+                        print("TestFlight/Sandbox purchase error: \(error.localizedDescription) - activating Pro for testing")
                         subscriptionStore.activatePro()
                         withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) {
                             showCelebration = true
@@ -616,10 +615,6 @@ public struct PaywallSheet: View {
                         alertMessage = error.localizedDescription
                         showAlert = true
                     }
-#else
-                    alertMessage = error.localizedDescription
-                    showAlert = true
-#endif
                 }
             } else {
                 // If products are not yet propagated on Apple's sandbox CDN (can take hours after initial creation)
