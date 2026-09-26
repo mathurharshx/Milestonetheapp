@@ -32,6 +32,7 @@
 		MS0088 /* VelocityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF088 /* VelocityCalculator.swift */; };
 		MS0089 /* VelocityReportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF089 /* VelocityReportSheet.swift */; };
 		MS0090 /* AliveDuneAtmosphereView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF090 /* AliveDuneAtmosphereView.swift */; };
+		MS0091 /* ProUnlockedCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF091 /* ProUnlockedCelebrationView.swift */; };
 		MS0017 /* CreateMissionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF017 /* CreateMissionSheet.swift */; };
 		MS0018 /* ProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF018 /* ProfileSheet.swift */; };
 		MS0019 /* QuoteModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF019 /* QuoteModalView.swift */; };
@@ -118,6 +119,7 @@
 		MSF088 /* VelocityCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VelocityCalculator.swift; sourceTree = "<group>"; };
 		MSF089 /* VelocityReportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VelocityReportSheet.swift; sourceTree = "<group>"; };
 		MSF090 /* AliveDuneAtmosphereView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AliveDuneAtmosphereView.swift; sourceTree = "<group>"; };
+		MSF091 /* ProUnlockedCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProUnlockedCelebrationView.swift; sourceTree = "<group>"; };
 		MSF017 /* CreateMissionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMissionSheet.swift; sourceTree = "<group>"; };
 		MSF018 /* ProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSheet.swift; sourceTree = "<group>"; };
 		MSF019 /* QuoteModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuoteModalView.swift; sourceTree = "<group>"; };
@@ -157,6 +159,7 @@
 		WGF010 /* MilestoneDotMatrixWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneDotMatrixWidget.swift; sourceTree = "<group>"; };
 		MSF086 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		WGF087 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		MSF092 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -199,6 +202,7 @@
 				MSF029 /* Info.plist */,
 				MSF030 /* Milestone.entitlements */,
 				MSF086 /* PrivacyInfo.xcprivacy */,
+				MSF092 /* Products.storekit */,
 			);
 			path = Milestone;
 			sourceTree = "<group>";
@@ -287,6 +291,7 @@
 				MSF080 /* VictoryCardView.swift */,
 				MSF087 /* KeystoneCardView.swift */,
 				MSF090 /* AliveDuneAtmosphereView.swift */,
+				MSF091 /* ProUnlockedCelebrationView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -475,6 +480,7 @@
 				MS0080 /* VictoryCardView.swift in Sources */,
 				MS0087 /* KeystoneCardView.swift in Sources */,
 				MS0090 /* AliveDuneAtmosphereView.swift in Sources */,
+				MS0091 /* ProUnlockedCelebrationView.swift in Sources */,
 				MS0081 /* SubscriptionStore.swift in Sources */,
 				MS0082 /* PaywallSheet.swift in Sources */,
 				MS0084 /* SoundscapeManager.swift in Sources */,

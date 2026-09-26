@@ -16,6 +16,7 @@ public struct PaywallSheet: View {
     }
 
     public enum PremiumFeature: String, Identifiable {
+        case widgets
         case soundscapes
         case vault
         case dualMissions
@@ -28,6 +29,7 @@ public struct PaywallSheet: View {
     @State private var isPurchasing: Bool = false
     @State private var alertMessage: String?
     @State private var showAlert: Bool = false
+    @State private var showCelebration: Bool = false
 
     public init(initialFeature: PremiumFeature? = nil) {
         _expandedFeature = State(initialValue: initialFeature)
@@ -132,21 +134,21 @@ public struct PaywallSheet: View {
                         .padding(.horizontal, 4)
                         .padding(.top, 2)
 
-                        // ── 1. Underline Tab Switcher: MONTHLY (1st) & ANNUAL (2nd) ──
+                        // ── 1. Underline Tab Switcher: ANNUAL (1st & Default) & MONTHLY (2nd Decoy) ──
                         VStack(spacing: 0) {
                             HStack(spacing: 0) {
-                                // Monthly Tab (First)
+                                // Annual Tab (Featured First)
+                                tabButton(
+                                    period: .annual,
+                                    title: "ANNUAL",
+                                    badge: "SAVE 50%"
+                                )
+
+                                // Monthly Tab (Second / Decoy)
                                 tabButton(
                                     period: .monthly,
                                     title: "MONTHLY",
                                     badge: nil
-                                )
-
-                                // Annual Tab (Second)
-                                tabButton(
-                                    period: .annual,
-                                    title: "ANNUAL",
-                                    badge: "SAVE 37%"
                                 )
                             }
 
@@ -157,9 +159,21 @@ public struct PaywallSheet: View {
                         }
                         .padding(.horizontal, 4)
 
-                        // ── 2. Interactive Bento Grid of Features ──
+                        // ── 2. Interactive Bento Grid of Features (4 Pillars) ──
                         VStack(spacing: 10) {
-                            // Bento 1: ADHD Focus Soundscapes (Wide Hero)
+                            // Bento 1: Flagship Dual-Pillar & Dot Matrix Widgets (Hero)
+                            bentoCard(
+                                feature: .widgets,
+                                icon: "square.grid.2x2.fill",
+                                iconColor: theme.accent,
+                                title: "Dual-Pillar & Dot Matrix Widgets",
+                                badge: "HOME & LOCK SCREEN",
+                                badgeColor: theme.accent,
+                                summary: "Unlock the Large Dual-Pillar widget (Work + Personal side-by-side) & burning dot countdowns.",
+                                detail: "Display Work and Personal countdowns together on iOS 18 with 1:1 burning runway dots. Includes interactive lock screen circular rings, rectangular runway strips, and desktop-grade Home Screen matrices."
+                            )
+
+                            // Bento 2: ADHD Focus Soundscapes
                             bentoCard(
                                 feature: .soundscapes,
                                 icon: "waveform",
@@ -171,20 +185,8 @@ public struct PaywallSheet: View {
                                 detail: "Synthesizes real-time acoustic frequencies directly on-device with zero internet required. 40Hz gamma neural entrainment stimulates the prefrontal cortex for sustained focus, while continuous brown noise quiets intrusive ADHD racing thoughts."
                             )
 
-                            // Bento 2 & 3: Two-Column Row (The Vault + Dual Pillars)
+                            // Bento 3 & 4: Two-Column Row (Dual Missions + The Vault)
                             HStack(alignment: .top, spacing: 10) {
-                                // The Vault
-                                bentoCard(
-                                    feature: .vault,
-                                    icon: "archivebox.fill",
-                                    iconColor: theme.accent,
-                                    title: "The Vault",
-                                    badge: "COLD STORAGE",
-                                    badgeColor: theme.accent,
-                                    summary: "Park future ideas safely in cold storage so today's mission stays protected.",
-                                    detail: "Had a brilliant new project idea while working? Don't break your momentum. Deposit it into The Vault in 1 tap. Keep your dopamine locked on your current single mission until completed, then promote any queued mission with one tap."
-                                )
-
                                 // Dual Missions
                                 bentoCard(
                                     feature: .dualMissions,
@@ -195,6 +197,18 @@ public struct PaywallSheet: View {
                                     badgeColor: AppColors.personalEmerald,
                                     summary: "Run 1 Work Mission and 1 Personal Mission simultaneously.",
                                     detail: "The only exception to the single-goal rule. Dual Missions allows ambitious creators to balance one professional mission and one personal mission side-by-side without context switching or burnout."
+                                )
+
+                                // The Vault
+                                bentoCard(
+                                    feature: .vault,
+                                    icon: "archivebox.fill",
+                                    iconColor: theme.accent,
+                                    title: "The Vault",
+                                    badge: "COLD STORAGE",
+                                    badgeColor: theme.accent,
+                                    summary: "Park future ideas safely in cold storage so today's mission stays protected.",
+                                    detail: "Had a brilliant new project idea while working? Don't break your momentum. Deposit it into The Vault in 1 tap. Keep your dopamine locked on your current single mission until completed, then promote any queued mission with one tap."
                                 )
                             }
                         }
@@ -231,7 +245,7 @@ public struct PaywallSheet: View {
                                         .foregroundStyle(theme.accent)
                                 }
 
-                                Text("Includes 7 days free. Cancel anytime in App Store before trial ends.")
+                                Text("Includes 3-day free trial. Cancel anytime in App Store before trial ends.")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(theme.textTertiary)
                             } else {
@@ -343,7 +357,9 @@ public struct PaywallSheet: View {
                             Task {
                                 await subscriptionStore.restorePurchases()
                                 if subscriptionStore.isProUser {
-                                    dismiss()
+                                    withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) {
+                                        showCelebration = true
+                                    }
                                 } else if let err = subscriptionStore.errorMessage {
                                     alertMessage = err
                                     showAlert = true
@@ -370,6 +386,14 @@ public struct PaywallSheet: View {
                         .shadow(color: Color.black.opacity(0.5), radius: 12, y: -4)
                         .ignoresSafeArea(.all, edges: .bottom)
                 )
+            }
+
+            if showCelebration {
+                ProUnlockedCelebrationView {
+                    dismiss()
+                }
+                .transition(.opacity)
+                .zIndex(20)
             }
         }
         .alert(isPresented: $showAlert) {
@@ -518,8 +542,8 @@ public struct PaywallSheet: View {
 
     private var ctaTitle: String {
         switch selectedPeriod {
-        case .monthly: return "UPGRADE TO PREMIUM"
-        case .annual: return "START 7-DAY FREE TRIAL"
+        case .monthly: return "UPGRADE TO PRO — \(monthlyProduct?.displayPrice ?? "$4.99")"
+        case .annual: return "START 3-DAY FREE TRIAL"
         case .lifetime: return "GET LIFETIME ACCESS — \(lifetimeProduct?.displayPrice ?? "$49.99")"
         }
     }
@@ -543,14 +567,18 @@ public struct PaywallSheet: View {
                 do {
                     let success = try await subscriptionStore.purchase(product)
                     if success {
-                        dismiss()
+                        withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) {
+                            showCelebration = true
+                        }
                     }
                 } catch {
 #if DEBUG
                     if subscriptionStore.isTestFlightOrSandbox {
                         print("Debug purchase fallback: \(error.localizedDescription) - activating Pro for testing")
                         subscriptionStore.activatePro()
-                        dismiss()
+                        withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) {
+                            showCelebration = true
+                        }
                     } else {
                         alertMessage = error.localizedDescription
                         showAlert = true
@@ -566,7 +594,9 @@ public struct PaywallSheet: View {
                 if subscriptionStore.isTestFlightOrSandbox {
                     print("Debug: Products not loaded yet - activating Pro for testing")
                     subscriptionStore.activatePro()
-                    dismiss()
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) {
+                        showCelebration = true
+                    }
                 } else {
                     alertMessage = "Connecting to the App Store. Please ensure you have an active internet connection and try again."
                     showAlert = true

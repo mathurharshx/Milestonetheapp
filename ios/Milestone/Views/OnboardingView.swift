@@ -5,6 +5,7 @@ public struct OnboardingView: View {
     public let onComplete: () -> Void
     @Environment(UserStore.self) private var userStore
     @Environment(MissionStore.self) private var missionStore
+    @Environment(SubscriptionStore.self) private var subscriptionStore
     @Environment(\.theme) private var theme
 
     @State private var step: Int = 1
@@ -128,7 +129,7 @@ public struct OnboardingView: View {
                     .onAppear {
                         isNameFocused = true
                     }
-                } else {
+                } else if step == 3 {
                     // ── Step 3: Notification Permissions (App Store Best Practice) ──
                     VStack(alignment: .leading, spacing: 0) {
                         Spacer()
@@ -159,7 +160,7 @@ public struct OnboardingView: View {
                                     HapticsManager.shared.notification(.success)
                                     let _ = await NotificationManager.shared.requestAuthorization()
                                     missionStore.refreshMorningNotification()
-                                    finishOnboarding()
+                                    proceedToPaywall()
                                 }
                             } label: {
                                 Text("ENABLE NOTIFICATIONS")
@@ -176,7 +177,7 @@ public struct OnboardingView: View {
 
                             Button {
                                 HapticsManager.shared.impact(.light)
-                                finishOnboarding()
+                                proceedToPaywall()
                             } label: {
                                 Text("MAYBE LATER")
                                     .font(.system(size: 12, weight: .semibold))
@@ -189,7 +190,54 @@ public struct OnboardingView: View {
                         .padding(.bottom, 32)
                     }
                     .padding(.horizontal, 32)
+                    .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
+                } else if step == 4 {
+                    // ── Step 4: The Onboarding Hard Paywall ──
+                    VStack(spacing: 0) {
+                        // Skip header
+                        HStack {
+                            Spacer()
+                            Button {
+                                HapticsManager.shared.impact(.light)
+                                finishOnboarding()
+                            } label: {
+                                Text("SKIP")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .tracking(1.5)
+                                    .foregroundStyle(theme.textTertiary)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        Capsule().fill(theme.surfaceLight.opacity(0.6))
+                                    )
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 14)
+
+                        // Embedded Paywall Sheet with completion
+                        PaywallSheet()
+                            .overlay(alignment: .bottom) {
+                                Button {
+                                    HapticsManager.shared.impact(.light)
+                                    finishOnboarding()
+                                } label: {
+                                    Text("Continue with Free Plan")
+                                        .font(.system(size: 11, weight: .medium))
+                                        .foregroundStyle(theme.textTertiary)
+                                        .padding(.bottom, 6)
+                                }
+                                .offset(y: 20)
+                            }
+                    }
                     .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .opacity))
+                }
+            }
+        }
+        .onChange(of: subscriptionStore.isProUser) { _, isPro in
+            if isPro && step == 4 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    finishOnboarding()
                 }
             }
         }
@@ -202,6 +250,12 @@ public struct OnboardingView: View {
         isNameFocused = false
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
             step = 3
+        }
+    }
+
+    private func proceedToPaywall() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            step = 4
         }
     }
 

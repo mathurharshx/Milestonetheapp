@@ -1,0 +1,112 @@
+{
+  "identifier" : "E2B7A814",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "49.99",
+      "familyShareable" : false,
+      "internalID" : "M0003LIFETIME",
+      "localizations" : [
+        {
+          "description" : "Lifetime Access to all Milestone Pro features.",
+          "displayName" : "Lifetime Pass",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.mathurharsh.milestonetheapp.pro.lifetime",
+      "referenceName" : "Milestone Lifetime Access",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "GRP_PRO",
+      "localizations" : [
+        {
+          "description" : "Milestone Pro Subscription Group",
+          "displayName" : "Milestone Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "Milestone Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "29.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "M0001ANNUAL",
+          "introductoryOffer" : {
+            "internalID" : "INTRO_TRIAL_3D",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P3D"
+          },
+          "localizations" : [
+            {
+              "description" : "Full access to Milestone Pro with a 3-day free trial.",
+              "displayName" : "Annual Pass (Trial)",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.mathurharsh.milestonetheapp.pro.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Milestone Pro Annual",
+          "subscriptionGroupID" : "GRP_PRO",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "M0002MONTHLY",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Monthly access to Milestone Pro.",
+              "displayName" : "Monthly Pass",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.mathurharsh.milestonetheapp.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Milestone Pro Monthly",
+          "subscriptionGroupID" : "GRP_PRO",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
