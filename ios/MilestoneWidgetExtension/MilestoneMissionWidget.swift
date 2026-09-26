@@ -263,6 +263,6 @@ public struct MilestoneMissionWidget: Widget {
         }
         .configurationDisplayName("Mission Card")
         .description("Track your active mission countdown and top priority task.")
-        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryInline])
+        .supportedFamilies([.systemMedium, .accessoryCircular, .accessoryInline])
     }
 }

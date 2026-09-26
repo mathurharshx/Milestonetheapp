@@ -173,6 +173,10 @@ public final class SubscriptionStore {
             }
         }
 
+        if isTestFlightOrSandbox && !hasActiveEntitlement && UserDefaults.standard.bool(forKey: "milestone:isProUser") {
+            hasActiveEntitlement = true
+        }
+
         self.isProUser = hasActiveEntitlement
         UserDefaults.standard.set(hasActiveEntitlement, forKey: "milestone:isProUser")
         syncProStateToWidgets()

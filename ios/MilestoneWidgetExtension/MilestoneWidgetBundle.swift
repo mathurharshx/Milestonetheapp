@@ -5,11 +5,12 @@ import SwiftUI
 struct MilestoneWidgetBundle: WidgetBundle {
     var body: some Widget {
         MilestoneDotMatrixWidget()
-        MilestoneWorkDotMatrixWidget()
         MilestonePersonalDotMatrixWidget()
+        MilestoneFullRunwayWidget()
         MilestoneMissionWidget()
         MilestonePomodoroWidget()
         PomodoroLiveActivity()
     }
 }
+
 

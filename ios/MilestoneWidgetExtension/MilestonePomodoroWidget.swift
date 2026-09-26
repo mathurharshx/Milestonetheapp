@@ -136,13 +136,8 @@ struct MilestonePomodoroWidgetView: View {
     // ── Small Widget (Live Hardware Ring) ──
     private var smallView: some View {
         VStack(spacing: 0) {
-            // Top Section Header
+            // Top Section: Clean minimal session fraction only (no text truncation)
             HStack {
-                Text(phaseTitle.uppercased())
-                    .font(.system(size: 9, weight: .heavy))
-                    .tracking(2)
-                    .foregroundStyle(entry.data.textSecondaryColor)
-
                 Spacer()
 
                 Text("\(entry.data.pomodoroSession)/\(entry.data.pomodoroTotalSessions)")
