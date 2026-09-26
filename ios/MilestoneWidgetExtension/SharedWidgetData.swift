@@ -151,7 +151,7 @@ extension MilestoneWidgetData {
     }
 
     public var trackColor: Color {
-        isDarkMode ? Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0) : Color(red: 0xD1/255.0, green: 0xD1/255.0, blue: 0xD6/255.0)
+        isDarkMode ? Color.white.opacity(0.18) : Color(red: 0xD1/255.0, green: 0xD1/255.0, blue: 0xD6/255.0)
     }
 
     public var accentColor: Color {

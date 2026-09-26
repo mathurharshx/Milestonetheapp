@@ -78,16 +78,16 @@ struct MilestoneDotMatrixWidgetView: View {
     @ViewBuilder
     private func dotView(index: Int, elapsedSampled: Int, dotSize: CGFloat) -> some View {
         if index < elapsedSampled {
-            // Passed day: subtle faded track dot
+            // Passed day: clearly defined, muted silver/graphite dot (crisply visible on dark background)
             Circle()
-                .fill(entry.data.trackColor.opacity(0.85))
+                .fill(Color.white.opacity(0.22))
                 .frame(width: dotSize, height: dotSize)
         } else if index == elapsedSampled {
             // Active Current Day (Burning Dot): lit up with subtle white aura
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.25))
-                    .frame(width: dotSize + 3, height: dotSize + 3)
+                    .fill(Color.white.opacity(0.30))
+                    .frame(width: dotSize + 3.5, height: dotSize + 3.5)
 
                 Circle()
                     .fill(Color.white)
@@ -490,7 +490,7 @@ struct MilestoneDotMatrixWidgetView: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 8), spacing: 3) {
                 ForEach(0..<sampleCount, id: \.self) { i in
                     Circle()
-                        .fill(i < elapsedSampled ? Color.white.opacity(0.20) : Color.white)
+                        .fill(i < elapsedSampled ? Color.white.opacity(0.24) : Color.white)
                         .frame(width: 4.5, height: 4.5)
                 }
             }

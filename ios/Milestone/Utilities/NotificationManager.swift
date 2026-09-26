@@ -125,7 +125,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         }
     }
 
-    // ── Daily Morning Accountability Notification ──
+    // ── Daily Morning Accountability Notification (Pre-scheduled for next 7 mornings) ──
     public func scheduleDailyMorningReminder(mission: Mission?, hour: Int = 9, minute: Int = 0) {
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
@@ -133,36 +133,50 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
 
             guard let mission = mission, mission.isActive else { return }
 
-            let content = UNMutableNotificationContent()
-            content.title = "Daily Mission Update"
-            content.sound = .default
-
-            let daysRemaining = DateCalculations.getDaysRemaining(targetDate: mission.targetDate)
+            let calendar = Calendar.current
+            let now = Date()
             let pendingTasks = mission.todos.filter { !$0.done }.count
 
-            if daysRemaining == 0 {
-                content.body = "Today is the target date for '\(mission.title)'."
-            } else if daysRemaining == 1 {
-                content.body = "1 day remaining for '\(mission.title)'."
-            } else {
-                content.body = "\(daysRemaining) days remaining for '\(mission.title)'."
-            }
+            // Schedule discrete alerts for the next 7 mornings so counts never freeze
+            for dayOffset in 0..<7 {
+                guard let targetMorning = calendar.date(byAdding: .day, value: dayOffset, to: now) else { continue }
+                var components = calendar.dateComponents([.year, .month, .day], from: targetMorning)
+                components.hour = hour
+                components.minute = minute
+                components.second = 0
 
-            if pendingTasks > 0 {
-                content.body += " \(pendingTasks) task\(pendingTasks == 1 ? "" : "s") pending."
-            }
+                guard let triggerDate = calendar.date(from: components), triggerDate > now else {
+                    continue
+                }
 
-            var dateComponents = DateComponents()
-            dateComponents.hour = hour
-            dateComponents.minute = minute
+                let daysRemaining = DateCalculations.differenceInDays(from: triggerDate, to: mission.targetDate)
+                guard daysRemaining >= 0 else { continue }
 
-            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-            let request = UNNotificationRequest(identifier: self.morningIdentifier, content: content, trigger: trigger)
+                let content = UNMutableNotificationContent()
+                content.title = "Daily Mission Update"
+                content.sound = .default
 
-            do {
-                try await self.center.add(request)
-            } catch {
-                print("Failed to schedule morning reminder: \(error.localizedDescription)")
+                if daysRemaining == 0 {
+                    content.body = "Today is the target date for '\(mission.title)'."
+                } else if daysRemaining == 1 {
+                    content.body = "1 day remaining for '\(mission.title)'."
+                } else {
+                    content.body = "\(daysRemaining) days remaining for '\(mission.title)'."
+                }
+
+                if pendingTasks > 0 {
+                    content.body += " \(pendingTasks) task\(pendingTasks == 1 ? "" : "s") pending."
+                }
+
+                let triggerComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
+                let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: false)
+                let request = UNNotificationRequest(
+                    identifier: "\(self.morningIdentifier).\(dayOffset)",
+                    content: content,
+                    trigger: trigger
+                )
+
+                try? await self.center.add(request)
             }
         }
     }
@@ -174,7 +188,13 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
     }
 
     private func cancelDailyMorningReminderInternal() {
-        center.removePendingNotificationRequests(withIdentifiers: [morningIdentifier])
+        center.getPendingNotificationRequests { [weak self] requests in
+            guard let self = self else { return }
+            let identifiers = requests
+                .map(\.identifier)
+                .filter { $0.hasPrefix(self.morningIdentifier) }
+            self.center.removePendingNotificationRequests(withIdentifiers: identifiers)
+        }
     }
 
     // ── Mission Target Deadline Reached Notification ──
