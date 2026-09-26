@@ -13,9 +13,11 @@ struct DotMatrixProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<DotMatrixEntry>) -> Void) {
         let data = SharedWidgetStore.load() ?? MilestoneWidgetData()
-        let entry = DotMatrixEntry(date: Date(), data: data)
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
-        completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+        let schedule = WidgetDateCalculations.generateMidnightSchedule(from: Date(), daysAhead: 4)
+        let entries = schedule.map { DotMatrixEntry(date: $0, data: data) }
+        // Next update scheduled after the last generated midnight
+        let nextUpdate = schedule.last ?? Calendar.current.date(byAdding: .day, value: 1, to: Date())!
+        completion(Timeline(entries: entries, policy: .after(nextUpdate)))
     }
 }
 
@@ -30,21 +32,22 @@ struct MilestoneDotMatrixWidgetView: View {
 
     private var daysRemaining: Int {
         guard let target = entry.data.missionTargetDate else { return 0 }
-        let diff = Date(timeIntervalSince1970: target).timeIntervalSince(Date())
-        return max(0, Int(ceil(diff / 86400.0)))
+        let targetDate = Date(timeIntervalSince1970: target)
+        return WidgetDateCalculations.daysRemaining(targetDate: targetDate, asOf: entry.date)
     }
 
     private var totalDays: Int {
         guard let created = entry.data.missionCreatedAt,
               let target = entry.data.missionTargetDate else { return 30 }
-        let diff = Date(timeIntervalSince1970: target).timeIntervalSince(Date(timeIntervalSince1970: created))
-        return max(1, Int(ceil(diff / 86400.0)))
+        let createdDate = Date(timeIntervalSince1970: created)
+        let targetDate = Date(timeIntervalSince1970: target)
+        return WidgetDateCalculations.totalDays(createdAt: createdDate, targetDate: targetDate)
     }
 
     private var daysElapsed: Int {
         guard let created = entry.data.missionCreatedAt else { return 0 }
-        let diff = Date().timeIntervalSince(Date(timeIntervalSince1970: created))
-        return max(0, Int(floor(diff / 86400.0)))
+        let createdDate = Date(timeIntervalSince1970: created)
+        return WidgetDateCalculations.daysElapsed(createdAt: createdDate, asOf: entry.date)
     }
 
     private var isPersonal: Bool {
@@ -349,12 +352,11 @@ struct MilestoneDotMatrixWidgetView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         } else if let payload = payload {
-            let pDiff = Date(timeIntervalSince1970: payload.targetDate).timeIntervalSince(Date())
-            let pRemaining = max(0, Int(ceil(pDiff / 86400.0)))
-            let pTotalDiff = Date(timeIntervalSince1970: payload.targetDate).timeIntervalSince(Date(timeIntervalSince1970: payload.createdAt))
-            let pTotal = max(1, Int(ceil(pTotalDiff / 86400.0)))
-            let pElapsedDiff = Date().timeIntervalSince(Date(timeIntervalSince1970: payload.createdAt))
-            let pElapsed = max(0, Int(floor(pElapsedDiff / 86400.0)))
+            let pTargetDate = Date(timeIntervalSince1970: payload.targetDate)
+            let pCreatedDate = Date(timeIntervalSince1970: payload.createdAt)
+            let pRemaining = WidgetDateCalculations.daysRemaining(targetDate: pTargetDate, asOf: entry.date)
+            let pTotal = WidgetDateCalculations.totalDays(createdAt: pCreatedDate, targetDate: pTargetDate)
+            let pElapsed = WidgetDateCalculations.daysElapsed(createdAt: pCreatedDate, asOf: entry.date)
 
             // Dynamic 1:1 Matrix Engine:
             // For missions up to 84 days (including 65-day runways), render exactly 1 dot per day!

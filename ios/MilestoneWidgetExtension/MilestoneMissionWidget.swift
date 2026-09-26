@@ -13,9 +13,10 @@ struct MissionProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<MissionEntry>) -> Void) {
         let data = SharedWidgetStore.load() ?? MilestoneWidgetData()
-        let entry = MissionEntry(date: Date(), data: data)
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
-        completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+        let schedule = WidgetDateCalculations.generateMidnightSchedule(from: Date(), daysAhead: 4)
+        let entries = schedule.map { MissionEntry(date: $0, data: data) }
+        let nextUpdate = schedule.last ?? Calendar.current.date(byAdding: .day, value: 1, to: Date())!
+        completion(Timeline(entries: entries, policy: .after(nextUpdate)))
     }
 }
 
@@ -30,21 +31,22 @@ struct MilestoneMissionWidgetView: View {
 
     private var daysRemaining: Int {
         guard let target = entry.data.missionTargetDate else { return 0 }
-        let diff = Date(timeIntervalSince1970: target).timeIntervalSince(Date())
-        return max(0, Int(ceil(diff / 86400.0)))
+        let targetDate = Date(timeIntervalSince1970: target)
+        return WidgetDateCalculations.daysRemaining(targetDate: targetDate, asOf: entry.date)
     }
 
     private var totalDays: Int {
         guard let created = entry.data.missionCreatedAt,
               let target = entry.data.missionTargetDate else { return 1 }
-        let diff = Date(timeIntervalSince1970: target).timeIntervalSince(Date(timeIntervalSince1970: created))
-        return max(1, Int(ceil(diff / 86400.0)))
+        let createdDate = Date(timeIntervalSince1970: created)
+        let targetDate = Date(timeIntervalSince1970: target)
+        return WidgetDateCalculations.totalDays(createdAt: createdDate, targetDate: targetDate)
     }
 
     private var progressRatio: Double {
         guard let created = entry.data.missionCreatedAt else { return 0 }
-        let diff = Date().timeIntervalSince(Date(timeIntervalSince1970: created))
-        let elapsed = max(0, Int(floor(diff / 86400.0)))
+        let createdDate = Date(timeIntervalSince1970: created)
+        let elapsed = WidgetDateCalculations.daysElapsed(createdAt: createdDate, asOf: entry.date)
         return min(1.0, max(0.0, Double(elapsed) / Double(totalDays)))
     }
 

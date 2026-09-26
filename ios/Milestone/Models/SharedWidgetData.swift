@@ -192,3 +192,49 @@ public enum SharedWidgetStore {
         }
     }
 }
+
+// ── Precise Calendar-Day Math for Widgets (Matches In-App Countdown) ──
+public enum WidgetDateCalculations {
+    private static var calendar: Calendar {
+        var cal = Calendar.current
+        cal.timeZone = TimeZone.current
+        return cal
+    }
+
+    public static func startOfDay(_ date: Date) -> Date {
+        calendar.startOfDay(for: date)
+    }
+
+    public static func differenceInDays(from startDate: Date, to endDate: Date) -> Int {
+        let start = startOfDay(startDate)
+        let end = startOfDay(endDate)
+        let components = calendar.dateComponents([.day], from: start, to: end)
+        return components.day ?? 0
+    }
+
+    public static func daysRemaining(targetDate: Date, asOf currentDate: Date) -> Int {
+        max(0, differenceInDays(from: currentDate, to: targetDate))
+    }
+
+    public static func daysElapsed(createdAt: Date, asOf currentDate: Date) -> Int {
+        max(0, differenceInDays(from: createdAt, to: currentDate))
+    }
+
+    public static func totalDays(createdAt: Date, targetDate: Date) -> Int {
+        max(1, differenceInDays(from: createdAt, to: targetDate))
+    }
+
+    /// Generates pre-scheduled timeline entries for the current instant and upcoming midnights
+    /// so the widget seamlessly advances at 12:00:00 AM without waiting for background network/system polls.
+    public static func generateMidnightSchedule(from startDate: Date = Date(), daysAhead: Int = 4) -> [Date] {
+        var dates: [Date] = [startDate]
+        let currentDayStart = startOfDay(startDate)
+
+        for dayOffset in 1...daysAhead {
+            if let nextMidnight = calendar.date(byAdding: .day, value: dayOffset, to: currentDayStart) {
+                dates.append(nextMidnight)
+            }
+        }
+        return dates
+    }
+}
