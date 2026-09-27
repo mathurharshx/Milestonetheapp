@@ -977,47 +977,50 @@ public struct SettingsTabView: View {
     }
 }
 
-// ── Golden Alive Border Modifier: Organic 24K Liquid Gold Shimmering Aura ──
+// ── Golden Alive Border Modifier: Sweeping Angular Gradient & Breathing Bloom (Matches Mission Box) ──
 struct GoldenAliveBorderModifier: ViewModifier {
-    @State private var rotationDegrees: Double = 0
-    @State private var pulseIntensity: Double = 0.8
+    @State private var borderAngle: Double = 0
+    @State private var isBreathing: Bool = false
     @Environment(\.scenePhase) private var scenePhase
 
     let cornerRadius: CGFloat
     let lineWidth: CGFloat
 
     // Luxurious 24K Gold Harmonized Gradient Stops
-    private let goldGradient = AngularGradient(
-        gradient: Gradient(colors: [
-            Color(red: 1.0, green: 0.84, blue: 0.0),       // Pure 24K Gold (#FFD700)
-            Color(red: 0.98, green: 0.68, blue: 0.15),     // Deep Amber (#F9AE26)
-            Color(red: 1.0, green: 0.95, blue: 0.78),      // Champagne White Gleam (#FFF2C7)
-            Color(red: 0.85, green: 0.55, blue: 0.10),     // Warm Bronze (#D98D1A)
-            Color(red: 1.0, green: 0.88, blue: 0.25),      // Radiant Auric Flare
-            Color(red: 1.0, green: 0.84, blue: 0.0)        // Seamless Loop Back
-        ]),
-        center: .center
-    )
+    private var goldGradient: AngularGradient {
+        AngularGradient(
+            gradient: Gradient(colors: [
+                Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.90),      // Pure 24K Gold
+                Color(red: 0.98, green: 0.68, blue: 0.15).opacity(0.20),     // Deep Amber Dim
+                Color(red: 1.0, green: 0.95, blue: 0.78).opacity(0.85),      // Champagne Gleam
+                Color(red: 0.85, green: 0.55, blue: 0.10).opacity(0.15),     // Bronze Dim
+                Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.90)       // Loop
+            ]),
+            center: .center,
+            angle: .degrees(borderAngle)
+        )
+    }
 
-    init(cornerRadius: CGFloat = 16, lineWidth: CGFloat = 1.6) {
+    init(cornerRadius: CGFloat = 16, lineWidth: CGFloat = 1.4) {
         self.cornerRadius = cornerRadius
         self.lineWidth = lineWidth
     }
 
     func body(content: Content) -> some View {
         content
+            // Outer Soft Ambient Glowing Bloom (Matches CreateMissionSheet)
             .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(goldGradient, lineWidth: lineWidth)
-                    .rotationEffect(.degrees(rotationDegrees))
-                    .blur(radius: 0.4)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(
+                        Color(red: 1.0, green: 0.84, blue: 0.0).opacity(isBreathing ? 0.35 : 0.12),
+                        lineWidth: isBreathing ? lineWidth + 1.2 : lineWidth + 0.2
+                    )
+                    .blur(radius: isBreathing ? 5 : 2)
             )
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(goldGradient, lineWidth: lineWidth + 2.0)
-                    .rotationEffect(.degrees(rotationDegrees))
-                    .blur(radius: 6)
-                    .opacity(0.35 * pulseIntensity)
+            // Sharp Living Sweeping Gradient Border (Matches CreateMissionSheet)
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(goldGradient, lineWidth: lineWidth)
             )
             .onAppear {
                 startAnimation()
@@ -1030,11 +1033,11 @@ struct GoldenAliveBorderModifier: ViewModifier {
     }
 
     private func startAnimation() {
-        withAnimation(.linear(duration: 5.5).repeatForever(autoreverses: false)) {
-            rotationDegrees = 360
+        withAnimation(.linear(duration: 6.0).repeatForever(autoreverses: false)) {
+            borderAngle = 360
         }
-        withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
-            pulseIntensity = 1.25
+        withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+            isBreathing = true
         }
     }
 }
