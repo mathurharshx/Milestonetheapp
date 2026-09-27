@@ -66,12 +66,12 @@ public struct SettingsTabView: View {
                         HStack(spacing: 14) {
                             ZStack {
                                 Circle()
-                                    .fill(subscriptionStore.isProUser ? Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.18) : theme.accent.opacity(0.16))
+                                    .fill(subscriptionStore.isProUser ? AppColors.personalEmerald.opacity(0.18) : theme.accent.opacity(0.16))
                                     .frame(width: 44, height: 44)
 
                                 Image(systemName: subscriptionStore.isProUser ? "crown.fill" : "sparkles")
                                     .font(.system(size: 20, weight: .bold))
-                                    .foregroundStyle(subscriptionStore.isProUser ? Color(red: 1.0, green: 0.84, blue: 0.0) : theme.accent)
+                                    .foregroundStyle(subscriptionStore.isProUser ? AppColors.personalEmerald : theme.accent)
                             }
 
                             VStack(alignment: .leading, spacing: 3) {
@@ -85,7 +85,7 @@ public struct SettingsTabView: View {
                                         Text("ACTIVE")
                                             .font(.system(size: 9, weight: .black))
                                             .tracking(1)
-                                            .foregroundStyle(Color.black)
+                                            .foregroundStyle(Color.white)
                                             .padding(.horizontal, 7)
                                             .padding(.vertical, 2.5)
                                             .background(
@@ -93,8 +93,8 @@ public struct SettingsTabView: View {
                                                     .fill(
                                                         LinearGradient(
                                                             colors: [
-                                                                Color(red: 1.0, green: 0.88, blue: 0.35),
-                                                                Color(red: 0.95, green: 0.72, blue: 0.10)
+                                                                Color(red: 0x3E/255.0, green: 0x8A/255.0, blue: 0x65/255.0),
+                                                                AppColors.personalEmerald
                                                             ],
                                                             startPoint: .topLeading,
                                                             endPoint: .bottomTrailing
@@ -113,7 +113,7 @@ public struct SettingsTabView: View {
 
                             Image(systemName: subscriptionStore.isProUser ? "gearshape.fill" : "chevron.right")
                                 .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(subscriptionStore.isProUser ? Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.8) : theme.textTertiary)
+                                .foregroundStyle(subscriptionStore.isProUser ? AppColors.personalEmerald.opacity(0.85) : theme.textTertiary)
                         }
                         .padding(14)
                         .background(
@@ -977,8 +977,8 @@ public struct SettingsTabView: View {
     }
 }
 
-// ── Golden Alive Border Modifier: Sweeping Angular Gradient & Breathing Bloom (Matches Mission Box) ──
-struct GoldenAliveBorderModifier: ViewModifier {
+// ── Emerald Alive Border Modifier: Sweeping Angular Gradient & Breathing Bloom (Matches Personal Mission) ──
+struct EmeraldAliveBorderModifier: ViewModifier {
     @State private var borderAngle: Double = 0
     @State private var isBreathing: Bool = false
     @Environment(\.scenePhase) private var scenePhase
@@ -986,15 +986,15 @@ struct GoldenAliveBorderModifier: ViewModifier {
     let cornerRadius: CGFloat
     let lineWidth: CGFloat
 
-    // Luxurious 24K Gold Harmonized Gradient Stops
-    private var goldGradient: AngularGradient {
+    // Luminous Botanical Emerald / Sage Gradient Stops
+    private var emeraldGradient: AngularGradient {
         AngularGradient(
             gradient: Gradient(colors: [
-                Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.90),      // Pure 24K Gold
-                Color(red: 0.98, green: 0.68, blue: 0.15).opacity(0.20),     // Deep Amber Dim
-                Color(red: 1.0, green: 0.95, blue: 0.78).opacity(0.85),      // Champagne Gleam
-                Color(red: 0.85, green: 0.55, blue: 0.10).opacity(0.15),     // Bronze Dim
-                Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.90)       // Loop
+                Color(red: 0x4E/255.0, green: 0xAA/255.0, blue: 0x7C/255.0).opacity(0.95),  // Vibrant Luminous Emerald (#4EAA7C)
+                AppColors.personalEmerald.opacity(0.20),                                    // Serene Deep Sage Dim
+                Color(red: 0x86/255.0, green: 0xE3/255.0, blue: 0xB3/255.0).opacity(0.90),  // Light Spring Gleam (#86E3B3)
+                AppColors.personalEmerald.opacity(0.15),                                    // Serene Deep Sage Dim
+                Color(red: 0x4E/255.0, green: 0xAA/255.0, blue: 0x7C/255.0).opacity(0.95)   // Loop
             ]),
             center: .center,
             angle: .degrees(borderAngle)
@@ -1012,7 +1012,7 @@ struct GoldenAliveBorderModifier: ViewModifier {
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(
-                        Color(red: 1.0, green: 0.84, blue: 0.0).opacity(isBreathing ? 0.35 : 0.12),
+                        Color(red: 0x4E/255.0, green: 0xAA/255.0, blue: 0x7C/255.0).opacity(isBreathing ? 0.35 : 0.12),
                         lineWidth: isBreathing ? lineWidth + 1.2 : lineWidth + 0.2
                     )
                     .blur(radius: isBreathing ? 5 : 2)
@@ -1020,7 +1020,7 @@ struct GoldenAliveBorderModifier: ViewModifier {
             // Sharp Living Sweeping Gradient Border (Matches CreateMissionSheet)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(goldGradient, lineWidth: lineWidth)
+                    .stroke(emeraldGradient, lineWidth: lineWidth)
             )
             .onAppear {
                 startAnimation()
@@ -1042,7 +1042,7 @@ struct GoldenAliveBorderModifier: ViewModifier {
     }
 }
 
-// ── Pro Banner Border Modifier: Switches between Golden Alive Aura & Standard Border ──
+// ── Pro Banner Border Modifier: Switches between Emerald Alive Aura & Standard Border ──
 private struct ProBannerBorderModifier: ViewModifier {
     let isProUser: Bool
     let accentColor: Color
@@ -1050,7 +1050,7 @@ private struct ProBannerBorderModifier: ViewModifier {
     func body(content: Content) -> some View {
         if isProUser {
             content
-                .modifier(GoldenAliveBorderModifier(cornerRadius: 16, lineWidth: 1.8))
+                .modifier(EmeraldAliveBorderModifier(cornerRadius: 16, lineWidth: 1.4))
         } else {
             content
                 .overlay(
