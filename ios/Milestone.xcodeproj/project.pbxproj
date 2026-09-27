@@ -33,6 +33,7 @@
 		MS0089 /* VelocityReportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF089 /* VelocityReportSheet.swift */; };
 		MS0090 /* AliveDuneAtmosphereView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF090 /* AliveDuneAtmosphereView.swift */; };
 		MS0091 /* ProUnlockedCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF091 /* ProUnlockedCelebrationView.swift */; };
+		MS0093 /* DeadlineReachedSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF093 /* DeadlineReachedSheet.swift */; };
 		MS0017 /* CreateMissionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF017 /* CreateMissionSheet.swift */; };
 		MS0018 /* ProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF018 /* ProfileSheet.swift */; };
 		MS0019 /* QuoteModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF019 /* QuoteModalView.swift */; };
@@ -120,6 +121,7 @@
 		MSF089 /* VelocityReportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VelocityReportSheet.swift; sourceTree = "<group>"; };
 		MSF090 /* AliveDuneAtmosphereView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AliveDuneAtmosphereView.swift; sourceTree = "<group>"; };
 		MSF091 /* ProUnlockedCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProUnlockedCelebrationView.swift; sourceTree = "<group>"; };
+		MSF093 /* DeadlineReachedSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineReachedSheet.swift; sourceTree = "<group>"; };
 		MSF017 /* CreateMissionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMissionSheet.swift; sourceTree = "<group>"; };
 		MSF018 /* ProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSheet.swift; sourceTree = "<group>"; };
 		MSF019 /* QuoteModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuoteModalView.swift; sourceTree = "<group>"; };
@@ -305,6 +307,7 @@
 				MSF082 /* PaywallSheet.swift */,
 				MSF085 /* VaultSheet.swift */,
 				MSF089 /* VelocityReportSheet.swift */,
+				MSF093 /* DeadlineReachedSheet.swift */,
 			);
 			path = Sheets;
 			sourceTree = "<group>";
@@ -487,6 +490,7 @@
 				MS0085 /* VaultSheet.swift in Sources */,
 				MS0088 /* VelocityCalculator.swift in Sources */,
 				MS0089 /* VelocityReportSheet.swift in Sources */,
+				MS0093 /* DeadlineReachedSheet.swift in Sources */,
 				MS0017 /* CreateMissionSheet.swift in Sources */,
 				MS0018 /* ProfileSheet.swift in Sources */,
 				MS0019 /* QuoteModalView.swift in Sources */,

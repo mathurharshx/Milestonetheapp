@@ -261,6 +261,11 @@ public final class MissionStore {
             // 15 seconds remaining: immediate test of completion wave & celebration
             createdAt = Calendar.current.date(byAdding: .day, value: -30, to: now) ?? now
             targetDate = now.addingTimeInterval(15)
+
+        case .deadlineReached:
+            // Expired: target date is 2 hours in the past
+            createdAt = Calendar.current.date(byAdding: .day, value: -14, to: now) ?? now
+            targetDate = now.addingTimeInterval(-2 * 3600)
         }
 
         if var mission = activeMission {
@@ -273,8 +278,8 @@ public final class MissionStore {
                 id: "work_test_mission",
                 title: "Launch Milestone v1.0",
                 todos: [
-                    TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
-                    TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false),
+                    TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: true),
+                    TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: true),
                     TodoTask(id: "3", text: "Publish Launch Announcement", done: false)
                 ],
                 targetDate: targetDate,
@@ -303,6 +308,15 @@ public final class MissionStore {
         syncToWidget()
     }
     #endif
+
+    public func extendMissionTargetDate(to newTargetDate: Date) {
+        guard var mission = currentPillarMission else { return }
+        mission.targetDate = newTargetDate
+        mission.isActive = true
+        self.currentPillarMission = mission
+        syncToWidget()
+        refreshMissionNotifications()
+    }
 
     private func saveActiveMission() {
         if let mission = activeMission {

@@ -17,6 +17,8 @@ public struct MissionTabView: View {
     @State private var showPaywallSheet: Bool = false
     @State private var paywallFeature: PaywallSheet.PremiumFeature? = nil
     @State private var showCreateMissionSheet: Bool = false
+    @State private var showDeadlineReachedSheet: Bool = false
+    @State private var hasPresentedDeadlineForMissionId: String? = nil
     @State private var completedQuote: Quote?
     @State private var activeMissionSnapshot: Mission?
     @State private var keystoneEvent: KeystoneEvent = .none
@@ -129,6 +131,14 @@ public struct MissionTabView: View {
                                 isCompleting: isCompletingAnimation
                             )
                             .padding(.bottom, 6)
+                            .onAppear {
+                                if countdown.isExpired && mission.isActive && !isCompletingAnimation && hasPresentedDeadlineForMissionId != mission.id {
+                                    hasPresentedDeadlineForMissionId = mission.id
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                                        showDeadlineReachedSheet = true
+                                    }
+                                }
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -284,6 +294,59 @@ public struct MissionTabView: View {
                                     }
                                 }
                                 .transition(.asymmetric(insertion: .scale(scale: 0.96).combined(with: .opacity), removal: .opacity))
+                            } else if mission.targetDate <= Date() {
+                                // ── Deadline Reached State: Direct, Clean Resolution ──
+                                HStack(spacing: 10) {
+                                    // Primary Action: Archive Mission
+                                    Button {
+                                        HapticsManager.shared.impact(.medium)
+                                        showDeadlineReachedSheet = true
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "flag.checkered")
+                                                .font(.system(size: 13, weight: .bold))
+                                            Text("DEADLINE REACHED")
+                                                .font(.system(size: 12, weight: .black))
+                                                .tracking(1.8)
+                                        }
+                                        .foregroundStyle(theme.background)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 52)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .fill(mission.category == .personal ? AppColors.personalEmerald : theme.accent)
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    // Quick +24H Extension Pill
+                                    Button {
+                                        HapticsManager.shared.impact(.light)
+                                        let newDate = Date().addingTimeInterval(86400)
+                                        missionStore.extendMissionTargetDate(to: newDate)
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "plus.circle")
+                                                .font(.system(size: 12, weight: .semibold))
+                                            Text("+24H")
+                                                .font(.system(size: 11, weight: .bold))
+                                                .tracking(1.2)
+                                        }
+                                        .foregroundStyle(theme.textPrimary)
+                                        .frame(width: 80)
+                                        .frame(height: 52)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .fill(theme.surfaceLight.opacity(0.85))
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .stroke(theme.border.opacity(0.5), lineWidth: 1)
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                                .transition(.opacity)
                             } else {
                                 Button {
                                     HapticsManager.shared.impact(.medium)
@@ -383,6 +446,19 @@ public struct MissionTabView: View {
                         isAscendingToVault = false
                         activeMissionSnapshot = nil
                         showCreateMissionSheet = true
+                    }
+                )
+            }
+        }
+        .sheet(isPresented: $showDeadlineReachedSheet) {
+            if let mission = missionStore.currentPillarMission {
+                DeadlineReachedSheet(
+                    mission: mission,
+                    onArchive: {
+                        missionStore.archiveMission(mission)
+                    },
+                    onExtend: { newTargetDate in
+                        missionStore.extendMissionTargetDate(to: newTargetDate)
                     }
                 )
             }

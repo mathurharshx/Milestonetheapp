@@ -8,6 +8,7 @@ public enum MissionTestPreset: String, CaseIterable, Identifiable {
     case hourly48h = "48 Hours (12h Passed · 36h Left)"
     case urgent24h = "24 Hours (6h Passed · 18h Left)"
     case completingNow = "Imminent (15 Seconds Left)"
+    case deadlineReached = "Expired (Deadline Reached)"
 
     public var id: String { rawValue }
 
@@ -19,6 +20,7 @@ public enum MissionTestPreset: String, CaseIterable, Identifiable {
         case .hourly48h: return "48H Runway Track"
         case .urgent24h: return "24H Urgent Track"
         case .completingNow: return "Imminent 15s Target"
+        case .deadlineReached: return "Deadline Reached (Expired)"
         }
     }
 }
