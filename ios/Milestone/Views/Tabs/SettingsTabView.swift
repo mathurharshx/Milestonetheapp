@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import StoreKit
 
 public struct SettingsTabView: View {
     @Environment(UserStore.self) private var userStore
@@ -12,6 +13,7 @@ public struct SettingsTabView: View {
 
     @State private var showProfileSheet: Bool = false
     @State private var showPaywallSheet: Bool = false
+    @State private var showManageSubscriptions: Bool = false
     @State private var paywallFeature: PaywallSheet.PremiumFeature? = nil
     @State private var showRestoreAlert: Bool = false
     @State private var restoreAlertMessage: String = ""
@@ -54,18 +56,22 @@ public struct SettingsTabView: View {
                     // ── SOVEREIGN PRO BANNER ──
                     Button {
                         HapticsManager.shared.impact(.medium)
-                        paywallFeature = nil
-                        showPaywallSheet = true
+                        if subscriptionStore.isProUser {
+                            showManageSubscriptions = true
+                        } else {
+                            paywallFeature = nil
+                            showPaywallSheet = true
+                        }
                     } label: {
                         HStack(spacing: 14) {
                             ZStack {
                                 Circle()
-                                    .fill(theme.accent.opacity(0.16))
+                                    .fill(subscriptionStore.isProUser ? Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.18) : theme.accent.opacity(0.16))
                                     .frame(width: 44, height: 44)
 
                                 Image(systemName: subscriptionStore.isProUser ? "crown.fill" : "sparkles")
                                     .font(.system(size: 20, weight: .bold))
-                                    .foregroundStyle(theme.accent)
+                                    .foregroundStyle(subscriptionStore.isProUser ? Color(red: 1.0, green: 0.84, blue: 0.0) : theme.accent)
                             }
 
                             VStack(alignment: .leading, spacing: 3) {
@@ -79,32 +85,43 @@ public struct SettingsTabView: View {
                                         Text("ACTIVE")
                                             .font(.system(size: 9, weight: .black))
                                             .tracking(1)
-                                            .foregroundStyle(theme.accent)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Capsule().fill(theme.accentDim))
+                                            .foregroundStyle(Color.black)
+                                            .padding(.horizontal, 7)
+                                            .padding(.vertical, 2.5)
+                                            .background(
+                                                Capsule()
+                                                    .fill(
+                                                        LinearGradient(
+                                                            colors: [
+                                                                Color(red: 1.0, green: 0.88, blue: 0.35),
+                                                                Color(red: 0.95, green: 0.72, blue: 0.10)
+                                                            ],
+                                                            startPoint: .topLeading,
+                                                            endPoint: .bottomTrailing
+                                                        )
+                                                    )
+                                            )
                                     }
                                 }
 
-                                Text(subscriptionStore.isProUser ? "All features & focus soundscapes unlocked" : "Unlock ADHD soundscapes, the vault & dual-track")
+                                Text(subscriptionStore.isProUser ? "Tap to manage subscription · All features unlocked" : "Unlock ADHD soundscapes, the vault & dual-track")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(theme.textTertiary)
                             }
 
                             Spacer()
 
-                            Image(systemName: "chevron.right")
+                            Image(systemName: subscriptionStore.isProUser ? "gearshape.fill" : "chevron.right")
                                 .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(theme.textTertiary)
+                                .foregroundStyle(subscriptionStore.isProUser ? Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.8) : theme.textTertiary)
                         }
                         .padding(14)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(theme.surfaceLight.opacity(0.6))
+                                .fill(theme.surfaceLight.opacity(subscriptionStore.isProUser ? 0.75 : 0.6))
                         )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(theme.accent.opacity(subscriptionStore.isProUser ? 0.35 : 0.65), lineWidth: 1)
+                        .modifier(
+                            ProBannerBorderModifier(isProUser: subscriptionStore.isProUser, accentColor: theme.accent)
                         )
                     }
                     .buttonStyle(.plain)
@@ -934,6 +951,7 @@ public struct SettingsTabView: View {
         .sheet(isPresented: $showPaywallSheet) {
             PaywallSheet(initialFeature: paywallFeature)
         }
+        .manageSubscriptionsSheet(isPresented: $showManageSubscriptions)
         .alert("Restore Purchases", isPresented: $showRestoreAlert) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -955,6 +973,87 @@ public struct SettingsTabView: View {
         let status = await NotificationManager.shared.checkAuthorizationStatus()
         await MainActor.run {
             self.notificationStatus = status
+        }
+    }
+}
+
+// ── Golden Alive Border Modifier: Organic 24K Liquid Gold Shimmering Aura ──
+struct GoldenAliveBorderModifier: ViewModifier {
+    @State private var rotationDegrees: Double = 0
+    @State private var pulseIntensity: Double = 0.8
+    @Environment(\.scenePhase) private var scenePhase
+
+    let cornerRadius: CGFloat
+    let lineWidth: CGFloat
+
+    // Luxurious 24K Gold Harmonized Gradient Stops
+    private let goldGradient = AngularGradient(
+        gradient: Gradient(colors: [
+            Color(red: 1.0, green: 0.84, blue: 0.0),       // Pure 24K Gold (#FFD700)
+            Color(red: 0.98, green: 0.68, blue: 0.15),     // Deep Amber (#F9AE26)
+            Color(red: 1.0, green: 0.95, blue: 0.78),      // Champagne White Gleam (#FFF2C7)
+            Color(red: 0.85, green: 0.55, blue: 0.10),     // Warm Bronze (#D98D1A)
+            Color(red: 1.0, green: 0.88, blue: 0.25),      // Radiant Auric Flare
+            Color(red: 1.0, green: 0.84, blue: 0.0)        // Seamless Loop Back
+        ]),
+        center: .center
+    )
+
+    init(cornerRadius: CGFloat = 16, lineWidth: CGFloat = 1.6) {
+        self.cornerRadius = cornerRadius
+        self.lineWidth = lineWidth
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(goldGradient, lineWidth: lineWidth)
+                    .rotationEffect(.degrees(rotationDegrees))
+                    .blur(radius: 0.4)
+            )
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(goldGradient, lineWidth: lineWidth + 2.0)
+                    .rotationEffect(.degrees(rotationDegrees))
+                    .blur(radius: 6)
+                    .opacity(0.35 * pulseIntensity)
+            )
+            .onAppear {
+                startAnimation()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    startAnimation()
+                }
+            }
+    }
+
+    private func startAnimation() {
+        withAnimation(.linear(duration: 5.5).repeatForever(autoreverses: false)) {
+            rotationDegrees = 360
+        }
+        withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
+            pulseIntensity = 1.25
+        }
+    }
+}
+
+// ── Pro Banner Border Modifier: Switches between Golden Alive Aura & Standard Border ──
+private struct ProBannerBorderModifier: ViewModifier {
+    let isProUser: Bool
+    let accentColor: Color
+
+    func body(content: Content) -> some View {
+        if isProUser {
+            content
+                .modifier(GoldenAliveBorderModifier(cornerRadius: 16, lineWidth: 1.8))
+        } else {
+            content
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(accentColor.opacity(0.65), lineWidth: 1)
+                )
         }
     }
 }
