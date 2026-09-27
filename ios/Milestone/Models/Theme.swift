@@ -21,8 +21,8 @@ public struct AppColors {
     public static let darkSurface = Color(red: 0x2A/255.0, green: 0x2A/255.0, blue: 0x2A/255.0)     // #2A2A2A
     public static let darkSurfaceLight = Color(red: 0x33/255.0, green: 0x33/255.0, blue: 0x33/255.0)// #333333
 
-    // Serene Botanical Sage Emerald for Personal Pillar & Break Phase
-    public static let personalEmerald = Color(red: 0x32/255.0, green: 0x72/255.0, blue: 0x53/255.0)
+    // Luminous Alpine Sage Emerald for Personal Pillar, Break Phase & Pro Highlights (#3E9B6E)
+    public static let personalEmerald = Color(red: 0x3E/255.0, green: 0x9B/255.0, blue: 0x6E/255.0)
 
     public static let danger = Color(red: 0xC0/255.0, green: 0x39/255.0, blue: 0x2B/255.0)          // #C0392B
 }
