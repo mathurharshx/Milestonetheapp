@@ -81,3 +81,29 @@ public struct Mission: Identifiable, Codable, Equatable, Hashable {
         category = try container.decodeIfPresent(MissionCategory.self, forKey: .category) ?? .work
     }
 }
+
+// ── Mission Launch Coordinator: High-Fidelity Hand-Off Between Creation & Home Screen ──
+@Observable
+public final class MissionLaunchCoordinator {
+    public static let shared = MissionLaunchCoordinator()
+
+    public var isIgniting: Bool = false
+    public var lastForgedCategory: MissionCategory = .work
+    public var ignitionToken: UUID = UUID()
+
+    private init() {}
+
+    @MainActor
+    public func triggerLaunch(category: MissionCategory) {
+        self.lastForgedCategory = category
+        self.ignitionToken = UUID()
+        self.isIgniting = true
+
+        // Complete ignition after cascade settles
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_200_000_000) // 1.2s
+            self.isIgniting = false
+        }
+    }
+}
+

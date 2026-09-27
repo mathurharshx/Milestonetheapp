@@ -11,6 +11,7 @@ public struct DotGridView: View {
     public let isCompleting: Bool
 
     @Environment(\.theme) private var theme
+    @State private var cascadeProgress: Double = 1.0
 
     public init(
         totalDays: Int,
@@ -133,24 +134,40 @@ public struct DotGridView: View {
     public var body: some View {
         let items = dotItems
         let totalUnits = isUnder24h ? totalHours : totalDays
+        let count = Double(max(1, items.count))
 
         if totalUnits > 0 && totalUnits <= 1095 {
             FlowLayout(spacing: dotGap) {
-                ForEach(items) { item in
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                    let itemProgress = Double(index) / count
+                    let isIlluminated = cascadeProgress >= itemProgress
+
                     Circle()
                         .fill(isCompleting ? theme.accent : (item.elapsed ? theme.dotElapsed : theme.dotFilled))
                         .frame(width: dotSize, height: dotSize)
-                        .scaleEffect(isCompleting ? 1.2 : 1.0)
+                        .scaleEffect(isCompleting ? 1.2 : (isIlluminated ? 1.0 : 0.2))
+                        .opacity(isIlluminated ? 1.0 : 0.0)
                         .overlay {
                             if item.isLead {
                                 Circle()
                                     .stroke(theme.accent.opacity(0.88), lineWidth: 1.1)
                                     .frame(width: dotSize + 5, height: dotSize + 5)
+                                    .scaleEffect(isIlluminated ? 1.0 : 0.5)
+                                    .opacity(isIlluminated ? 1.0 : 0.0)
                             }
                         }
                 }
             }
             .padding(.horizontal, 16)
+            .onChange(of: MissionLaunchCoordinator.shared.ignitionToken) { _, _ in
+                guard MissionLaunchCoordinator.shared.isIgniting else { return }
+
+                // ── Monolith Forge: Staggered High-Frequency Matrix Ripple ──
+                cascadeProgress = 0.0
+                withAnimation(.easeOut(duration: 0.55)) {
+                    cascadeProgress = 1.0
+                }
+            }
         }
     }
 }

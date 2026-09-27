@@ -343,6 +343,24 @@ public struct MissionTabView: View {
         .sheet(isPresented: $showPaywallSheet) {
             PaywallSheet(initialFeature: paywallFeature)
         }
+        .onChange(of: MissionLaunchCoordinator.shared.ignitionToken) { _, _ in
+            guard MissionLaunchCoordinator.shared.isIgniting else { return }
+
+            // ── Monolith Forge: Home Screen Resonance ──
+            keystoneEvent = .missionForged
+
+            // Secondary precision settle haptic
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                HapticsManager.shared.impact(.rigid)
+            }
+
+            // Reset keystone event after settling
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                if keystoneEvent == .missionForged {
+                    keystoneEvent = .none
+                }
+            }
+        }
         .fullScreenCover(isPresented: $showCelebrationSheet, onDismiss: {
             isCompletingAnimation = false
             isAscendingToVault = false

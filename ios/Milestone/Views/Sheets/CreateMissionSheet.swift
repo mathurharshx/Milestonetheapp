@@ -38,6 +38,10 @@ public struct CreateMissionSheet: View {
     @State private var heroBorderAngle: Double = 0.0
     @State private var isButtonBreathing: Bool = false
 
+    // Monolith Forge Laser Ignition State
+    @State private var isForging: Bool = false
+    @State private var forgeLaserProgress: CGFloat = 0.0
+
     private var effectiveCategory: MissionCategory {
         category ?? missionStore.activePillar
     }
@@ -238,9 +242,26 @@ public struct CreateMissionSheet: View {
                                                 center: .center,
                                                 angle: .degrees(heroBorderAngle)
                                             ),
-                                            lineWidth: focusedField == .title ? 1.4 : 1.0
+                                            lineWidth: isForging ? 2.0 : (focusedField == .title ? 1.4 : 1.0)
                                         )
                                 )
+                                .overlay(
+                                    // Monolith Forge High-Luminance Laser Ignition Line
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .trim(from: 0, to: forgeLaserProgress)
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [accentColor, Color.white, accentColor],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            style: StrokeStyle(lineWidth: 2.2, lineCap: .round)
+                                        )
+                                        .opacity(isForging ? 1.0 : 0.0)
+                                )
+                                .scaleEffect(isForging ? 1.02 : 1.0)
+                                .animation(.spring(response: 0.32, dampingFraction: 0.68), value: isForging)
+                                .disabled(isForging)
                         }
 
                         // 2. TARGET DATE (REQUIRED)
@@ -648,15 +669,36 @@ public struct CreateMissionSheet: View {
             return
         }
 
-        HapticsManager.shared.impact(.medium)
+        // ── Phase 1: The Monolith Forge Pressure-Lock & Sound ──
+        focusedField = nil
+        isForging = true
+        HapticsManager.shared.impact(.heavy)
         AudioManager.shared.play(.missionStart)
-        missionStore.createMission(
-            title: trimmedTitle,
-            targetDate: targetDate,
-            note: nil,
-            todos: todos,
-            category: effectiveCategory
-        )
-        dismiss()
+
+        // Rapid laser stroke ignition around title card
+        withAnimation(.easeOut(duration: 0.28)) {
+            forgeLaserProgress = 1.0
+        }
+
+        // Secondary confirmation micro-impact
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+            HapticsManager.shared.impact(.rigid)
+        }
+
+        // ── Phase 2: State Persistence & Seamless Home Screen Hand-Off ──
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) {
+            missionStore.createMission(
+                title: trimmedTitle,
+                targetDate: targetDate,
+                note: nil,
+                todos: todos,
+                category: effectiveCategory
+            )
+
+            // Trigger home screen Monolith Matrix Cascade
+            MissionLaunchCoordinator.shared.triggerLaunch(category: effectiveCategory)
+
+            dismiss()
+        }
     }
 }

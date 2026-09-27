@@ -6,6 +6,7 @@ public enum KeystoneEvent: Equatable {
     case taskCompleted
     case taskAdded
     case taskDeleted
+    case missionForged
 }
 
 /// A luxury continuous-corner rounded card housing the Mission Title, Countdown, and Dot Grid Matrix.
@@ -230,6 +231,22 @@ public struct KeystoneCardView<Content: View>: View {
                 pulseOpacity = 0.0
                 rimGlowOpacity = 0.0
                 scaleBreath = 1.0
+            }
+
+        case .missionForged:
+            // ── Monolith Forge: Heavy Anvil Settling Kinetic Spring & Luminous Rim Flare ──
+            scaleBreath = 0.94
+            pulseColor = activeAccentColor
+            pulseOpacity = 0.28
+            rimGlowColor = activeAccentColor
+            rimGlowOpacity = 0.90
+
+            withAnimation(.spring(response: 0.44, dampingFraction: 0.74)) {
+                scaleBreath = 1.0
+            }
+            withAnimation(.easeOut(duration: 1.0).delay(0.2)) {
+                pulseOpacity = 0.0
+                rimGlowOpacity = 0.0
             }
 
         case .none:
