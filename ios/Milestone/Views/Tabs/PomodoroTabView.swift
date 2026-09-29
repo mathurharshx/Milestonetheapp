@@ -84,6 +84,8 @@ public struct PomodoroTabView: View {
                                 .foregroundStyle(theme.textTertiary)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Clear focused task")
+                        .accessibilityHint("Removes this task from the active focus session")
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
@@ -175,6 +177,8 @@ public struct PomodoroTabView: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(soundscapeManager.isPlaying ? "Pause soundscape: \(soundscapeManager.currentSoundscape.rawValue)" : "Play focus soundscape")
+                    .accessibilityHint(subscriptionStore.isProUser ? "Toggles background audio" : "Requires premium subscription")
 
                     if subscriptionStore.isProUser {
                         Menu {
@@ -199,6 +203,8 @@ public struct PomodoroTabView: View {
                                         .stroke(theme.border.opacity(0.35), lineWidth: 1)
                                 )
                         }
+                        .accessibilityLabel("Soundscape options")
+                        .accessibilityHint("Select soundscape profile")
                     }
                 }
                 .padding(.bottom, 16)

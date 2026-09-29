@@ -14,7 +14,7 @@
   ],
   "products" : [
     {
-      "displayPrice" : "49.99",
+      "displayPrice" : "39.99",
       "familyShareable" : true,
       "internalID" : "6478901234",
       "localizations" : [
@@ -56,7 +56,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "3.99",
+          "displayPrice" : "4.99",
           "familyShareable" : true,
           "groupNumber" : 2,
           "internalID" : "6478901235",
@@ -92,11 +92,11 @@
             "internalID" : "7478901236",
             "numberOfPeriods" : 1,
             "paymentMode" : "free",
-            "subscriptionPeriod" : "P1W"
+            "subscriptionPeriod" : "P3D"
           },
           "localizations" : [
             {
-              "description" : "Annual access with 7-day free trial.",
+              "description" : "Annual access with 3-day free trial.",
               "displayName" : "Annual Premium",
               "locale" : "en_US"
             }

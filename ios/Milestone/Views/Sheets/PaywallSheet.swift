@@ -235,7 +235,7 @@ public struct PaywallSheet: View {
                         VStack(spacing: 6) {
                             if selectedPeriod == .monthly {
                                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                    Text(monthlyProduct?.displayPrice ?? "$3.99")
+                                    Text(monthlyProduct?.displayPrice ?? "$4.99")
                                         .font(.system(size: 26, weight: .heavy))
                                         .foregroundStyle(theme.textPrimary)
 

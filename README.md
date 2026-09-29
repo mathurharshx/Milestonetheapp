@@ -6,15 +6,16 @@ A minimalist, high-impact native iOS productivity application designed for deep 
 
 ## Key Features
 
-- **Single Mission Focus:** Commitment to one active goal at a time to prevent cognitive overload.
+- **Single Mission Focus & Dual Pillars:** Commitment to an active goal at a time with optional Work & Personal dual-track balance.
+- **Dedicated Tasks Runway:** Scheduled daily tasks, milestone deliverables, and consistency tracking ribbon.
 - **Dynamic Dot Grid Matrix:** Visual progress tracking dynamically sampled across 24h, 90d, 365d, and 1095d time horizons.
 - **4-Phase Pomodoro Timer:** 4-session focus cycles with an interactive 96-dot progress ring.
-- **Dynamic Island & Live Activities:** Battery-efficient, Apple Clock app-style snug Dynamic Island capsule and Lock Screen timer banner with real-time countdown.
+- **Dynamic Island & Live Activities:** Battery-efficient Dynamic Island capsule and Lock Screen timer banner with real-time countdown.
 - **Apple Fitness-Style Celebration:** Cascading dot matrix wave, glowing award seal, goal stats, and seamless spatial archive transition.
-- **Background Accountability Notifications:** Clean, minimal, non-intrusive notifications for focus sessions and daily morning countdowns.
-- **Customizable ADHD Rhythms:** Tailored focus intervals (15m, 20m, 25m, 30m, 45m, 50m, 60m) and break lengths.
-- **Native 4-Tab Navigation:** Mission, Pomodoro, Archive, and Settings.
-- **System Theme Synchronization:** Automatic Light/Dark mode matching iOS with fluid switch physics.
+- **ADHD Procedural Soundscapes:** Real-time on-device synthesis of 40Hz Gamma neural entrainment and Brown Noise.
+- **Background Accountability Notifications:** Clean, minimal, non-intrusive notifications for focus sessions, daily reminders, and deadline alerts.
+- **Native 5-Tab Navigation:** Pomodoro, Tasks, Mission, Archive, and Settings.
+- **Brutalist Luxury Aesthetic:** Pitch-black OLED theme with titanium white and alpine sage emerald accents.
 
 ---
 

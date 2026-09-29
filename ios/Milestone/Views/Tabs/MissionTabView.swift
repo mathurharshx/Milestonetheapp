@@ -466,6 +466,8 @@ public struct MissionTabView: View {
                     .scaleEffect(vaultPulse)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(subscriptionStore.isProUser ? "Mission Vault, \(missionStore.vaultMissions.count) queued missions" : "Mission Vault, Premium feature")
+                .accessibilityHint(subscriptionStore.isProUser ? "Opens queue of future and past missions" : "Requires premium subscription")
                 .sheet(isPresented: $showVaultSheet) {
                     VaultSheet()
                 }

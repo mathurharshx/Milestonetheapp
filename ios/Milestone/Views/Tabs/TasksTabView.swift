@@ -582,6 +582,8 @@ public struct TasksTabView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(isDone ? "Completed: \(task.text)" : "Mark as done: \(task.text)")
+            .accessibilityHint("Double tap to toggle completion status")
 
             // Task Text & Optional Scheduled Time
             VStack(alignment: .leading, spacing: 3) {
@@ -614,6 +616,8 @@ public struct TasksTabView: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Reminder set for \(timeString)")
+                    .accessibilityHint("Double tap to change reminder time")
                 }
             }
 
@@ -642,6 +646,8 @@ public struct TasksTabView: View {
                 )
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Focus on \(task.text)")
+            .accessibilityHint("Opens Pomodoro timer with this task")
 
             // Delete Button
             Button {
@@ -656,6 +662,7 @@ public struct TasksTabView: View {
                     .frame(width: 28, height: 28)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Delete \(task.text)")
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
@@ -891,6 +898,8 @@ public struct TasksTabView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(task.done ? "Completed: \(task.text)" : "Mark as done: \(task.text)")
+            .accessibilityHint("Double tap to toggle completion status")
 
             Text(task.text)
                 .font(.system(size: 15, weight: .medium))
@@ -922,6 +931,8 @@ public struct TasksTabView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Focus on \(task.text)")
+                .accessibilityHint("Opens Pomodoro timer with this milestone")
             }
 
             Button {
@@ -936,6 +947,7 @@ public struct TasksTabView: View {
                     .frame(width: 28, height: 28)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Delete \(task.text)")
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)

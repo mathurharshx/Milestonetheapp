@@ -11,7 +11,7 @@ public enum SubscriptionTier: String, CaseIterable, Identifiable {
 
     public var defaultPrice: String {
         switch self {
-        case .monthly: return "$3.99/mo"
+        case .monthly: return "$4.99/mo"
         case .annual: return "$29.99/yr"
         case .lifetime: return "$39.99"
         }
@@ -28,7 +28,7 @@ public enum SubscriptionTier: String, CaseIterable, Identifiable {
     public var subtitle: String {
         switch self {
         case .monthly: return "Billed monthly. Cancel anytime."
-        case .annual: return "$2.49/mo • 7-day free trial"
+        case .annual: return "$2.49/mo • 3-day free trial"
         case .lifetime: return "One-time payment. Forever yours."
         }
     }
