@@ -902,6 +902,34 @@ public struct SettingsTabView: View {
                             .padding(.vertical, 4)
                         }
                         .buttonStyle(.plain)
+
+                        Divider().overlay(theme.divider)
+
+                        Button {
+                            userStore.hasSeenOnboarding = false
+                            HapticsManager.shared.notification(.success)
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("Replay Onboarding Tour")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundStyle(theme.textPrimary)
+                                    Text("Reset hasSeenOnboarding flag to test the complete tour")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(theme.textTertiary)
+                                }
+                                Spacer()
+                                Text("REPLAY")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .tracking(1)
+                                    .foregroundStyle(theme.accent)
+                                    .padding(.horizontal, 9)
+                                    .padding(.vertical, 4)
+                                    .background(Capsule().fill(theme.accentDim))
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.plain)
                     }
 #endif
 
