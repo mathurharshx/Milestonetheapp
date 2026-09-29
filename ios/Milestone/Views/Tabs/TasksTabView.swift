@@ -326,7 +326,7 @@ public struct TasksTabView: View {
                     let isToday = calendar.isDateInToday(date)
                     let dayLetter = shortDayLetter(for: date)
                     let dayNumber = calendar.component(.day, from: date)
-                    let isCompletedDay = isToday && (dailyTasks.contains { $0.isCompletedToday })
+                    let isCompletedDay = isToday && !dailyTasks.isEmpty && dailyTasks.allSatisfy { $0.isCompletedToday }
 
                     VStack(spacing: 6) {
                         Text(dayLetter)
