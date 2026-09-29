@@ -53,6 +53,7 @@ public struct VaultSheet: View {
                             .font(.system(size: 22, weight: .semibold))
                             .foregroundStyle(theme.textTertiary)
                     }
+                    .accessibilityLabel("Close Vault")
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 20)

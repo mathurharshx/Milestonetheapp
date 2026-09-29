@@ -20,6 +20,7 @@ public struct KeystoneCardView<Content: View>: View {
     public let missionCategory: MissionCategory
 
     @Environment(\.theme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // Ambient Living Aurora State
     @State private var auroraPulse: Bool = false
@@ -180,8 +181,19 @@ public struct KeystoneCardView<Content: View>: View {
             y: isCompleting ? (isAscending ? -10 : -4) : 4
         )
         .onAppear {
-            withAnimation(.easeInOut(duration: 6.5).repeatForever(autoreverses: true)) {
-                auroraPulse = true
+            if !reduceMotion {
+                withAnimation(.easeInOut(duration: 6.5).repeatForever(autoreverses: true)) {
+                    auroraPulse = true
+                }
+            }
+        }
+        .onChange(of: reduceMotion) { _, isReduced in
+            if isReduced {
+                auroraPulse = false
+            } else {
+                withAnimation(.easeInOut(duration: 6.5).repeatForever(autoreverses: true)) {
+                    auroraPulse = true
+                }
             }
         }
         .onChange(of: event) { _, newEvent in

@@ -117,6 +117,7 @@ public struct PaywallSheet: View {
                                 .font(.system(size: 24, weight: .medium))
                                 .foregroundStyle(theme.textTertiary.opacity(0.7))
                         }
+                        .accessibilityLabel("Close paywall")
                     } else if let onContinue = onContinueFree {
                         Button {
                             HapticsManager.shared.impact(.light)
@@ -130,6 +131,7 @@ public struct PaywallSheet: View {
                                 .padding(.vertical, 6)
                                 .background(Capsule().fill(theme.surfaceLight.opacity(0.6)))
                         }
+                        .accessibilityLabel("Skip and continue with free plan")
                     }
                 }
                 .padding(.horizontal, 20)
@@ -340,6 +342,9 @@ public struct PaywallSheet: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Lifetime Pass, Pay \(lifetimeProduct?.displayPrice ?? "$39.99") once")
+                        .accessibilityAddTraits(selectedPeriod == .lifetime ? [.isSelected] : [])
                         .padding(.bottom, isEmbedded ? 8 : 12)
                     }
                     .padding(.horizontal, 20)
@@ -489,6 +494,9 @@ public struct PaywallSheet: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title) plan, \(badge ?? "")")
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 
     // ── Helper: Expandable Bento Grid Card ──

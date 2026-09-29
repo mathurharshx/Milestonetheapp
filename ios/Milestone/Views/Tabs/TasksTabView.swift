@@ -279,6 +279,10 @@ public struct TasksTabView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("\(cat.title) pillar")
+                        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+                        .accessibilityHint(cat == .personal && !subscriptionStore.isProUser ? "Requires premium subscription" : "Switches to \(cat.title) tasks")
                     }
                 }
                 .padding(3)

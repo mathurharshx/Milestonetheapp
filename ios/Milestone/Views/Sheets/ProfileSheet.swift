@@ -21,6 +21,7 @@ public struct ProfileSheet: View {
                             .font(.system(size: 20, weight: .medium))
                             .foregroundStyle(theme.textPrimary)
                     }
+                    .accessibilityLabel("Back")
 
                     Spacer()
 

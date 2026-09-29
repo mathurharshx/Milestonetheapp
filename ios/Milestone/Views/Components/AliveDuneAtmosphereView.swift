@@ -11,6 +11,7 @@ public struct AliveDuneAtmosphereView: View {
 
     @Environment(\.theme) private var theme
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // Independent harmonic phase states for non-repetitive organic fluid movement
     @State private var phaseCrest: Bool = false
@@ -206,22 +207,36 @@ public struct AliveDuneAtmosphereView: View {
             .drawingGroup() // Direct Metal GPU render pass: 0ms CPU load
         }
         .allowsHitTesting(false)
+        .accessibilityHidden(true)
         .onAppear {
             isVisible = true
-            startAtmosphericDrift()
+            if !reduceMotion {
+                startAtmosphericDrift()
+            }
         }
         .onDisappear {
             isVisible = false
         }
+        .onChange(of: reduceMotion) { _, isReduced in
+            if isReduced {
+                phaseCrest = false
+                phaseSwell = false
+                phaseHighlight = false
+                phaseShadow = false
+                phaseCounter = false
+            } else if isVisible {
+                startAtmosphericDrift()
+            }
+        }
         .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active && isVisible {
+            if newPhase == .active && isVisible && !reduceMotion {
                 startAtmosphericDrift()
             }
         }
     }
 
     private func startAtmosphericDrift() {
-        guard isVisible else { return }
+        guard isVisible, !reduceMotion else { return }
 
         // Dynamic, breathing cycle cadences for lively organic movement
         let durationCrest = isBreathingSync ? 3.0 : 4.8

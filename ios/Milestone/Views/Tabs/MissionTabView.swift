@@ -528,6 +528,10 @@ public struct MissionTabView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(category.title) pillar")
+                .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+                .accessibilityHint(category == .personal && !subscriptionStore.isProUser ? "Requires premium subscription" : "Switches to \(category.title) mission")
             }
         }
         .padding(3)

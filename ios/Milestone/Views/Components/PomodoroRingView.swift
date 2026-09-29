@@ -107,6 +107,8 @@ public struct PomodoroRingView: View {
             .allowsHitTesting(false)
         }
         .frame(width: ringSize, height: ringSize)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(phase.title): \(timeRemaining / 60) minutes \(timeRemaining % 60) seconds remaining, status: \(isRunning ? "running" : (isStarted ? "paused" : "ready"))")
     }
 }
 
@@ -118,6 +120,7 @@ private struct PomodoroBreathingAuraView: View, Equatable {
     let isSoundscapePlaying: Bool
     let ringSize: CGFloat
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isBreathingOuter: Bool = false
     @State private var isBreathingInner: Bool = false
 
@@ -171,12 +174,24 @@ private struct PomodoroBreathingAuraView: View, Equatable {
         .opacity(isRunning ? 1.0 : 0.0)
         .animation(.easeInOut(duration: 0.55), value: isRunning)
         .allowsHitTesting(false)
+        .accessibilityHidden(true)
         .onAppear {
-            startBreathing()
+            if !reduceMotion {
+                startBreathing()
+            }
+        }
+        .onChange(of: reduceMotion) { _, isReduced in
+            if isReduced {
+                isBreathingOuter = false
+                isBreathingInner = false
+            } else {
+                startBreathing()
+            }
         }
     }
 
     private func startBreathing() {
+        guard !reduceMotion else { return }
         isBreathingOuter = false
         isBreathingInner = false
         DispatchQueue.main.async {

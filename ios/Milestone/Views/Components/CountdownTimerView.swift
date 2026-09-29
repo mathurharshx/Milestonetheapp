@@ -41,6 +41,8 @@ public struct CountdownTimerView: View {
             }
         }
         .padding(.vertical, 16)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(countdown.days) days, \(countdown.hours) hours, \(countdown.minutes) minutes, and \(countdown.seconds) seconds remaining")
     }
 }
 

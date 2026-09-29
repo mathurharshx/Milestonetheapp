@@ -74,6 +74,7 @@ public struct VelocityReportSheet: View {
                             .frame(minWidth: 44, minHeight: 44)
                             .contentShape(Rectangle())
                     }
+                    .accessibilityLabel("Close report")
                 }
                 .padding(.horizontal, 22)
                 .padding(.top, 18)

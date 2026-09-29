@@ -113,6 +113,23 @@ public struct CreateMissionSheet: View {
     private var formContent: some View {
         ScrollViewReader { proxy in
             VStack(spacing: 0) {
+                if !isEmbedded {
+                    HStack {
+                        Spacer()
+                        Button {
+                            HapticsManager.shared.impact(.light)
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundStyle(theme.textTertiary)
+                        }
+                        .accessibilityLabel("Close")
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 16)
+                }
+
                 // ── Scrollable Form Area ──
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 26) {

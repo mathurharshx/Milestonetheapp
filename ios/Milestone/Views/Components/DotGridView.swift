@@ -159,6 +159,8 @@ public struct DotGridView: View {
                 }
             }
             .padding(.horizontal, 16)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(isUnder24h ? "Hourly progress: \(hoursElapsed) of \(totalHours) hours elapsed" : "Runway matrix: \(daysElapsed) of \(totalDays) days elapsed, \(max(0, totalDays - daysElapsed)) days remaining")
             .onChange(of: MissionLaunchCoordinator.shared.ignitionToken) { _, _ in
                 guard MissionLaunchCoordinator.shared.isIgniting else { return }
 
