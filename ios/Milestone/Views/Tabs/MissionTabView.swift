@@ -618,6 +618,8 @@ public struct MissionTabView: View {
 
         VStack(spacing: 12) {
             if let task = topTask {
+                let isThisCompleting = completingTaskId == task.id
+
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         HStack(spacing: 5) {
@@ -671,7 +673,6 @@ public struct MissionTabView: View {
                     }
 
                     HStack(spacing: 12) {
-                        let isThisCompleting = completingTaskId == task.id
                         Button {
                             guard completingTaskId == nil else { return }
                             HapticsManager.shared.impact(.light)
@@ -722,11 +723,35 @@ public struct MissionTabView: View {
                 .padding(14)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(theme.surfaceLight.opacity(0.55))
+                        .fill(theme.surfaceLight.opacity(isThisCompleting ? 0.75 : 0.55))
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(accent.opacity(0.3), lineWidth: 1)
+                                .stroke(accent.opacity(isThisCompleting ? 0.65 : 0.3), lineWidth: isThisCompleting ? 1.2 : 1)
                         )
+                        .overlay(
+                            GeometryReader { geo in
+                                if isThisCompleting {
+                                    Rectangle()
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color.clear,
+                                                    accent.opacity(0.35),
+                                                    Color.white.opacity(0.45),
+                                                    accent.opacity(0.35),
+                                                    Color.clear
+                                                ]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .frame(width: geo.size.width * 0.45)
+                                        .offset(x: isThisCompleting ? geo.size.width * 1.2 : -geo.size.width * 0.45)
+                                        .animation(.easeOut(duration: 0.38), value: isThisCompleting)
+                                }
+                            }
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                 )
             }
 

@@ -19,6 +19,7 @@ public struct TasksTabView: View {
     @State private var isAddingMilestone: Bool = false
     @State private var isMilestonesExpanded: Bool = true
     @State private var isCompletedMilestonesExpanded: Bool = false
+    @State private var completingTaskIds: Set<String> = []
     @FocusState private var focusedInput: InputField?
 
     private enum InputField: Hashable {
@@ -532,119 +533,164 @@ public struct TasksTabView: View {
     @ViewBuilder
     private func dailyTaskRow(_ task: TodoTask) -> some View {
         let isDone = task.isCompletedToday
+        let isCompleting = completingTaskIds.contains(task.id)
 
         HStack(spacing: 12) {
-                // Generous 48pt tap target checkbox
-                Button {
+            // Generous 48pt tap target checkbox
+            Button {
+                guard !isCompleting else { return }
+                if isDone {
+                    // Instant uncheck with light impact
                     HapticsManager.shared.impact(.light)
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                         missionStore.toggleTodo(id: task.id)
                     }
-                } label: {
-                    ZStack {
-                        Circle()
-                            .fill(isDone ? accentColor : Color.clear)
-                            .frame(width: 22, height: 22)
-
-                        Circle()
-                            .stroke(isDone ? accentColor : theme.textTertiary, lineWidth: 1.5)
-                            .frame(width: 22, height: 22)
-
-                        if isDone {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .black))
-                                .foregroundStyle(theme.background)
-                        }
-                    }
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-
-                // Task Text & Optional Scheduled Time
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(task.text)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(isDone ? theme.textTertiary : theme.textPrimary)
-                        .strikethrough(isDone, color: theme.textTertiary)
-
-                    if let timeString = task.formattedReminderTime {
-                        Button {
-                            HapticsManager.shared.impact(.light)
-                            var comps = DateComponents()
-                            comps.hour = task.reminderHour ?? 9
-                            comps.minute = task.reminderMinute ?? 0
-                            editTimeDate = Calendar.current.date(from: comps) ?? Date()
-                            editingTaskForTime = task
-                        } label: {
-                            HStack(spacing: 3.5) {
-                                Image(systemName: "bell.fill")
-                                    .font(.system(size: 7.5))
-                                Text(timeString)
-                                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                            }
-                            .foregroundStyle(isDone ? theme.textTertiary.opacity(0.7) : accentColor)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(
-                                Capsule()
-                                    .fill(isDone ? theme.surfaceLight.opacity(0.4) : accentColor.opacity(0.12))
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-
-                Spacer()
-
-                // Focus Action Button
-                Button {
-                    HapticsManager.shared.impact(.medium)
-                    pomodoroStore.focusOn(taskId: task.id, taskTitle: task.text)
-                    userStore.selectedTab = .pomodoro
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "hourglass")
-                            .font(.system(size: 9, weight: .bold))
-                        Text("FOCUS")
-                            .font(.system(size: 9, weight: .bold))
-                            .tracking(1.0)
-                    }
-                    .foregroundStyle(theme.textSecondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
-                    .background(
-                        Capsule()
-                            .fill(theme.surfaceLight.opacity(0.8))
-                            .overlay(Capsule().stroke(theme.border.opacity(0.5), lineWidth: 0.8))
-                    )
-                }
-                .buttonStyle(.plain)
-
-                // Delete Button
-                Button {
+                } else {
+                    // Option 2: Specular Sheen & Fold
                     HapticsManager.shared.impact(.light)
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
-                        missionStore.deleteTodo(id: task.id)
+                    withAnimation(.easeOut(duration: 0.18)) {
+                        completingTaskIds.insert(task.id)
                     }
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(theme.textTertiary.opacity(0.6))
-                        .frame(width: 28, height: 28)
+
+                    // Celebratory pause (380ms) for sheen sweep to play, then success haptic & fold
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.38) {
+                        HapticsManager.shared.notification(.success)
+                        withAnimation(.spring(response: 0.40, dampingFraction: 0.82)) {
+                            missionStore.toggleTodo(id: task.id)
+                            completingTaskIds.remove(task.id)
+                        }
+                    }
                 }
-                .buttonStyle(.plain)
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(isDone || isCompleting ? accentColor : Color.clear)
+                        .frame(width: 22, height: 22)
+
+                    Circle()
+                        .stroke(isDone || isCompleting ? accentColor : theme.textTertiary, lineWidth: 1.5)
+                        .frame(width: 22, height: 22)
+
+                    if isDone || isCompleting {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .black))
+                            .foregroundStyle(theme.background)
+                            .transition(.scale(scale: 0.6).combined(with: .opacity))
+                    }
+                }
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(theme.surfaceLight.opacity(0.55))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(theme.border.opacity(0.4), lineWidth: 0.8)
-                    )
-            )
+            .buttonStyle(.plain)
+
+            // Task Text & Optional Scheduled Time
+            VStack(alignment: .leading, spacing: 3) {
+                Text(task.text)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(isDone || isCompleting ? theme.textTertiary : theme.textPrimary)
+                    .strikethrough(isDone || isCompleting, color: theme.textTertiary)
+
+                if let timeString = task.formattedReminderTime {
+                    Button {
+                        HapticsManager.shared.impact(.light)
+                        var comps = DateComponents()
+                        comps.hour = task.reminderHour ?? 9
+                        comps.minute = task.reminderMinute ?? 0
+                        editTimeDate = Calendar.current.date(from: comps) ?? Date()
+                        editingTaskForTime = task
+                    } label: {
+                        HStack(spacing: 3.5) {
+                            Image(systemName: "bell.fill")
+                                .font(.system(size: 7.5))
+                            Text(timeString)
+                                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                        }
+                        .foregroundStyle(isDone ? theme.textTertiary.opacity(0.7) : accentColor)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule()
+                                .fill(isDone ? theme.surfaceLight.opacity(0.4) : accentColor.opacity(0.12))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            Spacer()
+
+            // Focus Action Button
+            Button {
+                HapticsManager.shared.impact(.medium)
+                pomodoroStore.focusOn(taskId: task.id, taskTitle: task.text)
+                userStore.selectedTab = .pomodoro
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "hourglass")
+                        .font(.system(size: 9, weight: .bold))
+                    Text("FOCUS")
+                        .font(.system(size: 9, weight: .bold))
+                        .tracking(1.0)
+                }
+                .foregroundStyle(theme.textSecondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule()
+                        .fill(theme.surfaceLight.opacity(0.8))
+                        .overlay(Capsule().stroke(theme.border.opacity(0.5), lineWidth: 0.8))
+                )
+            }
+            .buttonStyle(.plain)
+
+            // Delete Button
+            Button {
+                HapticsManager.shared.impact(.light)
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                    missionStore.deleteTodo(id: task.id)
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(theme.textTertiary.opacity(0.6))
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(theme.surfaceLight.opacity(isCompleting ? 0.75 : 0.55))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(isCompleting ? accentColor.opacity(0.65) : theme.border.opacity(0.4), lineWidth: isCompleting ? 1.2 : 0.8)
+                )
+                .overlay(
+                    GeometryReader { geo in
+                        if isCompleting {
+                            Rectangle()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.clear,
+                                            accentColor.opacity(0.35),
+                                            Color.white.opacity(0.45),
+                                            accentColor.opacity(0.35),
+                                            Color.clear
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: geo.size.width * 0.45)
+                                .offset(x: isCompleting ? geo.size.width * 1.2 : -geo.size.width * 0.45)
+                                .animation(.easeOut(duration: 0.38), value: isCompleting)
+                        }
+                    }
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+        )
     }
 
     // ── Milestone Deliverables Section ──
@@ -797,88 +843,134 @@ public struct TasksTabView: View {
     // ── Milestone Row ──
     @ViewBuilder
     private func milestoneRow(_ task: TodoTask) -> some View {
+        let isCompleting = completingTaskIds.contains(task.id)
+
         HStack(spacing: 12) {
-                Button {
+            Button {
+                guard !isCompleting else { return }
+                if task.done {
+                    // Instant uncheck with light impact
                     HapticsManager.shared.impact(.light)
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                         missionStore.toggleTodo(id: task.id)
                     }
-                } label: {
-                    ZStack {
-                        Circle()
-                            .fill(task.done ? accentColor : Color.clear)
-                            .frame(width: 22, height: 22)
-
-                        Circle()
-                            .stroke(task.done ? accentColor : theme.textTertiary, lineWidth: 1.5)
-                            .frame(width: 22, height: 22)
-
-                        if task.done {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .black))
-                                .foregroundStyle(theme.background)
-                        }
-                    }
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-
-                Text(task.text)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(task.done ? theme.textTertiary : theme.textPrimary)
-                    .strikethrough(task.done, color: theme.textTertiary)
-
-                Spacer()
-
-                if !task.done {
-                    Button {
-                        HapticsManager.shared.impact(.medium)
-                        pomodoroStore.focusOn(taskId: task.id, taskTitle: task.text)
-                        userStore.selectedTab = .pomodoro
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "hourglass")
-                                .font(.system(size: 9, weight: .bold))
-                            Text("FOCUS")
-                                .font(.system(size: 9, weight: .bold))
-                                .tracking(1.0)
-                        }
-                        .foregroundStyle(theme.textSecondary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 5)
-                        .background(
-                            Capsule()
-                                .fill(theme.surfaceLight.opacity(0.8))
-                                .overlay(Capsule().stroke(theme.border.opacity(0.5), lineWidth: 0.8))
-                        )
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                Button {
+                } else {
+                    // Option 2: Specular Sheen & Fold
                     HapticsManager.shared.impact(.light)
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
-                        missionStore.deleteTodo(id: task.id)
+                    withAnimation(.easeOut(duration: 0.18)) {
+                        completingTaskIds.insert(task.id)
                     }
+
+                    // Celebratory pause (380ms) for sheen sweep to play, then success haptic & fold
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.38) {
+                        HapticsManager.shared.notification(.success)
+                        withAnimation(.spring(response: 0.40, dampingFraction: 0.82)) {
+                            missionStore.toggleTodo(id: task.id)
+                            completingTaskIds.remove(task.id)
+                        }
+                    }
+                }
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(task.done || isCompleting ? accentColor : Color.clear)
+                        .frame(width: 22, height: 22)
+
+                    Circle()
+                        .stroke(task.done || isCompleting ? accentColor : theme.textTertiary, lineWidth: 1.5)
+                        .frame(width: 22, height: 22)
+
+                    if task.done || isCompleting {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .black))
+                            .foregroundStyle(theme.background)
+                            .transition(.scale(scale: 0.6).combined(with: .opacity))
+                    }
+                }
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Text(task.text)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(task.done || isCompleting ? theme.textTertiary : theme.textPrimary)
+                .strikethrough(task.done || isCompleting, color: theme.textTertiary)
+
+            Spacer()
+
+            if !task.done && !isCompleting {
+                Button {
+                    HapticsManager.shared.impact(.medium)
+                    pomodoroStore.focusOn(taskId: task.id, taskTitle: task.text)
+                    userStore.selectedTab = .pomodoro
                 } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(theme.textTertiary.opacity(0.6))
-                        .frame(width: 28, height: 28)
+                    HStack(spacing: 4) {
+                        Image(systemName: "hourglass")
+                            .font(.system(size: 9, weight: .bold))
+                        Text("FOCUS")
+                            .font(.system(size: 9, weight: .bold))
+                            .tracking(1.0)
+                    }
+                    .foregroundStyle(theme.textSecondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule()
+                            .fill(theme.surfaceLight.opacity(0.8))
+                            .overlay(Capsule().stroke(theme.border.opacity(0.5), lineWidth: 0.8))
+                    )
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(theme.surfaceLight.opacity(0.55))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(theme.border.opacity(0.4), lineWidth: 0.8)
-                    )
-            )
+
+            Button {
+                HapticsManager.shared.impact(.light)
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                    missionStore.deleteTodo(id: task.id)
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(theme.textTertiary.opacity(0.6))
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(theme.surfaceLight.opacity(isCompleting ? 0.75 : 0.55))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(isCompleting ? accentColor.opacity(0.65) : theme.border.opacity(0.4), lineWidth: isCompleting ? 1.2 : 0.8)
+                )
+                .overlay(
+                    GeometryReader { geo in
+                        if isCompleting {
+                            Rectangle()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.clear,
+                                            accentColor.opacity(0.35),
+                                            Color.white.opacity(0.45),
+                                            accentColor.opacity(0.35),
+                                            Color.clear
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: geo.size.width * 0.45)
+                                .offset(x: isCompleting ? geo.size.width * 1.2 : -geo.size.width * 0.45)
+                                .animation(.easeOut(duration: 0.38), value: isCompleting)
+                        }
+                    }
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+        )
     }
 
     // ── Empty Mission State ──
