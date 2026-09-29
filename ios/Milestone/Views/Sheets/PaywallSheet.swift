@@ -41,15 +41,15 @@ public struct PaywallSheet: View {
     }
 
     private var annualProduct: Product? {
-        subscriptionStore.products.first(where: { $0.id.contains("annual") })
+        subscriptionStore.products.first(where: { $0.id == SubscriptionStore.annualID })
     }
 
     private var monthlyProduct: Product? {
-        subscriptionStore.products.first(where: { $0.id.contains("monthly") })
+        subscriptionStore.products.first(where: { $0.id == SubscriptionStore.monthlyID })
     }
 
     private var lifetimeProduct: Product? {
-        subscriptionStore.products.first(where: { $0.id.contains("lifetime") })
+        subscriptionStore.products.first(where: { $0.id == SubscriptionStore.lifetimeID })
     }
 
     private var annualPerMonthString: String {
@@ -191,16 +191,16 @@ public struct PaywallSheet: View {
                                 detail: "Display Work and Personal countdowns with pure burning runway dots and remaining days. Includes dedicated minimalist Work and Personal Home Screen widgets, interactive Lock Screen rings, and side-by-side matrices."
                             )
 
-                            // Bento 2: ADHD Focus Soundscapes
+                            // Bento 2: Focus Soundscapes
                             bentoCard(
                                 feature: .soundscapes,
                                 icon: "waveform",
                                 iconColor: theme.accent,
-                                title: "ADHD Focus Soundscapes",
-                                badge: "40Hz GAMMA",
+                                title: "Focus Soundscapes",
+                                badge: "40Hz TONE",
                                 badgeColor: theme.accent,
-                                summary: "Procedural brown noise & 40Hz gamma binaural frequencies to eliminate mental friction.",
-                                detail: "Synthesizes real-time acoustic frequencies directly on-device with zero internet required. 40Hz gamma neural entrainment stimulates the prefrontal cortex for sustained focus, while continuous brown noise quiets intrusive ADHD racing thoughts."
+                                summary: "Procedural brown noise & 40Hz tone to create a steady acoustic backdrop.",
+                                detail: "Synthesizes real-time acoustic soundscapes directly on-device with zero internet connection required. Continuous brown noise and a 40 Hz tone provide a consistent ambient background for deep work sessions."
                             )
 
                             // Bento 3 & 4: Two-Column Row (Dual Missions + The Vault)
@@ -263,7 +263,7 @@ public struct PaywallSheet: View {
                                         .foregroundStyle(theme.accent)
                                 }
 
-                                Text("Includes 3-day free trial. Cancel anytime in App Store before trial ends.")
+                                Text("3-day free trial, then \(annualProduct?.displayPrice ?? "$29.99")/year; auto-renews until cancelled.")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(theme.textTertiary)
                                     .multilineTextAlignment(.center)

@@ -4,7 +4,7 @@ import Observation
 
 public enum SoundscapeType: String, CaseIterable, Identifiable {
     case brownNoise = "Brown Noise"
-    case gammaFocus = "40Hz Gamma Focus"
+    case gammaFocus = "40Hz Tone"
     case off = "None"
 
     public var id: String { rawValue }
@@ -12,15 +12,15 @@ public enum SoundscapeType: String, CaseIterable, Identifiable {
     public var icon: String {
         switch self {
         case .brownNoise: return "waveform.path"
-        case .gammaFocus: return "brain.head.profile"
+        case .gammaFocus: return "waveform"
         case .off: return "speaker.slash"
         }
     }
 
     public var subtitle: String {
         switch self {
-        case .brownNoise: return "Deep low-frequency roar to silence racing thoughts."
-        case .gammaFocus: return "40Hz neural entrainment for deep concentration."
+        case .brownNoise: return "Low-frequency acoustic backdrop for focus."
+        case .gammaFocus: return "40Hz audio tone for ambient concentration."
         case .off: return "Silent focus mode."
         }
     }

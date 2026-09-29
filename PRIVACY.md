@@ -19,7 +19,7 @@ At **Milestone** ("we", "our", or "the app"), we believe your focus, goals, and 
 - We do not receive, process, or store your payment details, credit card numbers, or billing address. All transaction validation occurs directly through Apple's secure infrastructure.
 
 ### 4. Audio & Permissions
-- **Soundscapes**: Procedural soundscapes (40Hz Gamma waves and Brown Noise) are generated mathematically in real-time on your device using Apple's AVAudioEngine. No audio is recorded, accessed from external servers, or transmitted.
+- **Soundscapes**: Procedural soundscapes (Brown Noise and a 40Hz audio tone) are generated mathematically in real-time on your device using Apple's AVAudioEngine. No audio is recorded, accessed from external servers, or transmitted.
 - **Notifications**: Local notifications for timers and morning reminders are scheduled and triggered entirely on your device without communicating with any external push notification server.
 
 ### 5. Contact Us

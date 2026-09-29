@@ -104,7 +104,7 @@ public struct SettingsTabView: View {
                                     }
                                 }
 
-                                Text(subscriptionStore.isProUser ? "Tap to manage subscription · All features unlocked" : "Unlock ADHD soundscapes, the vault & dual-track")
+                                Text(subscriptionStore.isProUser ? "Tap to manage subscription · All features unlocked" : "Unlock focus soundscapes, the vault & dual-track")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(theme.textTertiary)
                             }
@@ -205,7 +205,7 @@ public struct SettingsTabView: View {
 
                     Divider().overlay(theme.divider)
 
-                    // ── FOCUS TIMERS (ADHD RHYTHM) ──
+                    // ── FOCUS TIMERS ──
                     SectionHeader(title: "FOCUS TIMERS")
                         .padding(.top, 24)
 

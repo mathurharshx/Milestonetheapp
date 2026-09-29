@@ -189,25 +189,22 @@ struct MilestonePomodoroWidgetView: View {
 
             Spacer(minLength: 2)
 
-            // Tactile Interactive Start/Pause Button
-            Button(intent: TogglePomodoroWidgetIntent()) {
-                HStack(spacing: 5) {
-                    Image(systemName: entry.data.pomodoroIsRunning ? "pause.fill" : "play.fill")
-                        .font(.system(size: 9, weight: .heavy))
+            // Tactile In-App Focus Button
+            HStack(spacing: 5) {
+                Image(systemName: entry.data.pomodoroIsRunning ? "pause.fill" : "play.fill")
+                    .font(.system(size: 9, weight: .heavy))
 
-                    Text(entry.data.pomodoroIsRunning ? "PAUSE" : "START")
-                        .font(.system(size: 10, weight: .heavy))
-                        .tracking(1.5)
-                }
-                .foregroundStyle(entry.data.isDarkMode ? Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0) : Color.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 28)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(entry.data.textPrimaryColor)
-                )
+                Text(entry.data.pomodoroIsRunning ? "PAUSE" : "START")
+                    .font(.system(size: 10, weight: .heavy))
+                    .tracking(1.5)
             }
-            .buttonStyle(.plain)
+            .foregroundStyle(entry.data.isDarkMode ? Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0) : Color.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 28)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(entry.data.textPrimaryColor)
+            )
         }
         .padding(14)
         .containerBackground(for: .widget) {
@@ -275,37 +272,22 @@ struct MilestonePomodoroWidgetView: View {
 
                 Spacer()
 
-                // Dual Interactive Buttons
+                // Action Button (Opens Focus Timer in app)
                 HStack(spacing: 8) {
-                    Button(intent: TogglePomodoroWidgetIntent()) {
-                        HStack(spacing: 4) {
-                            Image(systemName: entry.data.pomodoroIsRunning ? "pause.fill" : "play.fill")
-                                .font(.system(size: 10, weight: .bold))
-                            Text(entry.data.pomodoroIsRunning ? "PAUSE" : "START")
-                                .font(.system(size: 10, weight: .bold))
-                                .tracking(1.5)
-                        }
-                        .foregroundStyle(entry.data.isDarkMode ? Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0) : Color.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 32)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(entry.data.textPrimaryColor)
-                        )
+                    HStack(spacing: 4) {
+                        Image(systemName: entry.data.pomodoroIsRunning ? "pause.fill" : "play.fill")
+                            .font(.system(size: 10, weight: .bold))
+                        Text(entry.data.pomodoroIsRunning ? "PAUSE" : "START FOCUS")
+                            .font(.system(size: 10, weight: .bold))
+                            .tracking(1.5)
                     }
-                    .buttonStyle(.plain)
-
-                    Button(intent: ResetPomodoroWidgetIntent()) {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(entry.data.textPrimaryColor)
-                            .frame(width: 32, height: 32)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(entry.data.surfaceColor)
-                            )
-                    }
-                    .buttonStyle(.plain)
+                    .foregroundStyle(entry.data.isDarkMode ? Color(red: 0x22/255.0, green: 0x22/255.0, blue: 0x22/255.0) : Color.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 32)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(entry.data.textPrimaryColor)
+                    )
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -366,7 +348,7 @@ public struct MilestonePomodoroWidget: Widget {
             MilestonePomodoroWidgetView(entry: entry)
         }
         .configurationDisplayName("Focus Timer")
-        .description("Interactive Pomodoro focus timer with live start/pause controls.")
+        .description("Glanceable Pomodoro focus timer with real-time countdown.")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular])
     }
 }

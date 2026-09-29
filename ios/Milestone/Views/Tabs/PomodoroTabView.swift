@@ -140,7 +140,7 @@ public struct PomodoroTabView: View {
                 }
                 .padding(.bottom, 12)
 
-                // ── ADHD Focus Soundscape Pill ──
+                // ── Focus Soundscape Pill ──
                 HStack(spacing: 8) {
                     Button {
                         HapticsManager.shared.impact(.light)

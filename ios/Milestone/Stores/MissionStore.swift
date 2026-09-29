@@ -14,6 +14,7 @@ public final class MissionStore {
         didSet {
             saveActivePersonalMission()
             syncToWidget()
+            refreshMorningNotification()
         }
     }
     public var activePillar: MissionCategory = .work {
@@ -230,15 +231,14 @@ public final class MissionStore {
         self.archivedMissions.removeAll(where: { $0.id == completed.id })
         self.archivedMissions.insert(completed, at: 0)
 
-        if completed.id == activeMission?.id || activePillar == .work || mission.category == .work {
+        if completed.id == activeMission?.id || (missionToArchive == nil && activePillar == .work) || (completed.category == .work && completed.id == activeMission?.id) {
             self.activeMission = nil
             UserDefaults.standard.removeObject(forKey: activeKey)
         }
-        if completed.id == activePersonalMission?.id || activePillar == .personal || mission.category == .personal {
+        if completed.id == activePersonalMission?.id || (missionToArchive == nil && activePillar == .personal) || (completed.category == .personal && completed.id == activePersonalMission?.id) {
             self.activePersonalMission = nil
             UserDefaults.standard.removeObject(forKey: activePersonalKey)
         }
-        self.currentPillarMission = nil
 
         UserDefaults.standard.synchronize()
         syncToWidget()
@@ -463,26 +463,42 @@ public final class MissionStore {
         let min = UserDefaults.standard.object(forKey: "milestone:morningReminderMinute") as? Int ?? 0
 
         Task { @MainActor in
-            if let mission = activeMission, mission.isActive {
-                // 1. Daily morning accountability reminder
+            let activeMissions = [activeMission, activePersonalMission].compactMap { $0 }.filter(\.isActive)
+
+            // Work Mission
+            if let work = activeMission, work.isActive {
                 if isEnabled {
-                    NotificationManager.shared.scheduleDailyMorningReminder(mission: mission, hour: hour, minute: min)
+                    NotificationManager.shared.scheduleDailyMorningReminder(mission: work, hour: hour, minute: min)
                 } else {
-                    NotificationManager.shared.cancelDailyMorningReminder()
+                    NotificationManager.shared.cancelDailyMorningReminder(category: .work)
                 }
-
-                // 2. Exact mission target deadline reached alert
-                NotificationManager.shared.scheduleMissionDeadlineNotification(mission: mission)
-
-                // 3. Reschedule all active uncompleted daily task reminders
-                for task in mission.todos where task.type == .daily && !task.isCompletedToday {
+                NotificationManager.shared.scheduleMissionDeadlineNotification(mission: work)
+                for task in work.todos where task.type == .daily && !task.isCompletedToday {
                     if let h = task.reminderHour, let m = task.reminderMinute {
                         NotificationManager.shared.scheduleDailyTaskReminder(taskId: task.id, taskText: task.text, hour: h, minute: m)
                     }
                 }
             } else {
-                NotificationManager.shared.cancelDailyMorningReminder()
-                NotificationManager.shared.cancelMissionDeadlineNotification()
+                NotificationManager.shared.cancelDailyMorningReminder(category: .work)
+                NotificationManager.shared.cancelMissionDeadlineNotification(category: .work)
+            }
+
+            // Personal Mission
+            if let personal = activePersonalMission, personal.isActive {
+                if isEnabled {
+                    NotificationManager.shared.scheduleDailyMorningReminder(mission: personal, hour: hour, minute: min)
+                } else {
+                    NotificationManager.shared.cancelDailyMorningReminder(category: .personal)
+                }
+                NotificationManager.shared.scheduleMissionDeadlineNotification(mission: personal)
+                for task in personal.todos where task.type == .daily && !task.isCompletedToday {
+                    if let h = task.reminderHour, let m = task.reminderMinute {
+                        NotificationManager.shared.scheduleDailyTaskReminder(taskId: task.id, taskText: task.text, hour: h, minute: m)
+                    }
+                }
+            } else {
+                NotificationManager.shared.cancelDailyMorningReminder(category: .personal)
+                NotificationManager.shared.cancelMissionDeadlineNotification(category: .personal)
             }
         }
     }
@@ -492,8 +508,8 @@ public final class MissionStore {
 
         let current = currentPillarMission ?? activeMission
         let totalTodos = current?.todos.count ?? 0
-        let doneTodos = current?.todos.filter(\.done).count ?? 0
-        let topTask = current?.todos.first(where: { !$0.done })
+        let doneTodos = current?.todos.filter({ $0.type == .daily ? $0.isCompletedToday : $0.done }).count ?? 0
+        let topTask = current?.todos.first(where: { !($0.type == .daily ? $0.isCompletedToday : $0.done) })
 
         // Construct dedicated payloads for Work & Personal
         let workPayload: MissionWidgetPayload? = activeMission.map { m in
@@ -503,9 +519,9 @@ public final class MissionStore {
                 createdAt: m.createdAt.timeIntervalSince1970,
                 category: "work",
                 todosTotal: m.todos.count,
-                todosDone: m.todos.filter(\.done).count,
-                topPendingTaskText: m.todos.first(where: { !$0.done })?.text,
-                topPendingTaskId: m.todos.first(where: { !$0.done })?.id
+                todosDone: m.todos.filter({ $0.type == .daily ? $0.isCompletedToday : $0.done }).count,
+                topPendingTaskText: m.todos.first(where: { !($0.type == .daily ? $0.isCompletedToday : $0.done) })?.text,
+                topPendingTaskId: m.todos.first(where: { !($0.type == .daily ? $0.isCompletedToday : $0.done) })?.id
             )
         }
 
@@ -516,9 +532,9 @@ public final class MissionStore {
                 createdAt: m.createdAt.timeIntervalSince1970,
                 category: "personal",
                 todosTotal: m.todos.count,
-                todosDone: m.todos.filter(\.done).count,
-                topPendingTaskText: m.todos.first(where: { !$0.done })?.text,
-                topPendingTaskId: m.todos.first(where: { !$0.done })?.id
+                todosDone: m.todos.filter({ $0.type == .daily ? $0.isCompletedToday : $0.done }).count,
+                topPendingTaskText: m.todos.first(where: { !($0.type == .daily ? $0.isCompletedToday : $0.done) })?.text,
+                topPendingTaskId: m.todos.first(where: { !($0.type == .daily ? $0.isCompletedToday : $0.done) })?.id
             )
         }
 

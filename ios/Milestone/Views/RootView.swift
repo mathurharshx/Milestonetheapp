@@ -63,7 +63,9 @@ public struct RootView: View {
         .onOpenURL { url in
             showSplash = false
             pomodoroStore.syncFromWidget()
-            userStore.handleDeepLink(url: url)
+            userStore.handleDeepLink(url: url, onPersonalRoute: {
+                missionStore.switchPillar(to: .personal)
+            })
         }
         .sheet(isPresented: Bindable(userStore).showPaywallSheet) {
             PaywallSheet(initialFeature: userStore.paywallInitialFeature)

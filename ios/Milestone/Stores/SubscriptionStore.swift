@@ -39,14 +39,15 @@ public enum SubscriptionTier: String, CaseIterable, Identifiable {
 public final class SubscriptionStore {
     public static let shared = SubscriptionStore()
 
-    // All possible Product IDs (with and without .pro. in App Store Connect)
-    public static let allPossibleIDs: Set<String> = [
-        "com.mathurharsh.milestonetheapp.pro.monthly",
-        "com.mathurharsh.milestonetheapp.monthly",
-        "com.mathurharsh.milestonetheapp.pro.annual",
-        "com.mathurharsh.milestonetheapp.annual",
-        "com.mathurharsh.milestonetheapp.pro.lifetime",
-        "com.mathurharsh.milestonetheapp.lifetime"
+    // Exact production Product IDs
+    public static let monthlyID = "com.mathurharsh.milestonetheapp.pro.monthly"
+    public static let annualID = "com.mathurharsh.milestonetheapp.pro.annual"
+    public static let lifetimeID = "com.mathurharsh.milestonetheapp.pro.lifetime"
+
+    public static let productIDs: Set<String> = [
+        monthlyID,
+        annualID,
+        lifetimeID
     ]
 
     public var isTestFlightOrSandbox: Bool {
@@ -93,12 +94,12 @@ public final class SubscriptionStore {
         defer { isLoading = false }
 
         do {
-            let storeProducts = try await Product.products(for: SubscriptionStore.allPossibleIDs)
+            let storeProducts = try await Product.products(for: SubscriptionStore.productIDs)
 
             // Sort: Annual first (highest conversion), then Monthly, then Lifetime
             self.products = storeProducts.sorted { p1, p2 in
-                if p1.id.contains("annual") { return true }
-                if p2.id.contains("annual") { return false }
+                if p1.id == SubscriptionStore.annualID { return true }
+                if p2.id == SubscriptionStore.annualID { return false }
                 return p1.price < p2.price
             }
         } catch {

@@ -15,9 +15,8 @@ struct DotMatrixProvider: TimelineProvider {
         let data = SharedWidgetStore.load() ?? MilestoneWidgetData()
         let schedule = WidgetDateCalculations.generateMidnightSchedule(from: Date(), daysAhead: 4)
         let entries = schedule.map { DotMatrixEntry(date: $0, data: data) }
-        // Next update scheduled after the last generated midnight
-        let nextUpdate = schedule.last ?? Calendar.current.date(byAdding: .day, value: 1, to: Date())!
-        completion(Timeline(entries: entries, policy: .after(nextUpdate)))
+        let nextMidnight = Calendar.current.nextDate(after: Date(), matching: DateComponents(hour: 0, minute: 0, second: 1), matchingPolicy: .nextTime) ?? Calendar.current.date(byAdding: .hour, value: 4, to: Date())!
+        completion(Timeline(entries: entries, policy: .after(nextMidnight)))
     }
 }
 

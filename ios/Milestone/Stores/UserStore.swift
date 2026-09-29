@@ -67,9 +67,12 @@ public final class UserStore {
     public var showPaywallSheet: Bool = false
     public var paywallInitialFeature: PaywallSheet.PremiumFeature? = nil
 
-    public func handleDeepLink(url: URL) {
+    public func handleDeepLink(url: URL, onPersonalRoute: (() -> Void)? = nil) {
         let str = url.absoluteString.lowercased()
-        if str.contains("soundscape") {
+        if str.contains("personal") {
+            selectedTab = .mission
+            onPersonalRoute?()
+        } else if str.contains("soundscape") {
             paywallInitialFeature = .soundscapes
             showPaywallSheet = true
         } else if str.contains("vault") {

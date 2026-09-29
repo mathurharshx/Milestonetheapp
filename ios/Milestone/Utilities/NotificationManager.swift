@@ -129,9 +129,10 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
     public func scheduleDailyMorningReminder(mission: Mission?, hour: Int = 9, minute: Int = 0) {
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
-            self.cancelDailyMorningReminderInternal()
 
             guard let mission = mission, mission.isActive else { return }
+            let categoryPrefix = "\(self.morningIdentifier).\(mission.category.rawValue)"
+            self.cancelDailyMorningReminderInternal(prefix: categoryPrefix)
 
             let calendar = Calendar.current
             let now = Date()
@@ -155,7 +156,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
                 let pendingMilestones = mission.todos.filter { $0.type == .milestone && !$0.done }.count
 
                 let content = UNMutableNotificationContent()
-                content.title = "Daily Mission Update"
+                content.title = "\(mission.category == .personal ? "Personal" : "Work") Mission Update"
                 content.sound = .default
 
                 var messageParts: [String] = []
@@ -178,7 +179,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
                 let triggerComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
                 let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: false)
                 let request = UNNotificationRequest(
-                    identifier: "\(self.morningIdentifier).\(dayOffset)",
+                    identifier: "\(categoryPrefix).\(dayOffset)",
                     content: content,
                     trigger: trigger
                 )
@@ -188,18 +189,20 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         }
     }
 
-    public func cancelDailyMorningReminder() {
+    public func cancelDailyMorningReminder(category: MissionCategory? = nil) {
         Task.detached(priority: .utility) { [weak self] in
-            self?.cancelDailyMorningReminderInternal()
+            guard let self = self else { return }
+            let prefix = category != nil ? "\(self.morningIdentifier).\(category!.rawValue)" : self.morningIdentifier
+            self.cancelDailyMorningReminderInternal(prefix: prefix)
         }
     }
 
-    private func cancelDailyMorningReminderInternal() {
+    private func cancelDailyMorningReminderInternal(prefix: String) {
         center.getPendingNotificationRequests { [weak self] requests in
             guard let self = self else { return }
             let identifiers = requests
                 .map(\.identifier)
-                .filter { $0.hasPrefix(self.morningIdentifier) }
+                .filter { $0.hasPrefix(prefix) }
             self.center.removePendingNotificationRequests(withIdentifiers: identifiers)
         }
     }
@@ -208,9 +211,10 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
     public func scheduleMissionDeadlineNotification(mission: Mission?) {
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
-            self.cancelMissionDeadlineNotificationInternal()
 
             guard let mission = mission, mission.isActive else { return }
+            let identifier = "\(self.deadlineIdentifier).\(mission.category.rawValue)"
+            self.center.removePendingNotificationRequests(withIdentifiers: [identifier])
 
             let targetDate = mission.targetDate
             let timeInterval = targetDate.timeIntervalSince(Date())
@@ -219,13 +223,13 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
             guard timeInterval > 0 else { return }
 
             let content = UNMutableNotificationContent()
-            content.title = "Mission Target Date Reached"
+            content.title = "\(mission.category == .personal ? "Personal" : "Work") Mission Target Reached"
             content.body = "Time is up for '\(mission.title)'! Open Milestone to review and mark it accomplished."
             content.sound = .default
             content.interruptionLevel = .timeSensitive
 
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
-            let request = UNNotificationRequest(identifier: self.deadlineIdentifier, content: content, trigger: trigger)
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
 
             do {
                 try await self.center.add(request)
@@ -235,14 +239,18 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         }
     }
 
-    public func cancelMissionDeadlineNotification() {
+    public func cancelMissionDeadlineNotification(category: MissionCategory? = nil) {
         Task.detached(priority: .utility) { [weak self] in
-            self?.cancelMissionDeadlineNotificationInternal()
+            guard let self = self else { return }
+            if let cat = category {
+                self.center.removePendingNotificationRequests(withIdentifiers: ["\(self.deadlineIdentifier).\(cat.rawValue)"])
+            } else {
+                self.center.getPendingNotificationRequests { requests in
+                    let ids = requests.map(\.identifier).filter { $0.hasPrefix(self.deadlineIdentifier) }
+                    self.center.removePendingNotificationRequests(withIdentifiers: ids)
+                }
+            }
         }
-    }
-
-    private func cancelMissionDeadlineNotificationInternal() {
-        center.removePendingNotificationRequests(withIdentifiers: [deadlineIdentifier])
     }
 
     // ── Individual Daily Task Reminder Notifications ──

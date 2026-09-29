@@ -12,7 +12,7 @@ A minimalist, high-impact native iOS productivity application designed for deep 
 - **4-Phase Pomodoro Timer:** 4-session focus cycles with an interactive 96-dot progress ring.
 - **Dynamic Island & Live Activities:** Battery-efficient Dynamic Island capsule and Lock Screen timer banner with real-time countdown.
 - **Apple Fitness-Style Celebration:** Cascading dot matrix wave, glowing award seal, goal stats, and seamless spatial archive transition.
-- **ADHD Procedural Soundscapes:** Real-time on-device synthesis of 40Hz Gamma neural entrainment and Brown Noise.
+- **Focus Soundscapes:** Real-time on-device synthesis of 40Hz Tone and Brown Noise.
 - **Background Accountability Notifications:** Clean, minimal, non-intrusive notifications for focus sessions, daily reminders, and deadline alerts.
 - **Native 5-Tab Navigation:** Pomodoro, Tasks, Mission, Archive, and Settings.
 - **Brutalist Luxury Aesthetic:** Pitch-black OLED theme with titanium white and alpine sage emerald accents.
