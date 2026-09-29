@@ -549,7 +549,7 @@ public struct TasksTabView: View {
                     // Option 2: Specular Sheen & Fold
                     HapticsManager.shared.impact(.light)
                     withAnimation(.easeOut(duration: 0.18)) {
-                        completingTaskIds.insert(task.id)
+                        _ = completingTaskIds.insert(task.id)
                     }
 
                     // Celebratory pause (380ms) for sheen sweep to play, then success haptic & fold
@@ -858,7 +858,7 @@ public struct TasksTabView: View {
                     // Option 2: Specular Sheen & Fold
                     HapticsManager.shared.impact(.light)
                     withAnimation(.easeOut(duration: 0.18)) {
-                        completingTaskIds.insert(task.id)
+                        _ = completingTaskIds.insert(task.id)
                     }
 
                     // Celebratory pause (380ms) for sheen sweep to play, then success haptic & fold
