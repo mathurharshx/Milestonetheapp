@@ -19,6 +19,9 @@ public struct CreateMissionSheet: View {
     @State private var isDatePickerExpanded: Bool = false
     @State private var isTimePickerExpanded: Bool = false
     @State private var todos: [TodoTask] = []
+    @State private var taskTypeSelection: TaskType = .milestone
+    @State private var dailyTaskHasTime: Bool = false
+    @State private var dailyTaskTime: Date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
     private enum Field: Hashable {
         case title
         case taskInput
@@ -100,15 +103,9 @@ public struct CreateMissionSheet: View {
             PaywallSheet(initialFeature: .dualMissions)
         }
         .onAppear {
-            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
-                isHeroBreathing = true
-            }
-            withAnimation(.linear(duration: 6.0).repeatForever(autoreverses: false)) {
-                heroBorderAngle = 360
-            }
-            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
-                isButtonBreathing = true
-            }
+            isHeroBreathing = true
+            heroBorderAngle = 360
+            isButtonBreathing = true
         }
     }
 
@@ -139,11 +136,13 @@ public struct CreateMissionSheet: View {
 
                                     Button {
                                         HapticsManager.shared.impact(.light)
-                                        title = "Launch Milestone v1.0"
+                                        title = "Scale to $100k ARR"
                                         todos = [
-                                            TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: false),
-                                            TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: false),
-                                            TodoTask(id: "3", text: "Publish Launch Announcement", done: false)
+                                            TodoTask(id: "1", text: "Reach out to 5 enterprise leads", done: false, type: .daily, reminderHour: 8, reminderMinute: 30),
+                                            TodoTask(id: "2", text: "Review churn and activation metrics", done: false, type: .daily, reminderHour: 17, reminderMinute: 0),
+                                            TodoTask(id: "3", text: "Finalize enterprise pricing tier", done: false, type: .milestone),
+                                            TodoTask(id: "4", text: "Close pilot agreements with 3 design partners", done: false, type: .milestone),
+                                            TodoTask(id: "5", text: "Deploy self-serve checkout & billing flow", done: false, type: .milestone)
                                         ]
                                     } label: {
                                         HStack(spacing: 4) {
@@ -261,6 +260,8 @@ public struct CreateMissionSheet: View {
                                 )
                                 .scaleEffect(isForging ? 1.02 : 1.0)
                                 .animation(.spring(response: 0.32, dampingFraction: 0.68), value: isForging)
+                                .animation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: isHeroBreathing)
+                                .animation(.linear(duration: 6.0).repeatForever(autoreverses: false), value: heroBorderAngle)
                                 .disabled(isForging)
                         }
 
@@ -472,7 +473,7 @@ public struct CreateMissionSheet: View {
                         // 4. TASKS (OPTIONAL)
                         VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 4) {
-                                Text("TASKS")
+                                Text("TASKS & DELIVERABLES")
                                     .font(.system(size: 11, weight: .bold))
                                     .tracking(2)
                                     .foregroundStyle(theme.textSecondary)
@@ -483,19 +484,95 @@ public struct CreateMissionSheet: View {
                                     .foregroundStyle(theme.textTertiary)
                             }
 
+                            // Type Selector Capsule
+                            HStack(spacing: 4) {
+                                Button {
+                                    HapticsManager.shared.impact(.light)
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        taskTypeSelection = .milestone
+                                    }
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "flag")
+                                            .font(.system(size: 9, weight: .bold))
+                                        Text("MILESTONE")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .tracking(1.2)
+                                    }
+                                    .foregroundStyle(taskTypeSelection == .milestone ? theme.background : theme.textSecondary)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .frame(maxWidth: .infinity)
+                                    .background(
+                                        Capsule().fill(taskTypeSelection == .milestone ? accentColor : Color.clear)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+
+                                Button {
+                                    HapticsManager.shared.impact(.light)
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        taskTypeSelection = .daily
+                                    }
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "repeat")
+                                            .font(.system(size: 9, weight: .bold))
+                                        Text("DAILY TASK")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .tracking(1.2)
+                                    }
+                                    .foregroundStyle(taskTypeSelection == .daily ? theme.background : theme.textSecondary)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .frame(maxWidth: .infinity)
+                                    .background(
+                                        Capsule().fill(taskTypeSelection == .daily ? accentColor : Color.clear)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(3)
+                            .background(
+                                Capsule()
+                                    .fill(theme.surfaceLight.opacity(0.6))
+                                    .overlay(Capsule().stroke(theme.border.opacity(0.4), lineWidth: 0.8))
+                            )
+                            .padding(.bottom, 2)
+
                             VStack(spacing: 8) {
                                 // Existing Tasks
                                 ForEach(todos) { task in
-                                    HStack(spacing: 12) {
-                                        Circle()
-                                            .fill(theme.accent)
-                                            .frame(width: 6, height: 6)
+                                    HStack(spacing: 10) {
+                                        Image(systemName: task.type == .daily ? "repeat" : "flag")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundStyle(accentColor)
 
-                                        Text(task.text)
-                                            .font(.system(size: 15))
-                                            .foregroundStyle(theme.textPrimary)
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(task.text)
+                                                .font(.system(size: 15))
+                                                .foregroundStyle(theme.textPrimary)
+
+                                            if let timeStr = task.formattedReminderTime {
+                                                HStack(spacing: 4) {
+                                                    Image(systemName: "bell.fill")
+                                                        .font(.system(size: 8))
+                                                    Text(timeStr)
+                                                        .font(.system(size: 9.5, weight: .semibold, design: .monospaced))
+                                                }
+                                                .foregroundStyle(accentColor.opacity(0.85))
+                                            }
+                                        }
 
                                         Spacer()
+
+                                        Text(task.type == .daily ? "DAILY" : "MILESTONE")
+                                            .font(.system(size: 8.5, weight: .heavy))
+                                            .tracking(1.0)
+                                            .foregroundStyle(theme.textTertiary)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Capsule().fill(theme.surfaceLight))
 
                                         Button {
                                             todos.removeAll(where: { $0.id == task.id })
@@ -511,6 +588,7 @@ public struct CreateMissionSheet: View {
                                         RoundedRectangle(cornerRadius: 12)
                                             .fill(theme.surfaceLight.opacity(0.4))
                                     )
+                                    .transition(.asymmetric(insertion: .scale(scale: 0.98).combined(with: .opacity), removal: .opacity))
                                 }
 
                                 // Add Task Row
@@ -519,7 +597,7 @@ public struct CreateMissionSheet: View {
                                         .stroke(theme.textTertiary, lineWidth: 1)
                                         .frame(width: 6, height: 6)
 
-                                    TextField("Add a task…", text: $todoInput)
+                                    TextField(taskTypeSelection == .daily ? "Add daily habit (e.g. 10k steps)…" : "Add milestone deliverable…", text: $todoInput)
                                         .font(.system(size: 15))
                                         .foregroundStyle(theme.textPrimary)
                                         .focused($focusedField, equals: .taskInput)
@@ -539,7 +617,7 @@ public struct CreateMissionSheet: View {
                                         } label: {
                                             Image(systemName: "plus")
                                                 .font(.system(size: 14, weight: .bold))
-                                                .foregroundStyle(theme.accent)
+                                                .foregroundStyle(accentColor)
                                         }
                                     }
                                 }
@@ -552,8 +630,60 @@ public struct CreateMissionSheet: View {
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(focusedField == .taskInput ? theme.accent : theme.border.opacity(0.5), lineWidth: focusedField == .taskInput ? 1.5 : 1)
+                                        .stroke(focusedField == .taskInput ? accentColor : theme.border.opacity(0.5), lineWidth: focusedField == .taskInput ? 1.5 : 1)
                                 )
+
+                                if taskTypeSelection == .daily {
+                                    HStack(spacing: 8) {
+                                        Button {
+                                            HapticsManager.shared.impact(.light)
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                                dailyTaskHasTime.toggle()
+                                            }
+                                        } label: {
+                                            HStack(spacing: 5) {
+                                                Image(systemName: dailyTaskHasTime ? "bell.fill" : "bell")
+                                                    .font(.system(size: 10, weight: .bold))
+
+                                                Text(dailyTaskHasTime ? "REMINDER TIME" : "+ ADD TIME")
+                                                    .font(.system(size: 9.5, weight: .bold))
+                                                    .tracking(1.0)
+                                            }
+                                            .foregroundStyle(dailyTaskHasTime ? accentColor : theme.textTertiary)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(
+                                                Capsule()
+                                                    .fill(dailyTaskHasTime ? accentColor.opacity(0.14) : theme.surfaceLight.opacity(0.6))
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+
+                                        if dailyTaskHasTime {
+                                            DatePicker("", selection: $dailyTaskTime, displayedComponents: .hourAndMinute)
+                                                .labelsHidden()
+                                                .tint(accentColor)
+                                                .scaleEffect(0.88)
+                                                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+
+                                            Spacer()
+
+                                            Button {
+                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                                    dailyTaskHasTime = false
+                                                }
+                                            } label: {
+                                                Image(systemName: "xmark.circle.fill")
+                                                    .font(.system(size: 14))
+                                                    .foregroundStyle(theme.textTertiary)
+                                            }
+                                            .buttonStyle(.plain)
+                                        } else {
+                                            Spacer()
+                                        }
+                                    }
+                                    .padding(.top, 2)
+                                }
                             }
                         }
                     }
@@ -611,6 +741,7 @@ public struct CreateMissionSheet: View {
                             x: 0,
                             y: isReady ? 3 : 1
                         )
+                        .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: isButtonBreathing)
                     }
                     .disabled(!isReady)
                     .padding(.horizontal, 24)
@@ -626,8 +757,13 @@ public struct CreateMissionSheet: View {
         let text = todoInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         HapticsManager.shared.impact(.light)
-        todos.append(TodoTask(text: text))
-        todoInput = ""
+        let hour = (taskTypeSelection == .daily && dailyTaskHasTime) ? Calendar.current.component(.hour, from: dailyTaskTime) : nil
+        let minute = (taskTypeSelection == .daily && dailyTaskHasTime) ? Calendar.current.component(.minute, from: dailyTaskTime) : nil
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+            todos.append(TodoTask(text: text, type: taskTypeSelection, reminderHour: hour, reminderMinute: minute))
+            todoInput = ""
+            dailyTaskHasTime = false
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             withAnimation(.easeOut(duration: 0.2)) {
                 proxy?.scrollTo("taskInputRow", anchor: .bottom)

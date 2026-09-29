@@ -10,22 +10,7 @@ public struct MainTabView: View {
         @Bindable var store = userStore
 
         TabView(selection: $store.selectedTab) {
-            // Tab 1: Mission
-            NavigationStack {
-                MissionTabView(onNavigateToArchive: {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                        userStore.selectedTab = .archive
-                    }
-                })
-                .toolbarBackground(.hidden, for: .navigationBar)
-            }
-            .tabItem {
-                Image(systemName: "scope")
-                Text("Mission")
-            }
-            .tag(TabItem.mission)
-
-            // Tab 2: Pomodoro
+            // Tab 0: Pomodoro
             NavigationStack {
                 PomodoroTabView()
                     .toolbarBackground(.hidden, for: .navigationBar)
@@ -35,6 +20,30 @@ public struct MainTabView: View {
                 Text("Pomodoro")
             }
             .tag(TabItem.pomodoro)
+
+            // Tab 1: Tasks
+            NavigationStack {
+                TasksTabView()
+                    .toolbarBackground(.hidden, for: .navigationBar)
+            }
+            .tabItem {
+                Image(systemName: "checklist")
+                Text("Tasks")
+            }
+            .tag(TabItem.tasks)
+
+            // Tab 2: Mission (Centerpiece)
+            NavigationStack {
+                MissionTabView(onNavigateToArchive: {
+                    userStore.selectedTab = .archive
+                })
+                .toolbarBackground(.hidden, for: .navigationBar)
+            }
+            .tabItem {
+                Image(systemName: "scope")
+                Text("Mission")
+            }
+            .tag(TabItem.mission)
 
             // Tab 3: Archive
             NavigationStack {

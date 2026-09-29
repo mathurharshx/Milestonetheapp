@@ -135,7 +135,6 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
 
             let calendar = Calendar.current
             let now = Date()
-            let pendingTasks = mission.todos.filter { !$0.done }.count
 
             // Schedule discrete alerts for the next 7 mornings so counts never freeze
             for dayOffset in 0..<7 {
@@ -152,21 +151,29 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
                 let daysRemaining = DateCalculations.differenceInDays(from: triggerDate, to: mission.targetDate)
                 guard daysRemaining >= 0 else { continue }
 
+                let pendingDailyTasks = mission.todos.filter { $0.type == .daily && !$0.isCompletedToday }.count
+                let pendingMilestones = mission.todos.filter { $0.type == .milestone && !$0.done }.count
+
                 let content = UNMutableNotificationContent()
                 content.title = "Daily Mission Update"
                 content.sound = .default
 
+                var messageParts: [String] = []
                 if daysRemaining == 0 {
-                    content.body = "Today is the target date for '\(mission.title)'."
+                    messageParts.append("Today is the target date for '\(mission.title)'.")
                 } else if daysRemaining == 1 {
-                    content.body = "1 day remaining for '\(mission.title)'."
+                    messageParts.append("1 day remaining for '\(mission.title)'.")
                 } else {
-                    content.body = "\(daysRemaining) days remaining for '\(mission.title)'."
+                    messageParts.append("\(daysRemaining) days remaining for '\(mission.title)'.")
                 }
 
-                if pendingTasks > 0 {
-                    content.body += " \(pendingTasks) task\(pendingTasks == 1 ? "" : "s") pending."
+                if pendingDailyTasks > 0 {
+                    messageParts.append("\(pendingDailyTasks) daily task\(pendingDailyTasks == 1 ? "" : "s") scheduled.")
+                } else if pendingMilestones > 0 {
+                    messageParts.append("\(pendingMilestones) milestone\(pendingMilestones == 1 ? "" : "s") pending.")
                 }
+
+                content.body = messageParts.joined(separator: " ")
 
                 let triggerComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: triggerDate)
                 let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: false)
@@ -236,5 +243,40 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
 
     private func cancelMissionDeadlineNotificationInternal() {
         center.removePendingNotificationRequests(withIdentifiers: [deadlineIdentifier])
+    }
+
+    // ── Individual Daily Task Reminder Notifications ──
+    private let taskReminderPrefix = "milestone.notification.task."
+
+    public func scheduleDailyTaskReminder(taskId: String, taskText: String, hour: Int, minute: Int) {
+        Task.detached(priority: .utility) { [weak self] in
+            guard let self = self else { return }
+            let identifier = "\(self.taskReminderPrefix)\(taskId)"
+            self.center.removePendingNotificationRequests(withIdentifiers: [identifier])
+
+            let content = UNMutableNotificationContent()
+            content.title = taskText
+            content.body = "Scheduled daily task"
+            content.sound = .default
+            content.interruptionLevel = .timeSensitive
+
+            var triggerComponents = DateComponents()
+            triggerComponents.hour = hour
+            triggerComponents.minute = minute
+
+            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: true)
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+
+            do {
+                try await self.center.add(request)
+            } catch {
+                print("Failed to schedule daily task reminder: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    public func cancelDailyTaskReminder(taskId: String) {
+        let identifier = "\(taskReminderPrefix)\(taskId)"
+        center.removePendingNotificationRequests(withIdentifiers: [identifier])
     }
 }

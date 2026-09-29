@@ -96,12 +96,20 @@ public final class MissionStore {
         if let archiveData = UserDefaults.standard.data(forKey: archiveKey),
            let missions = try? decoder.decode([Mission].self, from: archiveData) {
             self.archivedMissions = missions
+        } else if let archiveStr = UserDefaults.standard.string(forKey: archiveKey),
+                  let data = archiveStr.data(using: .utf8),
+                  let missions = try? decoder.decode([Mission].self, from: data) {
+            self.archivedMissions = missions
         } else {
             self.archivedMissions = []
         }
 
         if let vaultData = UserDefaults.standard.data(forKey: vaultKey),
            let missions = try? decoder.decode([Mission].self, from: vaultData) {
+            self.vaultMissions = missions
+        } else if let vaultStr = UserDefaults.standard.string(forKey: vaultKey),
+                  let data = vaultStr.data(using: .utf8),
+                  let missions = try? decoder.decode([Mission].self, from: data) {
             self.vaultMissions = missions
         } else {
             self.vaultMissions = []
@@ -110,6 +118,10 @@ public final class MissionStore {
         if let activeData = UserDefaults.standard.data(forKey: activeKey),
            let mission = try? decoder.decode(Mission.self, from: activeData) {
             self.activeMission = mission
+        } else if let activeStr = UserDefaults.standard.string(forKey: activeKey),
+                  let data = activeStr.data(using: .utf8),
+                  let mission = try? decoder.decode(Mission.self, from: data) {
+            self.activeMission = mission
         } else {
             self.activeMission = nil
         }
@@ -117,12 +129,57 @@ public final class MissionStore {
         if let personalData = UserDefaults.standard.data(forKey: activePersonalKey),
            let mission = try? decoder.decode(Mission.self, from: personalData) {
             self.activePersonalMission = mission
+        } else if let personalStr = UserDefaults.standard.string(forKey: activePersonalKey),
+                  let data = personalStr.data(using: .utf8),
+                  let mission = try? decoder.decode(Mission.self, from: data) {
+            self.activePersonalMission = mission
         } else {
             self.activePersonalMission = nil
         }
 
+        checkAndResetDailyTasksIfNeeded()
         syncToWidget()
         refreshMissionNotifications()
+    }
+
+    public func checkAndResetDailyTasksIfNeeded() {
+        let calendar = Calendar.current
+        var modified = false
+
+        if var work = activeMission {
+            for i in work.todos.indices where work.todos[i].type == .daily {
+                if let lastDate = work.todos[i].lastCompletedDate {
+                    if !calendar.isDateInToday(lastDate) {
+                        // Rolled over past midnight: reset done state for today
+                        work.todos[i].done = false
+                        // If completed more than 1 day ago, reset streak
+                        let daysAgo = calendar.dateComponents([.day], from: calendar.startOfDay(for: lastDate), to: calendar.startOfDay(for: Date())).day ?? 0
+                        if daysAgo > 1 {
+                            work.todos[i].streakCount = 0
+                        }
+                        modified = true
+                    }
+                }
+            }
+            if modified { self.activeMission = work }
+        }
+
+        if var personal = activePersonalMission {
+            var personalModified = false
+            for i in personal.todos.indices where personal.todos[i].type == .daily {
+                if let lastDate = personal.todos[i].lastCompletedDate {
+                    if !calendar.isDateInToday(lastDate) {
+                        personal.todos[i].done = false
+                        let daysAgo = calendar.dateComponents([.day], from: calendar.startOfDay(for: lastDate), to: calendar.startOfDay(for: Date())).day ?? 0
+                        if daysAgo > 1 {
+                            personal.todos[i].streakCount = 0
+                        }
+                        personalModified = true
+                    }
+                }
+            }
+            if personalModified { self.activePersonalMission = personal }
+        }
     }
 
     public func switchPillar(to category: MissionCategory) {
@@ -153,6 +210,7 @@ public final class MissionStore {
         } else {
             self.activeMission = newMission
         }
+        refreshMissionNotifications()
     }
 
     public func completeMission() {
@@ -190,13 +248,35 @@ public final class MissionStore {
     public func toggleTodo(id: String) {
         guard var mission = currentPillarMission else { return }
         if let index = mission.todos.firstIndex(where: { $0.id == id }) {
-            mission.todos[index].done.toggle()
+            var task = mission.todos[index]
+            if task.type == .daily {
+                let wasDoneToday = task.isCompletedToday
+                if wasDoneToday {
+                    // Unchecking today's completion
+                    task.done = false
+                    task.lastCompletedDate = nil
+                    task.streakCount = max(0, task.streakCount - 1)
+                    if let hour = task.reminderHour, let minute = task.reminderMinute {
+                        NotificationManager.shared.scheduleDailyTaskReminder(taskId: task.id, taskText: task.text, hour: hour, minute: minute)
+                    }
+                } else {
+                    // Completing today
+                    task.done = true
+                    task.lastCompletedDate = Date()
+                    task.streakCount += 1
+                    NotificationManager.shared.cancelDailyTaskReminder(taskId: task.id)
+                }
+            } else {
+                task.done.toggle()
+            }
+            mission.todos[index] = task
             self.currentPillarMission = mission
         }
     }
 
     public func deleteTodo(id: String) {
         guard var mission = currentPillarMission else { return }
+        NotificationManager.shared.cancelDailyTaskReminder(taskId: id)
         mission.todos.removeAll(where: { $0.id == id })
         self.currentPillarMission = mission
     }
@@ -207,17 +287,37 @@ public final class MissionStore {
         self.currentPillarMission = mission
     }
 
-    public func addTodo(text: String) {
+    public func addTodo(text: String, type: TaskType = .milestone, reminderHour: Int? = nil, reminderMinute: Int? = nil) {
         guard var mission = currentPillarMission else { return }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         let newTodo = TodoTask(
             id: "\(Int(Date().timeIntervalSince1970 * 1000))",
             text: trimmed,
-            done: false
+            done: false,
+            type: type,
+            reminderHour: reminderHour,
+            reminderMinute: reminderMinute
         )
+        if type == .daily, let hour = reminderHour, let minute = reminderMinute {
+            NotificationManager.shared.scheduleDailyTaskReminder(taskId: newTodo.id, taskText: newTodo.text, hour: hour, minute: minute)
+        }
         mission.todos.append(newTodo)
         self.currentPillarMission = mission
+    }
+
+    public func updateTodoReminder(id: String, hour: Int?, minute: Int?) {
+        guard var mission = currentPillarMission else { return }
+        if let index = mission.todos.firstIndex(where: { $0.id == id }) {
+            mission.todos[index].reminderHour = hour
+            mission.todos[index].reminderMinute = minute
+            if let h = hour, let m = minute, !mission.todos[index].isCompletedToday {
+                NotificationManager.shared.scheduleDailyTaskReminder(taskId: id, taskText: mission.todos[index].text, hour: h, minute: m)
+            } else {
+                NotificationManager.shared.cancelDailyTaskReminder(taskId: id)
+            }
+            self.currentPillarMission = mission
+        }
     }
 
     public func deleteArchived(ids: Set<String>) {
@@ -276,11 +376,13 @@ public final class MissionStore {
         } else {
             self.activeMission = Mission(
                 id: "work_test_mission",
-                title: "Launch Milestone v1.0",
+                title: "Scale to $100k ARR",
                 todos: [
-                    TodoTask(id: "1", text: "Submit App Store Metadata & Screenshots", done: true),
-                    TodoTask(id: "2", text: "Invite TestFlight Beta Testers", done: true),
-                    TodoTask(id: "3", text: "Publish Launch Announcement", done: false)
+                    TodoTask(id: "1", text: "Reach out to 5 enterprise leads", done: true, type: .daily, lastCompletedDate: Date(), streakCount: 4, reminderHour: 8, reminderMinute: 30),
+                    TodoTask(id: "2", text: "Review churn and activation metrics", done: false, type: .daily, streakCount: 3, reminderHour: 17, reminderMinute: 0),
+                    TodoTask(id: "3", text: "Finalize enterprise pricing tier", done: true, type: .milestone),
+                    TodoTask(id: "4", text: "Close pilot agreements with 3 design partners", done: false, type: .milestone),
+                    TodoTask(id: "5", text: "Deploy self-serve checkout & billing flow", done: false, type: .milestone)
                 ],
                 targetDate: targetDate,
                 createdAt: createdAt,
@@ -289,15 +391,18 @@ public final class MissionStore {
             )
         }
 
-        // Also seed activePersonalMission so Dual Pillar Large Widget has rich live data to test
+        // Seed activePersonalMission with academic & health goals
         let pCreated = Calendar.current.date(byAdding: .day, value: -10, to: now) ?? now
         let pTarget = Calendar.current.date(byAdding: .day, value: 20, to: now) ?? now
         self.activePersonalMission = Mission(
             id: "personal_test_mission",
-            title: "Half Marathon 2026",
+            title: "Thesis & Defense Preparation",
             todos: [
-                TodoTask(id: "p1", text: "Morning 10km Endurance Run", done: true),
-                TodoTask(id: "p2", text: "Electrolyte Recovery & Mobility", done: false)
+                TodoTask(id: "p1", text: "Write 500 words of research manuscript", done: true, type: .daily, lastCompletedDate: Date(), streakCount: 6, reminderHour: 7, reminderMinute: 30),
+                TodoTask(id: "p2", text: "Read and annotate 2 peer-reviewed papers", done: false, type: .daily, streakCount: 5, reminderHour: 14, reminderMinute: 0),
+                TodoTask(id: "p3", text: "Complete literature review draft", done: true, type: .milestone),
+                TodoTask(id: "p4", text: "Run statistical significance benchmarks", done: false, type: .milestone),
+                TodoTask(id: "p5", text: "Submit final thesis draft to committee", done: false, type: .milestone)
             ],
             targetDate: pTarget,
             createdAt: pCreated,
@@ -306,6 +411,7 @@ public final class MissionStore {
         )
 
         syncToWidget()
+        refreshMissionNotifications()
     }
     #endif
 
@@ -367,6 +473,13 @@ public final class MissionStore {
 
                 // 2. Exact mission target deadline reached alert
                 NotificationManager.shared.scheduleMissionDeadlineNotification(mission: mission)
+
+                // 3. Reschedule all active uncompleted daily task reminders
+                for task in mission.todos where task.type == .daily && !task.isCompletedToday {
+                    if let h = task.reminderHour, let m = task.reminderMinute {
+                        NotificationManager.shared.scheduleDailyTaskReminder(taskId: task.id, taskText: task.text, hour: h, minute: m)
+                    }
+                }
             } else {
                 NotificationManager.shared.cancelDailyMorningReminder()
                 NotificationManager.shared.cancelMissionDeadlineNotification()

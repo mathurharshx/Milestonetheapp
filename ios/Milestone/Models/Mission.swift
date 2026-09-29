@@ -1,14 +1,72 @@
 import Foundation
 
+public enum TaskType: String, Codable, CaseIterable {
+    case daily = "daily"
+    case milestone = "milestone"
+}
+
 public struct TodoTask: Identifiable, Codable, Equatable, Hashable {
     public let id: String
     public var text: String
     public var done: Bool
+    public var type: TaskType
+    public var lastCompletedDate: Date?
+    public var streakCount: Int
 
-    public init(id: String = UUID().uuidString, text: String, done: Bool = false) {
+    public var reminderHour: Int?
+    public var reminderMinute: Int?
+
+    public init(
+        id: String = UUID().uuidString,
+        text: String,
+        done: Bool = false,
+        type: TaskType = .milestone,
+        lastCompletedDate: Date? = nil,
+        streakCount: Int = 0,
+        reminderHour: Int? = nil,
+        reminderMinute: Int? = nil
+    ) {
         self.id = id
         self.text = text
         self.done = done
+        self.type = type
+        self.lastCompletedDate = lastCompletedDate
+        self.streakCount = streakCount
+        self.reminderHour = reminderHour
+        self.reminderMinute = reminderMinute
+    }
+
+    public var isCompletedToday: Bool {
+        guard type == .daily else { return done }
+        guard let lastDate = lastCompletedDate else { return false }
+        return Calendar.current.isDateInToday(lastDate)
+    }
+
+    public var formattedReminderTime: String? {
+        guard let hour = reminderHour, let minute = reminderMinute else { return nil }
+        var comps = DateComponents()
+        comps.hour = hour
+        comps.minute = minute
+        guard let date = Calendar.current.date(from: comps) else { return nil }
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, text, done, type, lastCompletedDate, streakCount, reminderHour, reminderMinute
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        text = try container.decode(String.self, forKey: .text)
+        done = try container.decode(Bool.self, forKey: .done)
+        type = try container.decodeIfPresent(TaskType.self, forKey: .type) ?? .milestone
+        lastCompletedDate = try container.decodeIfPresent(Date.self, forKey: .lastCompletedDate)
+        streakCount = try container.decodeIfPresent(Int.self, forKey: .streakCount) ?? 0
+        reminderHour = try container.decodeIfPresent(Int.self, forKey: .reminderHour)
+        reminderMinute = try container.decodeIfPresent(Int.self, forKey: .reminderMinute)
     }
 }
 

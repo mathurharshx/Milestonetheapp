@@ -24,6 +24,7 @@ public struct MissionTabView: View {
     @State private var keystoneEvent: KeystoneEvent = .none
     @State private var isConfirmingCompletion: Bool = false
     @State private var resetTimer: Timer? = nil
+    @State private var completingTaskId: String? = nil
 
     @Namespace private var pillarNamespace
 
@@ -144,69 +145,15 @@ public struct MissionTabView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 10)
 
-                        // ── Scrollable Tasks (Only Tasks Scroll, Dimmed during celebration) ──
-                        ScrollView(showsIndicators: false) {
-                            MissionTodoListView(
-                                todos: mission.todos,
-                                onToggle: { id in
-                                    let willBeDone = !(mission.todos.first(where: { $0.id == id })?.done ?? true)
-                                    withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
-                                        missionStore.toggleTodo(id: id)
-                                    }
-                                    if willBeDone {
-                                        keystoneEvent = .taskCompleted
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
-                                            if keystoneEvent == .taskCompleted {
-                                                keystoneEvent = .none
-                                            }
-                                        }
-                                    }
-                                },
-                                onDelete: { id in
-                                    withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
-                                        missionStore.deleteTodo(id: id)
-                                    }
-                                    keystoneEvent = .taskDeleted
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
-                                        if keystoneEvent == .taskDeleted {
-                                            keystoneEvent = .none
-                                        }
-                                    }
-                                },
-                                onMove: { indices, newOffset in
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
-                                        missionStore.moveTodo(fromOffsets: indices, toOffset: newOffset)
-                                    }
-                                },
-                                onAddTask: { text in
-                                    withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) {
-                                        missionStore.addTodo(text: text)
-                                    }
-                                    keystoneEvent = .taskAdded
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                        if keystoneEvent == .taskAdded {
-                                            keystoneEvent = .none
-                                        }
-                                    }
-                                },
-                                onFocusTask: { id, text in
-                                    HapticsManager.shared.impact(.medium)
-                                    pomodoroStore.focusOn(taskId: id, taskTitle: text)
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                        userStore.selectedTab = .pomodoro
-                                    }
-                                }
-                            )
-                            .padding(.top, 8)
-                            .padding(.bottom, 24)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .scrollIndicators(.hidden)
-                        .scrollDismissesKeyboard(.immediately)
-                        .padding(.horizontal, 24)
-                        .opacity(isCompletingAnimation ? 0.35 : 1.0)
-                        .disabled(isCompletingAnimation)
-                        .animation(.easeInOut(duration: 0.3), value: isCompletingAnimation)
+                        // ── Spotlight Focus Card & Tasks Link (Keeps Keystone Monumental) ──
+                        spotlightFocusCard(for: mission)
+                            .padding(.horizontal, 24)
+                            .padding(.top, 12)
+                            .opacity(isCompletingAnimation ? 0.35 : 1.0)
+                            .disabled(isCompletingAnimation)
+                            .animation(.easeInOut(duration: 0.3), value: isCompletingAnimation)
+
+                        Spacer(minLength: 16)
 
                         // ── Pinned Bottom Action (Morphing Anti-Misclick Split Button) ──
                         VStack(spacing: 0) {
@@ -390,6 +337,7 @@ public struct MissionTabView: View {
                         .padding(.bottom, 12)
                         .background(Color.clear)
                     }
+                    .transition(.identity)
                 } else {
                 VStack(spacing: 0) {
                     topHeaderBar
@@ -401,6 +349,7 @@ public struct MissionTabView: View {
                         CreateMissionSheet(category: .work, isEmbedded: true)
                     }
                 }
+                .transition(.identity)
             }
         }
         .sheet(isPresented: $showPaywallSheet) {
@@ -660,6 +609,177 @@ public struct MissionTabView: View {
         }
     }
 
+    // ── Spotlight Focus Card (Active Focus + Link to All Tasks) ──
+    @ViewBuilder
+    private func spotlightFocusCard(for mission: Mission) -> some View {
+        let accent = mission.category == .personal ? AppColors.personalEmerald : theme.accent
+        let activeTasks = mission.todos.filter { $0.type == .daily ? !$0.isCompletedToday : !$0.done }
+        let topTask = activeTasks.first
+
+        VStack(spacing: 12) {
+            if let task = topTask {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        HStack(spacing: 5) {
+                            Circle()
+                                .fill(accent)
+                                .frame(width: 6, height: 6)
+                            Text(task.type == .daily ? "TODAY'S FOCUS" : "NEXT MILESTONE")
+                                .font(.system(size: 9.5, weight: .heavy))
+                                .tracking(1.8)
+                                .foregroundStyle(accent)
+
+                            if let timeStr = task.formattedReminderTime {
+                                Text("•")
+                                    .font(.system(size: 8))
+                                    .foregroundStyle(theme.textTertiary)
+
+                                HStack(spacing: 3) {
+                                    Image(systemName: "bell.fill")
+                                        .font(.system(size: 7.5))
+                                    Text(timeStr)
+                                        .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                                }
+                                .foregroundStyle(theme.textSecondary)
+                            }
+                        }
+
+                        Spacer()
+
+                        Button {
+                            HapticsManager.shared.impact(.medium)
+                            pomodoroStore.focusOn(taskId: task.id, taskTitle: task.text)
+                            userStore.selectedTab = .pomodoro
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "hourglass")
+                                    .font(.system(size: 9, weight: .bold))
+                                Text("FOCUS")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .tracking(1.0)
+                            }
+                            .foregroundStyle(theme.textPrimary)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(accent.opacity(0.18))
+                                    .overlay(Capsule().stroke(accent.opacity(0.4), lineWidth: 0.8))
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    HStack(spacing: 12) {
+                        let isThisCompleting = completingTaskId == task.id
+                        Button {
+                            guard completingTaskId == nil else { return }
+                            HapticsManager.shared.impact(.light)
+                            completingTaskId = task.id
+                            keystoneEvent = .taskCompleted
+
+                            // Allow checkmark animation to display cleanly before state update
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.38) {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                    missionStore.toggleTodo(id: task.id)
+                                    completingTaskId = nil
+                                }
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                                if keystoneEvent == .taskCompleted {
+                                    keystoneEvent = .none
+                                }
+                            }
+                        } label: {
+                            ZStack {
+                                Circle()
+                                    .fill(isThisCompleting ? accent : Color.clear)
+                                    .frame(width: 22, height: 22)
+
+                                Circle()
+                                    .stroke(accent.opacity(0.8), lineWidth: 1.5)
+                                    .frame(width: 22, height: 22)
+
+                                if isThisCompleting {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 10, weight: .black))
+                                        .foregroundStyle(theme.background)
+                                }
+                            }
+                            .frame(width: 32, height: 32)
+                        }
+                        .buttonStyle(.plain)
+
+                        Text(task.text)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(isThisCompleting ? theme.textTertiary : theme.textPrimary)
+                            .strikethrough(isThisCompleting, color: theme.textTertiary)
+                            .lineLimit(2)
+
+                        Spacer()
+                    }
+                }
+                .padding(14)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(theme.surfaceLight.opacity(0.55))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(accent.opacity(0.3), lineWidth: 1)
+                        )
+                )
+            }
+
+            // Clean Footer Link to Tasks Tab
+            Button {
+                HapticsManager.shared.impact(.light)
+                userStore.selectedTab = .tasks
+            } label: {
+                HStack(spacing: 8) {
+                    let dailyTotal = mission.todos.filter { $0.type == .daily }.count
+                    let dailyDone = mission.todos.filter { $0.type == .daily && $0.isCompletedToday }.count
+                    let milestoneTotal = mission.todos.filter { $0.type == .milestone }.count
+
+                    if dailyTotal > 0 {
+                        Text("Today: \(dailyDone) of \(dailyTotal) daily tasks complete")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(dailyDone == dailyTotal ? accent : theme.textSecondary)
+                    } else if milestoneTotal > 0 {
+                        Text("\(milestoneTotal) milestone\(milestoneTotal == 1 ? "" : "s") set")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(theme.textSecondary)
+                    } else {
+                        Text("No tasks added yet")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(theme.textTertiary)
+                    }
+
+                    Spacer()
+
+                    HStack(spacing: 3) {
+                        Text("View All Tasks")
+                            .font(.system(size: 11, weight: .bold))
+                            .tracking(0.5)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 9, weight: .bold))
+                    }
+                    .foregroundStyle(accent)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 11)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(theme.surfaceLight.opacity(0.40))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(theme.border.opacity(0.35), lineWidth: 0.8)
+                        )
+                )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
     private func triggerCompletion(for mission: Mission) {
         guard !isCompletingAnimation else { return }
 
@@ -751,16 +871,13 @@ private struct AliveLeafPulseView: View {
                 )
         }
         .frame(width: 160, height: 160)
+        .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: isBreathing)
+        .animation(.easeInOut(duration: 0.95).repeatForever(autoreverses: true), value: innerPulse)
+        .animation(.easeOut(duration: 1.8).repeatForever(autoreverses: false), value: waveRipple)
         .onAppear {
-            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                isBreathing = true
-            }
-            withAnimation(.easeInOut(duration: 0.95).repeatForever(autoreverses: true)) {
-                innerPulse = true
-            }
-            withAnimation(.easeOut(duration: 1.8).repeatForever(autoreverses: false)) {
-                waveRipple = true
-            }
+            isBreathing = true
+            innerPulse = true
+            waveRipple = true
         }
     }
 }

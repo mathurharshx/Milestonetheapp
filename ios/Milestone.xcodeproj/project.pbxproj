@@ -41,6 +41,7 @@
 		MS0021 /* PomodoroTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF021 /* PomodoroTabView.swift */; };
 		MS0022 /* ArchiveTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF022 /* ArchiveTabView.swift */; };
 		MS0023 /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF023 /* SettingsTabView.swift */; };
+		MS0094 /* TasksTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF094 /* TasksTabView.swift */; };
 		MS0024 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF024 /* MainTabView.swift */; };
 		MS0025 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF025 /* SplashView.swift */; };
 		MS0026 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MSF026 /* OnboardingView.swift */; };
@@ -129,6 +130,7 @@
 		MSF021 /* PomodoroTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroTabView.swift; sourceTree = "<group>"; };
 		MSF022 /* ArchiveTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveTabView.swift; sourceTree = "<group>"; };
 		MSF023 /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
+		MSF094 /* TasksTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksTabView.swift; sourceTree = "<group>"; };
 		MSF024 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		MSF025 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		MSF026 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -325,6 +327,7 @@
 			children = (
 				MSF020 /* MissionTabView.swift */,
 				MSF021 /* PomodoroTabView.swift */,
+				MSF094 /* TasksTabView.swift */,
 				MSF022 /* ArchiveTabView.swift */,
 				MSF023 /* SettingsTabView.swift */,
 			);
@@ -498,6 +501,7 @@
 				MS0021 /* PomodoroTabView.swift in Sources */,
 				MS0022 /* ArchiveTabView.swift in Sources */,
 				MS0023 /* SettingsTabView.swift in Sources */,
+				MS0094 /* TasksTabView.swift in Sources */,
 				MS0024 /* MainTabView.swift in Sources */,
 				MS0025 /* SplashView.swift in Sources */,
 				MS0026 /* OnboardingView.swift in Sources */,

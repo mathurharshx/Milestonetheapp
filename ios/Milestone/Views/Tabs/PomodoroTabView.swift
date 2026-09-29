@@ -228,7 +228,7 @@ public struct PomodoroTabView: View {
                                 .font(.system(size: 12, weight: .heavy))
                                 .tracking(3.5)
                                 .foregroundStyle(theme.background)
-                                .frame(minWidth: 140, minHeight: 52)
+                                .frame(width: pomodoroStore.isStarted ? 140 : 180, height: 52)
                                 .background(
                                     RoundedRectangle(cornerRadius: 16)
                                         .fill(phaseColor)
@@ -250,7 +250,7 @@ public struct PomodoroTabView: View {
                                 .font(.system(size: 12, weight: .heavy))
                                 .tracking(3.5)
                                 .foregroundStyle(phaseColor)
-                                .frame(minWidth: 140, minHeight: 52)
+                                .frame(width: 140, height: 52)
                                 .background(
                                     RoundedRectangle(cornerRadius: 16)
                                         .fill(theme.surfaceLight.opacity(0.75))
@@ -273,7 +273,7 @@ public struct PomodoroTabView: View {
                                 .font(.system(size: 12, weight: .heavy))
                                 .tracking(2.5)
                                 .foregroundStyle(theme.textTertiary)
-                                .frame(minWidth: 80, minHeight: 52)
+                                .frame(width: 90, height: 52)
                                 .background(
                                     RoundedRectangle(cornerRadius: 16)
                                         .fill(theme.surface.opacity(0.6))
@@ -285,11 +285,15 @@ public struct PomodoroTabView: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .transition(.scale.combined(with: .opacity))
                     }
                 }
+                .animation(.spring(response: 0.35, dampingFraction: 0.78), value: pomodoroStore.isStarted)
+                .animation(.spring(response: 0.35, dampingFraction: 0.78), value: pomodoroStore.isRunning)
 
-                // Next Up Phase Banner
-                if pomodoroStore.isStarted {
+                // ── Lower Section with Fixed Height Anchor (Prevents UI Jumping) ──
+                VStack(spacing: 14) {
+                    // Next Up Phase Banner (Fades in/out smoothly without shifting layout)
                     HStack(spacing: 10) {
                         Text("NEXT")
                             .font(.system(size: 9, weight: .semibold))
@@ -305,39 +309,41 @@ public struct PomodoroTabView: View {
                             .tracking(0.5)
                             .foregroundStyle(theme.textTertiary)
                     }
-                    .padding(.top, 32)
-                }
+                    .opacity(pomodoroStore.isStarted ? 1.0 : 0.0)
+                    .animation(.easeInOut(duration: 0.25), value: pomodoroStore.isStarted)
 
-                // Complete Linked Task Action
-                if let taskId = pomodoroStore.activeTaskId {
-                    Button {
-                        HapticsManager.shared.notification(.success)
-                        missionStore.toggleTodo(id: taskId)
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                            pomodoroStore.clearActiveTask()
+                    // Optional Linked Task Completion Action
+                    if let taskId = pomodoroStore.activeTaskId {
+                        Button {
+                            HapticsManager.shared.notification(.success)
+                            missionStore.toggleTodo(id: taskId)
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                pomodoroStore.clearActiveTask()
+                            }
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 13, weight: .bold))
+                                Text("COMPLETE TASK")
+                                    .font(.system(size: 11, weight: .heavy))
+                                    .tracking(1.8)
+                            }
+                            .foregroundStyle(AppColors.personalEmerald)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 9)
+                            .background(
+                                Capsule().fill(AppColors.personalEmerald.opacity(0.14))
+                            )
+                            .overlay(
+                                Capsule().stroke(AppColors.personalEmerald.opacity(0.35), lineWidth: 1)
+                            )
                         }
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 13, weight: .bold))
-                            Text("COMPLETE TASK")
-                                .font(.system(size: 11, weight: .heavy))
-                                .tracking(1.8)
-                        }
-                        .foregroundStyle(AppColors.personalEmerald)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 9)
-                        .background(
-                            Capsule().fill(AppColors.personalEmerald.opacity(0.14))
-                        )
-                        .overlay(
-                            Capsule().stroke(AppColors.personalEmerald.opacity(0.35), lineWidth: 1)
-                        )
+                        .buttonStyle(.plain)
+                        .transition(.opacity)
                     }
-                    .buttonStyle(.plain)
-                    .padding(.top, 20)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
+                .frame(height: 76)
+                .padding(.top, 24)
 
                 Spacer()
             }

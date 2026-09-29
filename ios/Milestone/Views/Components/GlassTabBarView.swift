@@ -1,17 +1,19 @@
 import SwiftUI
 
 public enum TabItem: Int, CaseIterable, Identifiable {
-    case mission = 0
-    case pomodoro = 1
-    case archive = 2
-    case settings = 3
+    case pomodoro = 0
+    case tasks = 1
+    case mission = 2
+    case archive = 3
+    case settings = 4
 
     public var id: Int { rawValue }
 
     public var title: String {
         switch self {
+        case .pomodoro: return "Focus"
+        case .tasks: return "Tasks"
         case .mission: return "Mission"
-        case .pomodoro: return "Pomodoro"
         case .archive: return "Archive"
         case .settings: return "Settings"
         }
@@ -19,8 +21,9 @@ public enum TabItem: Int, CaseIterable, Identifiable {
 
     public var systemImage: String {
         switch self {
-        case .mission: return "scope"
         case .pomodoro: return "hourglass"
+        case .tasks: return "checklist"
+        case .mission: return "scope"
         case .archive: return "archivebox"
         case .settings: return "gearshape"
         }
@@ -35,7 +38,7 @@ public struct GlassTabBarView: View {
         self._selectedTab = selectedTab
     }
 
-    private let barWidth: CGFloat = 216
+    private let barWidth: CGFloat = 260
     private let barHeight: CGFloat = 52
     private let tabCount: CGFloat = CGFloat(TabItem.allCases.count)
 

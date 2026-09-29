@@ -53,31 +53,41 @@ public final class UserStore {
     }
 
     // ── Active Navigation Tab & Paywall ──
-    public var selectedTab: TabItem = .mission
+    public var selectedTab: TabItem = {
+        if UserDefaults.standard.object(forKey: "milestone:selectedTab") != nil {
+            let raw = UserDefaults.standard.integer(forKey: "milestone:selectedTab")
+            return TabItem(rawValue: raw) ?? .mission
+        }
+        return .mission
+    }() {
+        didSet {
+            UserDefaults.standard.set(selectedTab.rawValue, forKey: "milestone:selectedTab")
+        }
+    }
     public var showPaywallSheet: Bool = false
     public var paywallInitialFeature: PaywallSheet.PremiumFeature? = nil
 
     public func handleDeepLink(url: URL) {
         let str = url.absoluteString.lowercased()
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-            if str.contains("soundscape") {
-                paywallInitialFeature = .soundscapes
-                showPaywallSheet = true
-            } else if str.contains("vault") {
-                paywallInitialFeature = .vault
-                showPaywallSheet = true
-            } else if str.contains("premium") || str.contains("paywall") {
-                paywallInitialFeature = nil
-                showPaywallSheet = true
-            } else if str.contains("pomodoro") {
-                selectedTab = .pomodoro
-            } else if str.contains("mission") {
-                selectedTab = .mission
-            } else if str.contains("archive") {
-                selectedTab = .archive
-            } else if str.contains("settings") {
-                selectedTab = .settings
-            }
+        if str.contains("soundscape") {
+            paywallInitialFeature = .soundscapes
+            showPaywallSheet = true
+        } else if str.contains("vault") {
+            paywallInitialFeature = .vault
+            showPaywallSheet = true
+        } else if str.contains("premium") || str.contains("paywall") {
+            paywallInitialFeature = nil
+            showPaywallSheet = true
+        } else if str.contains("pomodoro") || str.contains("focus") {
+            selectedTab = .pomodoro
+        } else if str.contains("tasks") || str.contains("todo") {
+            selectedTab = .tasks
+        } else if str.contains("mission") {
+            selectedTab = .mission
+        } else if str.contains("archive") {
+            selectedTab = .archive
+        } else if str.contains("settings") {
+            selectedTab = .settings
         }
     }
 
