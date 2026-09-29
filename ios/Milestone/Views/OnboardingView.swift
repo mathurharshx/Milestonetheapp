@@ -342,6 +342,9 @@ public struct OnboardingView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "leaf.fill").font(.system(size: 8))
                                 Text("PERSONAL").font(.system(size: 9.5, weight: .bold))
+                                Image(systemName: "crown.fill")
+                                    .font(.system(size: 7.5, weight: .bold))
+                                    .foregroundStyle(Color(red: 0.88, green: 0.76, blue: 0.44))
                             }
                             .foregroundStyle(simulatedPillar == .personal ? theme.background : theme.textSecondary)
                             .padding(.horizontal, 10)
@@ -362,7 +365,7 @@ public struct OnboardingView: View {
                         )
                 )
 
-                // Cold Storage Vault Drawer
+                // Cold Storage Vault Drawer (With PRO Crown Badge)
                 HStack(spacing: 12) {
                     ZStack {
                         Circle()
@@ -381,12 +384,18 @@ public struct OnboardingView: View {
                                 .tracking(2)
                                 .foregroundStyle(theme.textPrimary)
 
-                            Text("2 QUEUED")
-                                .font(.system(size: 8.5, weight: .bold))
-                                .foregroundStyle(theme.background)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 1.5)
-                                .background(Capsule().fill(theme.accent))
+                            HStack(spacing: 3) {
+                                Image(systemName: "crown.fill")
+                                    .font(.system(size: 7))
+                                    .foregroundStyle(Color(red: 0.88, green: 0.76, blue: 0.44))
+                                Text("PRO")
+                                    .font(.system(size: 8, weight: .black))
+                                    .tracking(0.5)
+                            }
+                            .foregroundStyle(theme.background)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(theme.accent))
                         }
 
                         Text("Park future ideas here without breaking focus")
@@ -514,17 +523,32 @@ public struct OnboardingView: View {
                         )
                 )
 
-                // Offline Soundscape Bar
+                // Offline Soundscape Bar (With PRO Crown Badge)
                 HStack(spacing: 12) {
                     Image(systemName: "waveform")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(theme.accent)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("ACOUSTIC SOUNDSCAPES")
-                            .font(.system(size: 10, weight: .heavy))
-                            .tracking(1.5)
-                            .foregroundStyle(theme.textPrimary)
+                        HStack(spacing: 6) {
+                            Text("FOCUS SOUNDSCAPES")
+                                .font(.system(size: 10, weight: .heavy))
+                                .tracking(1.5)
+                                .foregroundStyle(theme.textPrimary)
+
+                            HStack(spacing: 3) {
+                                Image(systemName: "crown.fill")
+                                    .font(.system(size: 7))
+                                    .foregroundStyle(Color(red: 0.88, green: 0.76, blue: 0.44))
+                                Text("PRO")
+                                    .font(.system(size: 8, weight: .black))
+                                    .tracking(0.5)
+                            }
+                            .foregroundStyle(theme.background)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(theme.accent))
+                        }
 
                         Text("Brown Noise & 40 Hz Tone (100% on-device)")
                             .font(.system(size: 11, weight: .regular))
@@ -596,11 +620,11 @@ public struct OnboardingView: View {
                 .foregroundStyle(theme.textPrimary)
                 .padding(.bottom, 10)
 
-            Text("Personalize your cockpit and schedule your daily morning runway reminder.")
+            Text("Set your profile and choose when to receive your daily morning focus briefing.")
                 .font(.system(size: 15, weight: .regular))
                 .lineSpacing(4)
                 .foregroundStyle(theme.textTertiary)
-                .padding(.bottom, 20)
+                .padding(.bottom, 18)
 
             VStack(spacing: 14) {
                 // Name Input
@@ -631,12 +655,12 @@ public struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("DAILY RUNWAY REMINDER")
+                            Text("DAILY MORNING BRIEFING")
                                 .font(.system(size: 10, weight: .heavy))
                                 .tracking(2)
                                 .foregroundStyle(theme.textSecondary)
 
-                            Text("Morning countdown of days & pending tasks")
+                            Text("Remaining days & today's priority tasks")
                                 .font(.system(size: 11, weight: .regular))
                                 .foregroundStyle(theme.textTertiary)
                         }
@@ -647,18 +671,24 @@ public struct OnboardingView: View {
                             .labelsHidden()
                             .tint(theme.accent)
                     }
-                    .padding(14)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(theme.surfaceLight.opacity(0.45))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(theme.border.opacity(0.4), lineWidth: 1)
-                            )
-                    )
+
+                    Text("Every morning at this time, Milestone delivers a silent, glanceable briefing with your remaining runway and today's top tasks—so you start each day with absolute clarity.")
+                        .font(.system(size: 11.5, weight: .regular))
+                        .lineSpacing(3)
+                        .foregroundStyle(theme.textTertiary)
+                        .padding(.top, 4)
                 }
+                .padding(14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(theme.surfaceLight.opacity(0.45))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(theme.border.opacity(0.4), lineWidth: 1)
+                        )
+                )
             }
-            .padding(.bottom, 24)
+            .padding(.bottom, 20)
 
             Spacer(minLength: 12)
 
